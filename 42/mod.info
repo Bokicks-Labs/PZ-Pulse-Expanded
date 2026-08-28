@@ -1,0 +1,8 @@
+name=PZ Pulse Expanded
+id=PZ_Pulse_Expanded
+author=Ronald S. Bocchichio
+description=Adds additional character stat panels to PZ Pulse.
+category=features
+modversion=0.1.0-dev
+versionMin=42.0.0
+require=PZ_Pulse
