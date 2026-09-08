@@ -53,5 +53,8 @@ table.insert(PZ_Pulse_EXT, {
     id = "needs_expanded",
     title = "Needs Expanded",
     cls = "info",
-    collect = discomfortCollector
+    collect = discomfortCollector,
+    js = "media/web/expanded-needs.js",
+    css = "media/web/expanded-needs.css",
+    render = "renderNeedsExpanded"
 })
