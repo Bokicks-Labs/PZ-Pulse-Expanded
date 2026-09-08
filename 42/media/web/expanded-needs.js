@@ -154,7 +154,7 @@ function renderStatRow(stat) {
     const iconUri = iconKey ? iconMap[iconKey] : null;
 
     const iconHtml =
-        typeof iconUri === "string" && iconUri !== ""
+        typeof iconUri === "string" && iconUri.trim() !== ""
             ? `<img class="needs-expanded-icon" src="${esc(iconUri)}" alt="">`
             : `<span class="needs-expanded-icon needs-expanded-icon-blank"></span>`;
 
