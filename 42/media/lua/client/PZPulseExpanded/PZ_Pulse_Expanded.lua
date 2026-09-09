@@ -43,9 +43,7 @@ local function discomfortCollector(player)
     }
 end
 
--- Register the custom Needs Expanded panel/data source with PZ Pulse.
--- Browser JS/CSS/render fields are added when the first complete rendering
--- vertical slice is wired up.
+-- Register the Needs Expanded collector and browser renderer with PZ Pulse.
 table.insert(PZ_Pulse_EXT, {
     api = 1,
     mod = "PZ_Pulse_Expanded",

@@ -1,0 +1,68 @@
+/*
+ * Needs Expanded
+ *
+ * All selectors are prefixed to avoid leaking styles into PZ Pulse or other
+ * extension panels.
+ */
+
+.needs-expanded-rows {
+    display: grid;
+    grid-template-columns: auto minmax(0, max-content) 1fr 5ch;
+    column-gap: 8px;
+    row-gap: 6px;
+    align-items: center;
+}
+
+.needs-expanded-row {
+    display: contents;
+}
+
+.needs-expanded-icon {
+    width: var(--need-icon-size, 20px);
+    height: var(--need-icon-size, 20px);
+    object-fit: contain;
+    image-rendering: pixelated;
+}
+
+.needs-expanded-icon-blank {
+    visibility: hidden;
+}
+
+.needs-expanded-label {
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.needs-expanded-bar {
+    min-width: 40px;
+    height: 12px;
+    background: #000;
+    border: 1px solid var(--line);
+    overflow: hidden;
+}
+
+.needs-expanded-fill {
+    display: block;
+    height: 100%;
+    transition: width 0.25s ease;
+}
+
+.needs-expanded-fill.ok {
+    background: var(--ok);
+}
+
+.needs-expanded-fill.warn {
+    background: var(--warn);
+}
+
+.needs-expanded-fill.danger {
+    background: var(--danger);
+}
+
+.needs-expanded-value {
+    text-align: right;
+    font-variant-numeric: lining-nums tabular-nums;
+    color: var(--muted);
+}
