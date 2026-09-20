@@ -26,12 +26,13 @@ function loadRenderer() {
         adaptNaturesCallStats,
         adaptOptionalModStats,
         adaptCustomMoodles,
+        adaptPzPulseMoodles,
         adaptPzPulseNeeds,
         buildPlayerStat,
         isValidMoodle,
         normalizePercent,
         renderNeedsExpanded,
-        renderMoodleRow,
+        renderMoodleBadge,
         renderPlayerStatRow,
         statBarClass
     };`, context, { filename: scriptPath });
@@ -190,6 +191,7 @@ test("renders only active valid modded moodles with level and provenance", () =>
             level: 3,
             maxLevel: 4,
             valence: "bad",
+            iconKey: "tasab/BodyGrime",
             source
         },
         {
@@ -198,6 +200,7 @@ test("renders only active valid modded moodles with level and provenance", () =>
             level: 2,
             maxLevel: 4,
             valence: "good",
+            iconKey: "tasab/CoolingBody",
             source
         },
         {
@@ -224,12 +227,14 @@ test("renders only active valid modded moodles with level and provenance", () =>
     });
 
     assert.equal(api.adaptCustomMoodles(moodles).length, 2);
-    assert.equal(countLabel(html, "Body Grime"), 1);
-    assert.equal(countLabel(html, "Cooling Body"), 1);
-    assert.equal(countLabel(html, "Inactive"), 0);
-    assert.equal(countLabel(html, "Malformed"), 0);
-    assert.match(html, /Active Moodles/);
-    assert.match(html, /L3/);
+    assert.equal(count(html, "needs-expanded-moodle-badge"), 2);
+    assert.match(html, /Body Grime/);
+    assert.match(html, /Cooling Body/);
+    assert.doesNotMatch(html, /Inactive/);
+    assert.doesNotMatch(html, /Malformed/);
+    assert.doesNotMatch(html, /Active Moodles/);
+    assert.match(html, /<b>3<\/b>/);
+    assert.doesNotMatch(html, /needs-expanded-moodle-row/);
     assert.match(html, /Source: Take A Bath And Shower/);
     assert.equal(JSON.stringify(moodles), before, "moodle payload was mutated");
 });
@@ -244,13 +249,15 @@ test("keeps stat and moodle nullability independent", () => {
                 level: 1,
                 maxLevel: 3,
                 valence: "good",
+                iconKey: "drugtime/DT_Stoned_1",
                 source: { type: "mod", id: "DrugTime89", name: "DrugTime 89" }
             }]
         }
     });
 
     assert.notEqual(moodleOnly, "");
-    assert.equal(countLabel(moodleOnly, "Stoned"), 1);
+    assert.equal(count(moodleOnly, "needs-expanded-moodle-badge"), 1);
+    assert.match(moodleOnly, /Stoned/);
     assert.equal(api.renderNeedsExpanded({
         needs_expanded: { custom_moodles: [{}], optional_mod_stats: {} }
     }), "");
@@ -286,4 +293,22 @@ test("returns an empty body only when no usable source rows remain", () => {
     assert.equal(api.renderNeedsExpanded({}), "");
     assert.notEqual(api.renderNeedsExpanded({ needs: vanillaNeeds() }), "");
     assert.notEqual(api.renderNeedsExpanded({ needs_expanded: { discomfort: 12 } }), "");
+});
+
+test("renders PZ Pulse vanilla moodles through the same icon badge layout", () => {
+    const { api, context } = loadRenderer();
+    context.window.PZ_MOODLE_ICONS = {
+        status_hunger: "glyph",
+        circle_bad3: "circle"
+    };
+
+    const html = api.renderNeedsExpanded({
+        moodles: [{ label: "Very Hungry", level: 3, icon: "status_hunger", valence: "bad" }]
+    });
+
+    assert.equal(api.adaptPzPulseMoodles(null).length, 0);
+    assert.equal(count(html, "needs-expanded-moodle-badge"), 1);
+    assert.match(html, /src="circle"/);
+    assert.match(html, /src="glyph"/);
+    assert.match(html, /<b>3<\/b>/);
 });

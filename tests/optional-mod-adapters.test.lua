@@ -7,6 +7,7 @@ local active = {
     MoodleFramework = true,
     DrugTime89 = true,
     NC_NaturesCall = true,
+    MedicineMoodlesB42 = true,
 }
 
 function getActivatedMods()
@@ -39,7 +40,7 @@ local modData = {
     tabas_BodyGrime = 38,
     BrushYourDamnTeeth = { dentalHygiene = 0.82 },
     LSMoodles = {
-        MindfulState = { Level = 2, Alignment = "Good", Value = 0.4 },
+        MindfulState = { Level = 2, Alignment = "Good", Value = 0.4, Tiers = 2, Icon = 0 },
         Hidden = { Level = 0, Alignment = "Bad", Value = 0 },
         Malformed = { Level = 3, Value = 0.6 },
     },
@@ -84,6 +85,19 @@ MF.MoodleData[tostring(player)] = {
     },
 }
 
+ModMedicineMoodles = {
+    PlayerMoodles = {
+        [0] = {
+            LemonGrass = {
+                getLevel = function() return 2 end,
+                getGoodBadNeutral = function() return 2 end,
+                getTitle = function() return "Lemongrass" end,
+                getDescription = function() return "The medicine is active." end,
+            },
+        },
+    },
+}
+
 local statsAdapter = require("PZPulseExpanded/OptionalModStatsAdapter")
 local moodleAdapter = require("PZPulseExpanded/CustomMoodleAdapter")
 
@@ -101,19 +115,26 @@ for _, moodle in ipairs(moodles) do
 end
 
 assert(byId["LifestyleHobbies:MindfulState"].label == "Mindful")
+assert(byId["LifestyleHobbies:MindfulState"].iconKey == "lifestyle/MindfulState1")
 assert(byId["LifestyleHobbies:Hidden"] == nil)
 assert(byId["LifestyleHobbies:Malformed"] == nil)
 assert(byId["TakeABathAndShowerNew:BodyGrime"].level == 3)
 assert(byId["TakeABathAndShowerNew:BodyGrime"].source.id == "TakeABathAndShowerNew")
+assert(byId["TakeABathAndShowerNew:BodyGrime"].iconKey == "tasab/BodyGrime")
 assert(byId["MoodleFramework:UnknownAddonMoodle"].source.name == "Moodle Framework add-on")
+assert(byId["MedicineMoodlesB42:LemonGrass"].label == "Lemongrass")
+assert(byId["MedicineMoodlesB42:LemonGrass"].iconKey == "medicine/LemonGrass")
 assert(byId["DrugTime89:Stoned"].valence == "good")
+assert(byId["DrugTime89:Stoned"].iconKey == "drugtime/DT_Stoned_1")
 assert(byId["DrugTime89:Hard"] == nil)
 assert(byId["NC_NaturesCall:NCGut"].level == 2)
 assert(byId["NC_NaturesCall:NCGut"].valence == "bad")
+assert(byId["NC_NaturesCall:NCGut"].iconKey == "natures-call/NCGutBad")
 
 active.LifestyleHobbies = false
 active.TakeABathAndShowerNew = false
 active.BrushYourDamnTeeth = false
+active.MedicineMoodlesB42 = false
 
 assert(statsAdapter.collect(player) == nil,
     "inactive optional stat mods should yield no values")

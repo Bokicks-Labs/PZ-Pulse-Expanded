@@ -12,6 +12,7 @@
             --warn: #e0ad3d;
             --danger: #df5b5b;
             --need-icon-size: 20px;
+            --moodle-size: 32px;
         }
 
         body {
@@ -42,9 +43,22 @@
                 .replace(/>/g, "&gt;")
                 .replace(/"/g, "&quot;");
         }
+        window.PZ_MOODLE_ICONS = {
+            circle_good: "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Ccircle cx='16' cy='16' r='15' fill='%2355bd6a'/%3E%3C/svg%3E",
+            circle_bad1: "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Ccircle cx='16' cy='16' r='15' fill='%23a16a62'/%3E%3C/svg%3E",
+            circle_bad2: "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Ccircle cx='16' cy='16' r='15' fill='%23b65f58'/%3E%3C/svg%3E",
+            circle_bad3: "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Ccircle cx='16' cy='16' r='15' fill='%23df5b5b'/%3E%3C/svg%3E",
+            circle_bad4: "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Ccircle cx='16' cy='16' r='15' fill='%23ef3535'/%3E%3C/svg%3E"
+        };
     </script>
     <script src="../42/media/web/expanded-needs.js"></script>
     <script>
+        // The production page supplies this vanilla glyph through PZ Pulse's
+        // full icon map. Reuse an embedded fixture glyph here so the layout
+        // exercise covers a vanilla badge without copying base-game art.
+        window.PZ_MOODLE_ICONS.status_hunger =
+            PZ_PULSE_EXPANDED_MOODLE_ICONS["lifestyle/MindfulState"];
+
         const needs = [
             ["Hunger", 8, true, "status_hunger"],
             ["Thirst", 18, true, "status_thirst"],
@@ -62,6 +76,9 @@
 
         document.getElementById("fixture").innerHTML = renderNeedsExpanded({
             needs,
+            moodles: [
+                { label: "Hungry", level: 2, valence: "bad", icon: "status_hunger" }
+            ],
             needs_expanded: {
                 discomfort: 27.42,
                 natures_call: { bladder: 60, bowel: 0 },
@@ -78,6 +95,7 @@
                         level: 2,
                         maxLevel: 4,
                         valence: "good",
+                        iconKey: "lifestyle/MindfulState1",
                         source: { type: "mod", id: "LifestyleHobbies", name: "Lifestyle: Hobbies" }
                     },
                     {
@@ -87,6 +105,7 @@
                         level: 3,
                         maxLevel: 4,
                         valence: "bad",
+                        iconKey: "tasab/BodyGrime",
                         source: { type: "mod", id: "TakeABathAndShowerNew", name: "Take A Bath And Shower" }
                     },
                     {
@@ -96,6 +115,7 @@
                         level: 1,
                         maxLevel: 3,
                         valence: "good",
+                        iconKey: "drugtime/DT_Stoned_1",
                         source: { type: "mod", id: "DrugTime89", name: "DrugTime 89" }
                     }
                 ]

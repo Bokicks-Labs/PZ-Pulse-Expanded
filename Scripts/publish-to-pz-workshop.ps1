@@ -44,6 +44,10 @@ finally {
     $preview.Dispose()
 }
 
+# Keep the single-file PZ Pulse extension payload synchronized with the
+# committed third-party PNG sources before staging it for Steam.
+& (Join-Path $PSScriptRoot 'build-moodle-icon-map.ps1')
+
 New-Item -ItemType Directory -Path $workshopContents -Force | Out-Null
 
 $sourceFiles = [Collections.Generic.Dictionary[string,string]]::new([StringComparer]::OrdinalIgnoreCase)

@@ -13,18 +13,13 @@
     align-items: center;
 }
 
-.needs-expanded-section-title {
-    margin: 0 0 6px;
-    padding-bottom: 4px;
-    border-bottom: 1px solid var(--line);
-    color: var(--muted);
-    font-size: 0.85em;
-    letter-spacing: 0.04em;
-    text-transform: uppercase;
-}
-
 .needs-expanded-moodles {
-    margin-bottom: 10px;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    margin-bottom: 4px;
+    align-items: center;
+    min-height: var(--moodle-size, 32px);
 }
 
 .needs-expanded-row {
@@ -42,20 +37,57 @@
     visibility: hidden;
 }
 
-.needs-expanded-moodle-dot {
-    width: 10px;
-    height: 10px;
-    margin: 5px;
-    border-radius: 50%;
-    box-shadow: 0 0 0 1px var(--line);
+.needs-expanded-moodle-badge {
+    position: relative;
+    display: inline-block;
+    width: var(--moodle-size, 32px);
+    height: var(--moodle-size, 32px);
 }
 
-.needs-expanded-moodle-dot.good {
-    background: var(--ok);
+.needs-expanded-moodle-badge img {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+    image-rendering: pixelated;
 }
 
-.needs-expanded-moodle-dot.bad {
-    background: var(--danger);
+.needs-expanded-moodle-badge .needs-expanded-moodle-bg {
+    z-index: 0;
+}
+
+.needs-expanded-moodle-badge .needs-expanded-moodle-glyph {
+    z-index: 1;
+}
+
+.needs-expanded-moodle-badge b {
+    position: absolute;
+    right: -2px;
+    bottom: -2px;
+    min-width: 12px;
+    height: 12px;
+    padding: 0 2px;
+    font-size: 0.6em;
+    line-height: 12px;
+    text-align: center;
+    color: #fff;
+    background: #000;
+    border: 1px solid var(--line);
+    border-radius: 7px;
+    z-index: 2;
+    font-variant-numeric: lining-nums;
+}
+
+.needs-expanded-moodle-fallback {
+    display: inline-flex;
+    align-items: center;
+    min-height: 24px;
+    padding: 2px 6px;
+    border: 1px solid var(--line);
+    border-radius: 3px;
+    color: var(--muted);
+    font-size: 0.85em;
 }
 
 .needs-expanded-label {

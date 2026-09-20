@@ -191,8 +191,9 @@ These are dashboard presentation thresholds, not Project Zomboid Moodle threshol
 
 A **Moodle** represents an active status indicator.
 
-Needs Expanded displays active modded moodles above the stat rows. Inactive or
-neutral moodles are represented by absence, not by a level-zero object.
+Needs Expanded displays active vanilla and modded moodles above the stat rows.
+Inactive or neutral moodles are represented by absence, not by a level-zero
+object.
 
 ## Shape
 
@@ -204,6 +205,7 @@ neutral moodles are represented by absence, not by a level-zero object.
     level: 3,
     maxLevel: 4,
     valence: "bad",
+    iconKey: "tasab/BodyGrime",
     source: {
         type: "mod",
         id: "TakeABathAndShowerNew",
@@ -218,13 +220,15 @@ neutral moodles are represented by absence, not by a level-zero object.
 | `label` | `string` | yes | Localized player-facing active-state title. |
 | `description` | `string` | no | Localized active-state tooltip description. |
 | `level` | positive integer | yes | Current source-defined active level. |
-| `maxLevel` | positive integer | yes | Maximum level for bar normalization. |
+| `maxLevel` | positive integer | yes | Maximum level reported by the source. |
 | `valence` | `"good" \| "bad"` | yes | Whether the active state is beneficial or harmful. |
+| `iconKey` | `string` | no | Base PZ Pulse or bundled source-mod glyph key. |
 | `source` | `StatSource` | yes | Provenance metadata shared with Stats. |
 
-The moodle bar is a visualization of `level / maxLevel`; it does not claim the
-source mod exposes a continuous percentage. Good moodles use the positive
-semantic color and bad moodles use the danger color.
+Moodles use PZ Pulse's circle-and-glyph badge design. `valence` and `level`
+select the colored circle, `iconKey` selects the glyph, and the current level
+appears in the bottom-right corner. A missing glyph degrades to a compact text
+chip rather than a numeric stat bar.
 
 ---
 

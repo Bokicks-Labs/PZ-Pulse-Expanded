@@ -32,6 +32,11 @@ Inactive moodles stay hidden, matching the compact behavior of the original
 panel. Stats with no safe value are also hidden independently, so one missing
 integration never empties or breaks the whole panel.
 
+The moodle area matches PZ Pulse's original design: each active state is shown
+as its original glyph on PZ Pulse's colored moodle circle, with the current
+level in the bottom-right corner. The only layout difference is a tighter gap
+between the moodle badges and the status bars.
+
 ## Optional mod integrations
 
 No mod in this section is required.
@@ -66,9 +71,26 @@ No mod in this section is required.
 - **Medicine Moodles:** supports its registered medicine-effect moodles.
 - **Brush Your Damn Teeth:** supports its mouth-state moodle and an optional
   **Dental Hygiene** meter.
+- **Infirmities:** supports panic attacks, tremors, addictions, and withdrawal.
+- **The Mutants:** supports the Puked moodle.
 
 Integrations are read-only. PZ Pulse Expanded does not create, initialize, or
 mutate another mod's player data just to display it.
+
+## Third-party artwork and removal requests
+
+To reproduce each supported mod's in-game moodles faithfully, this add-on
+includes only the moodle glyph artwork used by **Lifestyle: Hobbies**, **Take A
+Bath And Shower**, **Infirmities**, **Medicine Moodles**, **Brush Your Damn
+Teeth**, **The Mutants**, **DrugTime 89**, and **Nature's Call**. PZ Pulse's
+colored circles and vanilla moodle glyphs are reused from the required PZ Pulse
+mod at runtime and are not copied into this add-on.
+
+The exact copied filenames, source paths, Workshop IDs, and known author names
+are documented in `docs/third-party-art.md` in the project repository. All
+third-party artwork remains the property of its respective creator; no
+ownership is claimed. If any mod author or rights holder asks for their
+artwork or integration to be removed, contact me and I will remove it promptly.
 
 ## Compatibility and multiplayer
 

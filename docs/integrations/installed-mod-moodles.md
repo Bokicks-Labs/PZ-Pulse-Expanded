@@ -44,12 +44,19 @@ Known installed registrations retain their actual source provenance:
 |---|---|
 | Take A Bath And Shower | `Wet_Bathing`, `CoolingBody`, `WarmingBody`, `FeelingGaze`, `BodyGrime` |
 | Infirmities | `PanicAttack`, `Tremors`, six `AddictedTo...` moodles, `Withdrawal` |
-| Medicine Moodles | `Antibiotics`, `Antidepressants`, `BetaBlockers`, `Painkillers`, `SleepingTablets` |
+| Medicine Moodles | `Antibiotics`, `Antidepressants`, `BetaBlockers`, `Painkillers`, `SleepingTablets`, `LemonGrass` |
 | Brush Your Damn Teeth | `BYDT_MouthState` |
 | The Mutants | `PZTheMutants_Puked` |
 
 An active unrecognized Moodle Framework registration is still displayed and is
 identified as a `Moodle Framework add-on` rather than being silently discarded.
+Medicine Moodles keeps its `MF.ISMoodle` objects in its own per-player table,
+so the adapter also observes that already-initialized table without creating or
+updating any medicine moodles.
+
+Known installed sources use exact copied source-mod glyphs. An unknown Moodle
+Framework registration still appears as a compact text moodle chip if no
+matching bundled glyph is available; it never falls back to a stat bar.
 
 ### Other installed moodle systems
 

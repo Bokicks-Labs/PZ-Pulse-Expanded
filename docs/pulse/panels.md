@@ -16,10 +16,12 @@ player-stat rows
 
 Active moodles appear above the stat rows.
 
-The implemented first slice includes active positive and negative moodles from
-supported source mods, including moodles exposed through Moodle Framework.
-Level zero is omitted. Each row includes its source in the tooltip and uses a
-level bar rather than inventing a continuous percentage.
+The implemented panel includes PZ Pulse's active vanilla moodles plus active
+positive and negative moodles from supported source mods, including moodles
+exposed through Moodle Framework. Level zero is omitted. Each moodle is a PZ
+Pulse-style layered icon badge with the current level in its bottom-right
+corner; its tooltip includes source provenance. The moodle-to-stat gap is 4px,
+which is intentionally tighter than PZ Pulse's 10px default.
 
 ## Stat section
 
@@ -103,7 +105,9 @@ Needs Expanded may use it defensively when available, but:
 
 - missing icon globals must not break the panel
 - missing individual icon keys must not break the panel
-- an invisible icon spacer should preserve row alignment
+- missing vanilla glyphs should degrade to compact text moodle chips
+- known supported mods use embedded copies of their source glyphs
+- missing stat-row icons still use an invisible spacer to preserve alignment
 
 ## Skills Expanded
 

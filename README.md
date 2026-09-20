@@ -45,7 +45,7 @@ The current feature branch extends the first Discomfort vertical slice without
 changing the normalized rendering path:
 
 ```text
-Lifestyle / Moodle Framework / DrugTime / Nature's Call ─→ active Moodle rows
+PZ Pulse vanilla moodles + supported mod moodles ─────────→ icon badges
 
 PZ Pulse d.needs ───────────────────────────────┐
 Project Zomboid Discomfort ─────────────────────┼─→ normalized PlayerStat rows
@@ -68,6 +68,7 @@ the panel. See the installed-mod inventory in
 - [`docs/pulse/panels.md`](docs/pulse/panels.md) — panel responsibilities and rendering behavior.
 - [`docs/integrations/natures-call.md`](docs/integrations/natures-call.md) — verified compatibility-adapter contract and limits.
 - [`docs/integrations/installed-mod-moodles.md`](docs/integrations/installed-mod-moodles.md) — local installed-mod moodle/stat inventory and supported sources.
+- [`docs/third-party-art.md`](docs/third-party-art.md) — exact copied moodle-art inventory, attribution, and removal policy.
 - [`docs/decisions/0001-normalized-provider-model.md`](docs/decisions/0001-normalized-provider-model.md) — rationale for normalizing provider data before rendering.
 
 ## Scope note: PZ Map
@@ -87,7 +88,9 @@ After testing the current source, stage a verified Workshop upload with:
 The script mirrors only the `42` and `common` payload folders into
 `%UserProfile%\Zomboid\Workshop\PZ-Pulse-Expanded`, copies the Workshop
 metadata and preview, removes retired files only inside that staging mod, and
-verifies the staged payload by SHA-256. It does not upload to Steam. The initial
+verifies the staged payload by SHA-256. It also rebuilds the embedded moodle
+icon map from the committed third-party PNG sources before copying. It does not
+upload to Steam. The initial
 `workshop.txt` intentionally has no `id=` line; add Steam's assigned numeric ID
 after the first successful publish. On the Workshop item page, also add
 [PZ Pulse](https://steamcommunity.com/sharedfiles/filedetails/?id=3753700423)

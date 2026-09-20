@@ -78,6 +78,7 @@ local MOODLE_FRAMEWORK_SOURCES = {
     BetaBlockers = SOURCES.medicine,
     Painkillers = SOURCES.medicine,
     SleepingTablets = SOURCES.medicine,
+    LemonGrass = SOURCES.medicine,
 
     BYDT_MouthState = SOURCES.teeth,
     PZTheMutants_Puked = SOURCES.mutants,
@@ -166,8 +167,39 @@ local function addMoodle(result, seen, moodle)
         level = level,
         maxLevel = maxLevel,
         valence = moodle.valence,
+        iconKey = moodle.iconKey,
         source = moodle.source,
     }
+end
+
+local function lifestyleIconKey(name, state, level)
+    local filename = tostring(name)
+    local tiers = tonumber(state.Tiers) or 0
+    local iconMode = tonumber(state.Icon) or 0
+
+    if iconMode ~= 1 and iconMode ~= 3 then
+        if level == 4 and tiers == 3 then
+            filename = filename .. "3"
+        elseif level >= 3 and tiers >= 2 then
+            filename = filename .. "2"
+        elseif level >= 2 and tiers >= 1 then
+            filename = filename .. "1"
+        end
+    end
+    return "lifestyle/" .. filename
+end
+
+local function moodleFrameworkIconKey(source, name)
+    local folders = {
+        [SOURCES.tasab.id] = "tasab",
+        [SOURCES.infirmities.id] = "infirmities",
+        [SOURCES.medicine.id] = "medicine",
+        [SOURCES.teeth.id] = "teeth",
+        [SOURCES.mutants.id] = "mutants",
+    }
+    local folder = folders[source.id]
+    if folder == nil then return nil end
+    return folder .. "/" .. tostring(name)
 end
 
 local function collectLifestyle(player, result, seen)
@@ -195,6 +227,7 @@ local function collectLifestyle(player, result, seen)
                     level = level,
                     maxLevel = 4,
                     valence = valence,
+                    iconKey = lifestyleIconKey(name, state, level),
                     source = SOURCES.lifestyle,
                 })
             end
@@ -243,7 +276,48 @@ local function collectMoodleFramework(player, result, seen)
                     level = level,
                     maxLevel = 4,
                     valence = valence,
+                    iconKey = moodleFrameworkIconKey(source, name),
                     source = source,
+                })
+            end
+        end
+    end
+end
+
+local function collectMedicineMoodles(player, result, seen)
+    if not isActive(SOURCES.medicine.id) then return end
+    if type(ModMedicineMoodles) ~= "table"
+        or type(ModMedicineMoodles.PlayerMoodles) ~= "table" then return end
+
+    local objects = ModMedicineMoodles.PlayerMoodles[player:getPlayerNum()]
+    if type(objects) ~= "table" then return end
+
+    for name, object in pairs(objects) do
+        if type(object) == "table"
+            and type(object.getLevel) == "function"
+            and type(object.getGoodBadNeutral) == "function" then
+            local level = normalizeLevel(object:getLevel(), 4)
+            local alignment = tonumber(object:getGoodBadNeutral())
+            local valence = alignment == 1 and "good"
+                or alignment == 2 and "bad"
+                or nil
+
+            if level ~= nil and valence ~= nil then
+                local title = type(object.getTitle) == "function"
+                    and object:getTitle(alignment, level)
+                    or nil
+                local description = type(object.getDescription) == "function"
+                    and object:getDescription(alignment, level)
+                    or nil
+                addMoodle(result, seen, {
+                    id = SOURCES.medicine.id .. ":" .. tostring(name),
+                    label = title or humanize(name),
+                    description = description,
+                    level = level,
+                    maxLevel = 4,
+                    valence = valence,
+                    iconKey = "medicine/" .. tostring(name),
+                    source = SOURCES.medicine,
                 })
             end
         end
@@ -277,6 +351,7 @@ local function collectDrugTime(player, result, seen)
                 level = level,
                 maxLevel = 3,
                 valence = definition.valence,
+                iconKey = "drugtime/DT_" .. definition.name .. "_" .. tostring(level),
                 source = SOURCES.drugtime,
             })
         end
@@ -336,6 +411,13 @@ local function collectNaturesCall(player, result, seen)
                     level = level,
                     maxLevel = definition.maxLevel,
                     valence = valence,
+                    iconKey = definition.name == "NCSmell"
+                        and "mood_noxioussmell"
+                        or definition.name == "NCGut"
+                            and (valence == "good"
+                                and "natures-call/NCGutGood"
+                                or "natures-call/NCGutBad")
+                            or "natures-call/" .. definition.name,
                     source = SOURCES.natures_call,
                 })
             end
@@ -346,6 +428,7 @@ end
 local COLLECTORS = {
     collectLifestyle,
     collectMoodleFramework,
+    collectMedicineMoodles,
     collectDrugTime,
     collectNaturesCall,
 }
