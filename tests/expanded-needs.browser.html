@@ -56,8 +56,16 @@
         // The production page supplies this vanilla glyph through PZ Pulse's
         // full icon map. Reuse an embedded fixture glyph here so the layout
         // exercise covers a vanilla badge without copying base-game art.
-        window.PZ_MOODLE_ICONS.status_hunger =
+        const fixtureVanillaGlyph =
             PZ_PULSE_EXPANDED_MOODLE_ICONS["lifestyle/MindfulState"];
+        [
+            "status_hunger", "status_thirst", "mood_sleepy",
+            "status_difficultybreathing", "mood_bored", "mood_stressed",
+            "mood_panicked", "mood_sad", "mood_pained", "mood_nauseous",
+            "status_wet", "mood_drunk", "mood_discomfort"
+        ].forEach((key) => {
+            window.PZ_MOODLE_ICONS[key] = fixtureVanillaGlyph;
+        });
 
         const needs = [
             ["Hunger", 8, true, "status_hunger"],

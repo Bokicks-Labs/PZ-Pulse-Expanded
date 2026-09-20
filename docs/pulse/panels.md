@@ -31,6 +31,10 @@ Each normalized Stat renders as a row:
 [icon] Label        [bar]        27%
 ```
 
+Every built-in stat definition supplies an icon. Vanilla bars reuse PZ Pulse's
+existing moodle glyph map; optional mod bars reuse the matching embedded
+source-mod moodle glyph.
+
 The shared row grid is expected to align:
 
 1. icon

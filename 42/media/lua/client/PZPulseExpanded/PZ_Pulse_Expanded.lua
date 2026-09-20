@@ -126,7 +126,7 @@ end
 table.insert(PZ_Pulse_EXT, {
     api = 1,
     mod = "PZ_Pulse_Expanded",
-    version = "1.1.0",
+    version = "1.2.0",
     id = "needs_expanded",
     title = "Needs Expanded",
     cls = "info",

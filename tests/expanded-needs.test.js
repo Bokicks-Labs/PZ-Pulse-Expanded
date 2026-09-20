@@ -287,6 +287,37 @@ test("uses icon spacers when globals or keys are missing and escapes HTML", () =
     assert.doesNotMatch(withMap, /src="icon" onerror=/);
 });
 
+test("renders an icon for every built-in stat bar", () => {
+    const { api, context } = loadRenderer();
+    const baseIconKeys = [
+        "status_hunger", "status_thirst", "mood_sleepy",
+        "status_difficultybreathing", "mood_bored", "mood_stressed",
+        "mood_panicked", "mood_sad", "mood_pained", "mood_nauseous",
+        "status_wet", "mood_drunk", "mood_discomfort"
+    ];
+    context.window.PZ_MOODLE_ICONS = Object.fromEntries(
+        baseIconKeys.map((key) => [key, `data:${key}`])
+    );
+
+    const html = api.renderNeedsExpanded({
+        needs: vanillaNeeds(),
+        needs_expanded: {
+            discomfort: 20,
+            natures_call: { bladder: 40, bowel: 50 },
+            optional_mod_stats: {
+                lifestyle_hygiene_need: 60,
+                tasab_body_grime: 70,
+                bydt_dental_hygiene: 0.8
+            }
+        }
+    });
+
+    assert.equal(count(html, 'class="needs-expanded-row"'), 18);
+    assert.equal(count(html, 'class="needs-expanded-icon"'), 18);
+    assert.doesNotMatch(html, /needs-expanded-icon-blank/);
+    assert.match(html, /data:image\/png;base64/);
+});
+
 test("returns an empty body only when no usable source rows remain", () => {
     const { api } = loadRenderer();
     assert.equal(api.renderNeedsExpanded(null), "");

@@ -91,7 +91,7 @@ Stats are displayed as rows in **Needs Expanded**.
 | `min` | `number \| numeric string` | yes | Minimum value of the stat's numeric range. |
 | `max` | `number \| numeric string` | yes | Maximum value of the stat's numeric range. Must be greater than `min` for percentage normalization. |
 | `badHigh` | `boolean` | yes | `true` when larger normalized values represent a worse state; `false` when smaller normalized values represent a worse state. |
-| `iconKey` | `string` | no | Preferred icon lookup key. Missing icons must not prevent the row from rendering. |
+| `iconKey` | `string` | no | Preferred icon lookup key. Every built-in stat supplies one; missing third-party icons must not prevent a row from rendering. |
 | `visibleByDefault` | `boolean` | no | Whether the stat should initially be visible when stat-level visibility configuration is available. Default intent is `true`. |
 | `source` | `StatSource` | yes | Provenance metadata for tooltips and diagnostics. |
 

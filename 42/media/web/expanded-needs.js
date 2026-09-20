@@ -260,6 +260,7 @@ const NATURES_CALL_STAT_DEFINITIONS = {
         min: 0,
         max: 120,
         badHigh: true,
+        iconKey: "natures-call/NCBladder",
         visibleByDefault: true,
         source: NATURES_CALL_SOURCE
     },
@@ -269,6 +270,7 @@ const NATURES_CALL_STAT_DEFINITIONS = {
         min: 0,
         max: 120,
         badHigh: true,
+        iconKey: "natures-call/NCBowel",
         visibleByDefault: true,
         source: NATURES_CALL_SOURCE
     }
@@ -281,6 +283,7 @@ const OPTIONAL_MOD_STAT_DEFINITIONS = {
         min: 0,
         max: 100,
         badHigh: true,
+        iconKey: "lifestyle/HygieneBad",
         visibleByDefault: true,
         source: LIFESTYLE_SOURCE
     },
@@ -290,6 +293,7 @@ const OPTIONAL_MOD_STAT_DEFINITIONS = {
         min: 0,
         max: 100,
         badHigh: true,
+        iconKey: "tasab/BodyGrime",
         visibleByDefault: true,
         source: TASAB_SOURCE
     },
@@ -299,6 +303,7 @@ const OPTIONAL_MOD_STAT_DEFINITIONS = {
         min: 0,
         max: 1,
         badHigh: false,
+        iconKey: "teeth/BYDT_MouthState",
         visibleByDefault: true,
         source: BRUSH_YOUR_DAMN_TEETH_SOURCE
     }
@@ -1051,22 +1056,9 @@ function renderPlayerStatRow(stat) {
         return null;
     }
 
-    // PZ_MOODLE_ICONS is a useful PZ Pulse browser global, but it is not part
-    // of the documented stable extension API. Missing upstream icon data must
-    // degrade to an empty spacer instead of breaking the row.
-    const iconMap =
-        window.PZ_MOODLE_ICONS &&
-            typeof window.PZ_MOODLE_ICONS === "object"
-            ? window.PZ_MOODLE_ICONS
-            : {};
-
-    const iconKey =
-        typeof stat.iconKey === "string" &&
-            stat.iconKey.trim() !== ""
-            ? stat.iconKey
-            : null;
-
-    const iconUri = iconKey ? iconMap[iconKey] : null;
+    // Resolve both PZ Pulse's vanilla icon map and our embedded copies of
+    // source-mod moodle art. Missing data still degrades safely to a spacer.
+    const iconUri = resolveMoodleGlyph(stat.iconKey);
 
     const iconHtml =
         typeof iconUri === "string" && iconUri.trim() !== ""

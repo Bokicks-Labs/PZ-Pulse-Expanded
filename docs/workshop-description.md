@@ -26,6 +26,7 @@ The replacement panel includes:
 - the underlying vanilla **Discomfort** stat
 - active moodles discovered from supported installed mods
 - optional continuous meters from supported mods
+- a corresponding vanilla or source-mod moodle icon beside every stat bar
 - source-aware tooltips so modded rows identify where their data came from
 
 Inactive moodles stay hidden, matching the compact behavior of the original
