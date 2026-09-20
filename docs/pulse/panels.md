@@ -16,14 +16,10 @@ player-stat rows
 
 Active moodles appear above the stat rows.
 
-Long-term goals include:
-
-- vanilla moodles
-- positive moodles
-- modded moodles such as those exposed by Moodle frameworks
-- provenance tooltips
-
-The Moodle normalized model is not yet frozen.
+The implemented first slice includes active positive and negative moodles from
+supported source mods, including moodles exposed through Moodle Framework.
+Level zero is omitted. Each row includes its source in the tooltip and uses a
+level bar rather than inventing a continuous percentage.
 
 ## Stat section
 
@@ -39,6 +35,21 @@ The shared row grid is expected to align:
 2. label
 3. bar
 4. formatted value
+
+The implemented deterministic row order is:
+
+1. PZ Pulse Needs+ vanilla stats: Hunger, Thirst, Fatigue, Stamina, Boredom,
+   Stress, Panic, Unhappiness, Pain, Sickness, Wetness, and Drunkenness
+2. vanilla Discomfort
+3. optional Nature's Call Bladder and Bowel fills
+4. optional continuous mod stats: Lifestyle Hygiene Need, TASAB Body Grime,
+   and Brush Your Damn Teeth Dental Hygiene
+
+PZ Pulse's `d.needs` shape is a private dependency. The current adapter targets
+the exact ordered collector contract verified in PZ Pulse 1.1.3 and validates
+individual rows before normalization. Missing or invalid rows are skipped
+without affecting the other sources. This applies per stat: an installed but
+uninitialized mod does not create a zero bar.
 
 ## Stat visibility
 

@@ -13,6 +13,20 @@
     align-items: center;
 }
 
+.needs-expanded-section-title {
+    margin: 0 0 6px;
+    padding-bottom: 4px;
+    border-bottom: 1px solid var(--line);
+    color: var(--muted);
+    font-size: 0.85em;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+}
+
+.needs-expanded-moodles {
+    margin-bottom: 10px;
+}
+
 .needs-expanded-row {
     display: contents;
 }
@@ -26,6 +40,22 @@
 
 .needs-expanded-icon-blank {
     visibility: hidden;
+}
+
+.needs-expanded-moodle-dot {
+    width: 10px;
+    height: 10px;
+    margin: 5px;
+    border-radius: 50%;
+    box-shadow: 0 0 0 1px var(--line);
+}
+
+.needs-expanded-moodle-dot.good {
+    background: var(--ok);
+}
+
+.needs-expanded-moodle-dot.bad {
+    background: var(--danger);
 }
 
 .needs-expanded-label {

@@ -128,6 +128,27 @@ The following remain implementation details:
 
 PZ Pulse private surfaces may be used defensively when necessary, but PZ Pulse Expanded must not present them as stable contracts.
 
+### Current Needs Expanded adapters
+
+The current panel composes normalized rows from independent inputs:
+
+1. PZ Pulse's private `d.needs` array is adapted in the browser. PZ Pulse 1.1.3
+   does not provide stable need IDs, so the adapter owns an explicit mapping to
+   its verified collector order and validates row shape/direction before use.
+2. The extension Lua collector reads vanilla `CharacterStat.DISCOMFORT`.
+3. The optional Nature's Call adapter reads existing per-player source-mod
+   state without initializing it. See
+   [`integrations/natures-call.md`](integrations/natures-call.md).
+4. The optional-mod stat adapter reads continuous values already owned by
+   Lifestyle: Hobbies, Take A Bath And Shower, and Brush Your Damn Teeth.
+5. The custom-moodle adapter reads active Lifestyle moodles, Moodle Framework
+   registrations, DrugTime 89 stages, and Nature's Call moodle state. It never
+   creates moodles or initializes another mod's state.
+
+Each input, stat, and moodle degrades independently. A missing mod or malformed
+optional value omits only that item; it does not erase valid rows from any
+other source. The shared payload is never mutated.
+
 ## Error philosophy
 
 Expected missing or invalid data should degrade predictably.

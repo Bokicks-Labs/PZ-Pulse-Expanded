@@ -2,7 +2,11 @@
 
 PZ Pulse Expanded extends [PZ Pulse](https://github.com/PZ-Pulse/API) with richer player-state information and replacement panels designed to support both vanilla and modded data.
 
-The project is currently in early development. The first vertical slice is **Discomfort** in a custom **Needs Expanded** panel.
+The project is currently in early development. **Needs Expanded** now renders
+PZ Pulse's vanilla Needs+ stats, active moodles from supported installed mods,
+the underlying vanilla **Discomfort** stat, and independently nullable
+continuous stats from Nature's Call, Lifestyle: Hobbies, Take A Bath And
+Shower, and Brush Your Damn Teeth.
 
 ## Goals
 
@@ -37,26 +41,33 @@ A replacement skills panel designed to support:
 
 ## Current milestone
 
-The current feature branch proves the data flow with the vanilla `CharacterStat.DISCOMFORT` value:
+The current feature branch extends the first Discomfort vertical slice without
+changing the normalized rendering path:
 
 ```text
-Project Zomboid player
-        ↓
-Lua collector
-        ↓
-PZ Pulse extension payload
-        ↓
-normalized Stat model
-        ↓
-Needs Expanded renderer
+Lifestyle / Moodle Framework / DrugTime / Nature's Call ─→ active Moodle rows
+
+PZ Pulse d.needs ───────────────────────────────┐
+Project Zomboid Discomfort ─────────────────────┼─→ normalized PlayerStat rows
+Optional compatible mod stats (when readable) ─┘
+                         ↓
+              Needs Expanded renderer
 ```
+
+Every optional item fails closed by itself: when its source mod is inactive or
+its state cannot be read, that row is omitted without affecting the rest of
+the panel. See the installed-mod inventory in
+[`docs/integrations/installed-mod-moodles.md`](docs/integrations/installed-mod-moodles.md).
 
 ## Documentation
 
 - [`docs/architecture.md`](docs/architecture.md) — project architecture, scope, and stability boundaries.
+- [`docs/workshop-description.md`](docs/workshop-description.md) — player-facing Steam Workshop description.
 - [`docs/pulse/data-model.md`](docs/pulse/data-model.md) — normalized browser-side data models.
 - [`docs/pulse/provider-api.md`](docs/pulse/provider-api.md) — draft third-party provider API.
 - [`docs/pulse/panels.md`](docs/pulse/panels.md) — panel responsibilities and rendering behavior.
+- [`docs/integrations/natures-call.md`](docs/integrations/natures-call.md) — verified compatibility-adapter contract and limits.
+- [`docs/integrations/installed-mod-moodles.md`](docs/integrations/installed-mod-moodles.md) — local installed-mod moodle/stat inventory and supported sources.
 - [`docs/decisions/0001-normalized-provider-model.md`](docs/decisions/0001-normalized-provider-model.md) — rationale for normalizing provider data before rendering.
 
 ## Scope note: PZ Map
@@ -64,3 +75,20 @@ Needs Expanded renderer
 PZ Map integration is not currently planned. PZ Map does not expose a stable public extension API for the functionality this project would require, so integrating against its private internals would create an intentionally unstable dependency.
 
 This can be revisited if an appropriate public API becomes available.
+
+## Workshop staging
+
+After testing the current source, stage a verified Workshop upload with:
+
+```powershell
+.\Scripts\publish-to-pz-workshop.ps1
+```
+
+The script mirrors only the `42` and `common` payload folders into
+`%UserProfile%\Zomboid\Workshop\PZ-Pulse-Expanded`, copies the Workshop
+metadata and preview, removes retired files only inside that staging mod, and
+verifies the staged payload by SHA-256. It does not upload to Steam. The initial
+`workshop.txt` intentionally has no `id=` line; add Steam's assigned numeric ID
+after the first successful publish. On the Workshop item page, also add
+[PZ Pulse](https://steamcommunity.com/sharedfiles/filedetails/?id=3753700423)
+as a required item so subscribers receive the dependency automatically.

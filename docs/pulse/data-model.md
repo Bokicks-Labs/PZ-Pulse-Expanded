@@ -6,7 +6,8 @@ The renderer should not need to know whether a value came from Project Zomboid, 
 
 This document describes the normalized browser-side models. These models are the intended contract between provider/adapter code and panel-rendering code.
 
-> Status: early design. The Stat model is being implemented now. Moodle and Skill shapes are placeholders until their vertical slices begin.
+> Status: early design. Stat and active Moodle vertical slices are implemented.
+> The Skill shape remains a placeholder until that vertical slice begins.
 
 ## Common conventions
 
@@ -109,10 +110,13 @@ or:
 ```js
 {
     type: "mod",
-    id: "NaturesCall",
+    id: "NC_NaturesCall",
     name: "Nature's Call"
 }
 ```
+
+The Nature's Call example reflects the currently verified installed mod ID;
+the separate provider API remains a draft rather than a frozen contract.
 
 ### Field contract
 
@@ -140,6 +144,7 @@ Examples:
 value=50,  min=0,  max=100 → 50%
 value=0.5, min=0,  max=1   → 50%
 value=15,  min=10, max=20  → 50%
+value=60,  min=0,  max=120 → 50%
 ```
 
 Formatting is intentionally separate from normalization:
@@ -186,19 +191,40 @@ These are dashboard presentation thresholds, not Project Zomboid Moodle threshol
 
 A **Moodle** represents an active status indicator.
 
-Needs Expanded will display active vanilla and modded moodles above the stat rows, matching the overall layout of PZ Pulse's Moodles & Needs+ panel.
+Needs Expanded displays active modded moodles above the stat rows. Inactive or
+neutral moodles are represented by absence, not by a level-zero object.
 
-The normalized Moodle shape is not frozen yet.
+## Shape
 
-Expected concerns include:
+```js
+{
+    id: "TakeABathAndShowerNew:BodyGrime",
+    label: "Body Grime",
+    description: "Time to wash.",
+    level: 3,
+    maxLevel: 4,
+    valence: "bad",
+    source: {
+        type: "mod",
+        id: "TakeABathAndShowerNew",
+        name: "Take A Bath And Shower"
+    }
+}
+```
 
-- stable ID
-- label
-- description
-- level/severity
-- positive or negative state
-- icon
-- provenance
+| Field | Type | Required | Description |
+|---|---|---:|---|
+| `id` | `string` | yes | Stable source-qualified moodle identifier. |
+| `label` | `string` | yes | Localized player-facing active-state title. |
+| `description` | `string` | no | Localized active-state tooltip description. |
+| `level` | positive integer | yes | Current source-defined active level. |
+| `maxLevel` | positive integer | yes | Maximum level for bar normalization. |
+| `valence` | `"good" \| "bad"` | yes | Whether the active state is beneficial or harmful. |
+| `source` | `StatSource` | yes | Provenance metadata shared with Stats. |
+
+The moodle bar is a visualization of `level / maxLevel`; it does not claim the
+source mod exposes a continuous percentage. Good moodles use the positive
+semantic color and bad moodles use the danger color.
 
 ---
 

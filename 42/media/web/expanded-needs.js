@@ -48,6 +48,19 @@
  * @property {boolean} [visibleByDefault=true]
  */
 
+/**
+ * Active moodle emitted by an optional source mod.
+ *
+ * @typedef {Object} Moodle
+ * @property {string} id
+ * @property {string} label
+ * @property {string} [description]
+ * @property {number|string} level
+ * @property {number|string} maxLevel
+ * @property {"good"|"bad"} valence
+ * @property {StatSource} source
+ */
+
 /*
 ███████╗██╗   ██╗███╗   ██╗ ██████╗████████╗██╗ ██████╗ ███╗   ██╗    ██████╗ ███████╗███████╗██╗███╗   ██╗██╗████████╗██╗ ██████╗ ███╗   ██╗███████╗
 ██╔════╝██║   ██║████╗  ██║██╔════╝╚══██╔══╝██║██╔═══██╗████╗  ██║    ██╔══██╗██╔════╝██╔════╝██║████╗  ██║██║╚══██╔══╝██║██╔═══██╗████╗  ██║██╔════╝
@@ -67,6 +80,56 @@
 
 */
 
+const PROJECT_ZOMBOID_SOURCE = {
+    type: "base_game",
+    id: "project_zomboid",
+    name: "Project Zomboid"
+};
+
+const NATURES_CALL_SOURCE = {
+    type: "mod",
+    id: "NC_NaturesCall",
+    name: "Nature's Call"
+};
+
+const LIFESTYLE_SOURCE = {
+    type: "mod",
+    id: "LifestyleHobbies",
+    name: "Lifestyle: Hobbies"
+};
+
+const TASAB_SOURCE = {
+    type: "mod",
+    id: "TakeABathAndShowerNew",
+    name: "Take A Bath And Shower"
+};
+
+const BRUSH_YOUR_DAMN_TEETH_SOURCE = {
+    type: "mod",
+    id: "BrushYourDamnTeeth",
+    name: "Brush Your Damn Teeth"
+};
+
+/*
+ * PZ Pulse 1.1.3's private d.needs array has no stable ids. These definitions
+ * document its collector's exact fixed order and provide collision-free ids.
+ * adaptPzPulseNeeds() validates each private row before using that mapping.
+ */
+const PZ_PULSE_NEED_DEFINITIONS = [
+    { id: "hunger", label: "Hunger", description: "Current hunger level.", badHigh: true, iconKey: "status_hunger" },
+    { id: "thirst", label: "Thirst", description: "Current thirst level.", badHigh: true, iconKey: "status_thirst" },
+    { id: "fatigue", label: "Fatigue", description: "Current fatigue level.", badHigh: true, iconKey: "mood_sleepy" },
+    { id: "endurance", label: "Stamina", description: "Current stamina level.", badHigh: false, iconKey: "status_difficultybreathing" },
+    { id: "boredom", label: "Boredom", description: "Current boredom level.", badHigh: true, iconKey: "mood_bored" },
+    { id: "stress", label: "Stress", description: "Current stress level.", badHigh: true, iconKey: "mood_stressed" },
+    { id: "panic", label: "Panic", description: "Current panic level.", badHigh: true, iconKey: "mood_panicked" },
+    { id: "unhappiness", label: "Unhappiness", description: "Current unhappiness level.", badHigh: true, iconKey: "mood_sad" },
+    { id: "pain", label: "Pain", description: "Current pain level.", badHigh: true, iconKey: "mood_pained" },
+    { id: "sickness", label: "Sickness", description: "Current apparent sickness level.", badHigh: true, iconKey: "mood_nauseous" },
+    { id: "wetness", label: "Wetness", description: "Current wetness level.", badHigh: true, iconKey: "status_wet" },
+    { id: "intoxication", label: "Drunkenness", description: "Current intoxication level.", badHigh: true, iconKey: "mood_drunk" }
+];
+
 const PLAYER_STAT_DEFINITIONS = {
     discomfort: {
         label: "Discomfort",
@@ -79,11 +142,58 @@ const PLAYER_STAT_DEFINITIONS = {
         iconKey: "mood_discomfort",
         visibleByDefault: true,
 
-        source: {
-            type: "base_game",
-            id: "project_zomboid",
-            name: "Project Zomboid"
-        }
+        source: PROJECT_ZOMBOID_SOURCE
+    }
+};
+
+const NATURES_CALL_STAT_DEFINITIONS = {
+    natures_call_bladder: {
+        label: "Bladder",
+        description: "Current bladder fill. Nature's Call overfill is included in the 0–120 range.",
+        min: 0,
+        max: 120,
+        badHigh: true,
+        visibleByDefault: true,
+        source: NATURES_CALL_SOURCE
+    },
+    natures_call_bowel: {
+        label: "Bowel",
+        description: "Current bowel fill. Nature's Call overfill is included in the 0–120 range.",
+        min: 0,
+        max: 120,
+        badHigh: true,
+        visibleByDefault: true,
+        source: NATURES_CALL_SOURCE
+    }
+};
+
+const OPTIONAL_MOD_STAT_DEFINITIONS = {
+    lifestyle_hygiene_need: {
+        label: "Hygiene Need",
+        description: "Lifestyle's current need to wash. Higher values mean dirtier.",
+        min: 0,
+        max: 100,
+        badHigh: true,
+        visibleByDefault: true,
+        source: LIFESTYLE_SOURCE
+    },
+    tasab_body_grime: {
+        label: "Body Grime",
+        description: "Current body grime tracked by Take A Bath And Shower.",
+        min: 0,
+        max: 100,
+        badHigh: true,
+        visibleByDefault: true,
+        source: TASAB_SOURCE
+    },
+    bydt_dental_hygiene: {
+        label: "Dental Hygiene",
+        description: "Long-term dental hygiene. Higher values are healthier.",
+        min: 0,
+        max: 1,
+        badHigh: false,
+        visibleByDefault: true,
+        source: BRUSH_YOUR_DAMN_TEETH_SOURCE
     }
 };
 
@@ -273,6 +383,54 @@ function isValidPlayerStat(stat) {
     return true;
 }
 
+/**
+ * Validates one active normalized Moodle. Neutral/inactive level zero is not
+ * representable here because those moodles should be absent from the panel.
+ *
+ * @param {*} moodle
+ * @returns {moodle is Moodle}
+ */
+function isValidMoodle(moodle) {
+    if (!isValidObject(moodle)) {
+        return false;
+    }
+
+    if (
+        !isNonEmptyString(moodle.id) ||
+        !isNonEmptyString(moodle.label) ||
+        !isFiniteNumbers(moodle.level, moodle.maxLevel) ||
+        !isValidStatSource(moodle.source)
+    ) {
+        return false;
+    }
+
+    const level = Number(moodle.level);
+    const maxLevel = Number(moodle.maxLevel);
+
+    if (
+        !Number.isInteger(level) ||
+        !Number.isInteger(maxLevel) ||
+        level < 1 ||
+        maxLevel < 1 ||
+        level > maxLevel
+    ) {
+        return false;
+    }
+
+    if (moodle.valence !== "good" && moodle.valence !== "bad") {
+        return false;
+    }
+
+    if (
+        moodle.description !== undefined &&
+        !isNonEmptyString(moodle.description)
+    ) {
+        return false;
+    }
+
+    return true;
+}
+
 /*
   ____        _ _     _             _____                 _   _
  | __ ) _   _(_) | __| | ___ _ __  |  ___|   _ _ __   ___| |_(_) ___  _ __  ___
@@ -358,6 +516,115 @@ function buildPlayerStats(values, definitions) {
         }
     }
     return stats;
+}
+
+/**
+ * Adapts PZ Pulse 1.1.3's private d.needs rows into normalized PlayerStats.
+ *
+ * The upstream array has localized labels but no stable ids. Identity comes
+ * from its documented collector order; the row's direction and icon are
+ * checked so a changed private shape fails closed instead of being mislabeled.
+ * Input rows are never modified.
+ *
+ * @param {*} needs
+ * @returns {PlayerStat[]}
+ */
+function adaptPzPulseNeeds(needs) {
+    if (!Array.isArray(needs)) {
+        return [];
+    }
+
+    const stats = [];
+
+    for (let index = 0; index < PZ_PULSE_NEED_DEFINITIONS.length; index += 1) {
+        const definition = PZ_PULSE_NEED_DEFINITIONS[index];
+        const upstream = needs[index];
+
+        if (!isValidObject(upstream)) {
+            continue;
+        }
+
+        if (
+            !isNonEmptyString(upstream.label) ||
+            typeof upstream.badHigh !== "boolean" ||
+            upstream.badHigh !== definition.badHigh
+        ) {
+            continue;
+        }
+
+        if (
+            isNonEmptyString(upstream.icon) &&
+            upstream.icon !== definition.iconKey
+        ) {
+            continue;
+        }
+
+        const stat = buildPlayerStat(
+            definition.id,
+            upstream.value,
+            {
+                label: upstream.label,
+                description: definition.description,
+                min: 0,
+                max: 100,
+                badHigh: upstream.badHigh,
+                iconKey: definition.iconKey,
+                visibleByDefault: true,
+                source: PROJECT_ZOMBOID_SOURCE
+            }
+        );
+
+        if (stat !== null) {
+            stats.push(stat);
+        }
+    }
+
+    return stats;
+}
+
+/**
+ * Adapts optional raw Nature's Call values from our Lua collector.
+ *
+ * @param {*} values
+ * @returns {PlayerStat[]}
+ */
+function adaptNaturesCallStats(values) {
+    if (!isValidObject(values)) {
+        return [];
+    }
+
+    return buildPlayerStats(
+        {
+            natures_call_bladder: values.bladder,
+            natures_call_bowel: values.bowel
+        },
+        NATURES_CALL_STAT_DEFINITIONS
+    );
+}
+
+/**
+ * Adapts independently nullable optional-mod stat values.
+ *
+ * @param {*} values
+ * @returns {PlayerStat[]}
+ */
+function adaptOptionalModStats(values) {
+    return buildPlayerStats(values, OPTIONAL_MOD_STAT_DEFINITIONS);
+}
+
+/**
+ * Validates the raw moodle array supplied by the Lua compatibility adapter.
+ * Invalid items are skipped independently and the input is never mutated.
+ *
+ * @param {*} moodles
+ * @returns {Moodle[]}
+ */
+function adaptCustomMoodles(moodles) {
+    if (!Array.isArray(moodles)) {
+        return [];
+    }
+
+    return moodles.filter(isValidMoodle);
 }
 
 /*
@@ -572,6 +839,32 @@ function formatStatTooltip(stat) {
     return lines.join("\n");
 }
 
+/**
+ * Builds player-facing tooltip text for an active modded moodle.
+ *
+ * @param {*} moodle
+ * @returns {string|null}
+ */
+function formatMoodleTooltip(moodle) {
+    if (!isValidMoodle(moodle)) {
+        return null;
+    }
+
+    const lines = [moodle.label];
+
+    if (isNonEmptyString(moodle.description)) {
+        lines.push("", moodle.description.trim());
+    }
+
+    lines.push(
+        "",
+        `Level: ${Number(moodle.level)} of ${Number(moodle.maxLevel)}`,
+        `Source: ${moodle.source.name}`
+    );
+
+    return lines.join("\n");
+}
+
 /*
   ____                _
  |  _ \ ___ _ __   __| | ___ _ __ ___ _ __ ___
@@ -662,6 +955,53 @@ function renderPlayerStatRow(stat) {
 }
 
 /**
+ * Renders an active moodle using the same aligned row grid as numeric stats.
+ * The bar encodes source-defined moodle level, not an invented raw percent.
+ *
+ * @param {Moodle} moodle
+ * @returns {string|null}
+ */
+function renderMoodleRow(moodle) {
+    if (!isValidMoodle(moodle)) {
+        return null;
+    }
+
+    const level = Number(moodle.level);
+    const maxLevel = Number(moodle.maxLevel);
+    const percent = (level / maxLevel) * 100;
+    const barClass = moodle.valence === "good" ? "ok" : "danger";
+    const tooltip = formatMoodleTooltip(moodle);
+
+    if (tooltip === null) {
+        return null;
+    }
+
+    return `
+    <div
+        class="needs-expanded-row needs-expanded-moodle-row"
+        title="${esc(tooltip)}"
+    >
+        <span class="needs-expanded-icon needs-expanded-moodle-dot ${moodle.valence}"></span>
+
+        <span class="needs-expanded-label">
+            ${esc(moodle.label)}
+        </span>
+
+        <span class="needs-expanded-bar">
+            <span
+                class="needs-expanded-fill ${barClass}"
+                style="width:${percent}%"
+            ></span>
+        </span>
+
+        <span class="needs-expanded-value">
+            L${level}
+        </span>
+    </div>
+`;
+}
+
+/**
  * Renders the Needs Expanded panel from the complete PZ Pulse payload.
  *
  * PZ Pulse places this extension's collector result at d.needs_expanded.
@@ -676,40 +1016,70 @@ function renderNeedsExpanded(d) {
         return "";
     }
 
-    const values = d.needs_expanded;
+    const values = isValidObject(d.needs_expanded)
+        ? d.needs_expanded
+        : {};
 
-    if (!isValidObject(values)) {
+    // Deterministic display order: PZ Pulse's vanilla Needs+ rows, our
+    // Discomfort row, then optional compatibility-adapter rows.
+    const moodles = adaptCustomMoodles(values.custom_moodles);
+
+    const stats = [
+        ...adaptPzPulseNeeds(d.needs),
+        ...buildPlayerStats(values, PLAYER_STAT_DEFINITIONS),
+        ...adaptNaturesCallStats(values.natures_call),
+        ...adaptOptionalModStats(values.optional_mod_stats)
+    ];
+
+    if (moodles.length === 0 && stats.length === 0) {
         return "";
     }
 
-    const stats = buildPlayerStats(
-        values,
-        PLAYER_STAT_DEFINITIONS
-    );
+    const moodleRows = [];
 
-    if (stats.length === 0) {
-        return "";
+    for (const moodle of moodles) {
+        const row = renderMoodleRow(moodle);
+
+        if (row !== null) {
+            moodleRows.push(row);
+        }
     }
 
-    const rows = [];
+    const statRows = [];
 
     for (const stat of stats) {
         const row = renderPlayerStatRow(stat);
 
         if (row !== null) {
-            rows.push(row);
+            statRows.push(row);
         }
     }
 
-    if (rows.length === 0) {
+    if (moodleRows.length === 0 && statRows.length === 0) {
         return "";
     }
 
+    const moodleSection = moodleRows.length > 0
+        ? `
+            <div class="needs-expanded-section-title">Active Moodles</div>
+            <div class="needs-expanded-rows needs-expanded-moodles">
+                ${moodleRows.join("")}
+            </div>
+        `
+        : "";
+
+    const statSection = statRows.length > 0
+        ? `
+            <div class="needs-expanded-rows">
+                ${statRows.join("")}
+            </div>
+        `
+        : "";
+
     return `
         <div class="needs-expanded">
-            <div class="needs-expanded-rows">
-                ${rows.join("")}
-            </div>
+            ${moodleSection}
+            ${statSection}
         </div>
     `;
 }

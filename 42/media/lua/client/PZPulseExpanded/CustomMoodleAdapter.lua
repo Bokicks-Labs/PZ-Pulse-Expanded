@@ -1,0 +1,373 @@
+-- Read-only collector for active moodles exposed by installed optional mods.
+--
+-- The collector never creates a moodle or initializes source-mod state. It
+-- reads existing tables only and omits inactive, missing, or malformed items.
+
+PZPulseExpanded_CustomMoodleAdapter =
+    PZPulseExpanded_CustomMoodleAdapter or {}
+
+local Adapter = PZPulseExpanded_CustomMoodleAdapter
+
+local SOURCES = {
+    lifestyle = {
+        type = "mod",
+        id = "LifestyleHobbies",
+        name = "Lifestyle: Hobbies",
+    },
+    tasab = {
+        type = "mod",
+        id = "TakeABathAndShowerNew",
+        name = "Take A Bath And Shower",
+    },
+    infirmities = {
+        type = "mod",
+        id = "twbInfirmities",
+        name = "Infirmities",
+    },
+    medicine = {
+        type = "mod",
+        id = "MedicineMoodlesB42",
+        name = "Medicine Moodles",
+    },
+    teeth = {
+        type = "mod",
+        id = "BrushYourDamnTeeth",
+        name = "Brush Your Damn Teeth",
+    },
+    mutants = {
+        type = "mod",
+        id = "PZTheMutants",
+        name = "The Mutants",
+    },
+    drugtime = {
+        type = "mod",
+        id = "DrugTime89",
+        name = "DrugTime 89",
+    },
+    natures_call = {
+        type = "mod",
+        id = "NC_NaturesCall",
+        name = "Nature's Call",
+    },
+    moodle_framework = {
+        type = "mod",
+        id = "MoodleFramework",
+        name = "Moodle Framework add-on",
+    },
+}
+
+local MOODLE_FRAMEWORK_SOURCES = {
+    Wet_Bathing = SOURCES.tasab,
+    CoolingBody = SOURCES.tasab,
+    WarmingBody = SOURCES.tasab,
+    FeelingGaze = SOURCES.tasab,
+    BodyGrime = SOURCES.tasab,
+
+    PanicAttack = SOURCES.infirmities,
+    Tremors = SOURCES.infirmities,
+    AddictedToAlcohol = SOURCES.infirmities,
+    AddictedToNicotine = SOURCES.infirmities,
+    AddictedToPainkillers = SOURCES.infirmities,
+    AddictedToCaffeine = SOURCES.infirmities,
+    AddictedToSleepingPills = SOURCES.infirmities,
+    AddictedToAmp = SOURCES.infirmities,
+    Withdrawal = SOURCES.infirmities,
+
+    Antibiotics = SOURCES.medicine,
+    Antidepressants = SOURCES.medicine,
+    BetaBlockers = SOURCES.medicine,
+    Painkillers = SOURCES.medicine,
+    SleepingTablets = SOURCES.medicine,
+
+    BYDT_MouthState = SOURCES.teeth,
+    PZTheMutants_Puked = SOURCES.mutants,
+}
+
+local NATURES_CALL_MOODLES = {
+    { name = "NCUnknownPants", key = "unknownPants", valence = "bad", maxLevel = 1 },
+    { name = "NCBladder", key = "bladder", valence = "bad", maxLevel = 3 },
+    { name = "NCBowel", key = "bowel", valence = "bad", maxLevel = 3 },
+    { name = "NCSoilage", key = "soilage", valence = "bad", maxLevel = 3 },
+    { name = "NCSmell", key = "nearbySmell", valence = "bad", maxLevel = 3 },
+    { name = "NCGut", key = "gut", signed = true, maxLevel = 3 },
+    { name = "NCCramps", key = "cramps", valence = "bad", maxLevel = 3 },
+    { name = "NCHeartburn", key = "heartburn", valence = "bad", maxLevel = 3 },
+}
+
+local function isActive(modId)
+    if getActivatedMods == nil then return false end
+
+    local mods = getActivatedMods()
+    if mods == nil or mods.contains == nil then return false end
+
+    return mods:contains(modId)
+end
+
+local function normalizeLevel(value, maxLevel)
+    local level = tonumber(value)
+    if level == nil or level ~= level then return nil end
+
+    level = math.floor(math.abs(level))
+    maxLevel = tonumber(maxLevel) or 4
+    if level < 1 then return nil end
+    if level > maxLevel then level = maxLevel end
+    return level
+end
+
+local function humanize(name)
+    local text = tostring(name or "")
+    text = text:gsub("_", " ")
+    text = text:gsub("(%l)(%u)", "%1 %2")
+    text = text:gsub("^NC", "")
+    text = text:gsub("^%s+", ""):gsub("%s+$", "")
+    return text ~= "" and text or "Modded Moodle"
+end
+
+local function translated(key, fallback)
+    if getText == nil then return fallback end
+
+    local ok, value = pcall(getText, key)
+    if not ok or type(value) ~= "string" or value == "" or value == key then
+        return fallback
+    end
+
+    return value
+end
+
+local function tableText(root, valence, level)
+    if type(root) ~= "table" then return nil end
+
+    local alignment = valence == "good" and 1 or 2
+    local values = root[alignment]
+    if type(values) ~= "table" then return nil end
+
+    local value = values[level]
+    if type(value) ~= "string" or value == "" then return nil end
+    return value
+end
+
+local function addMoodle(result, seen, moodle)
+    if type(moodle) ~= "table" or type(moodle.source) ~= "table" then return end
+
+    local id = tostring(moodle.id or "")
+    local label = tostring(moodle.label or "")
+    local level = normalizeLevel(moodle.level, moodle.maxLevel)
+    local maxLevel = tonumber(moodle.maxLevel) or 4
+
+    if id == "" or label == "" or level == nil then return end
+    if moodle.valence ~= "good" and moodle.valence ~= "bad" then return end
+    if seen[id] then return end
+
+    seen[id] = true
+    result[#result + 1] = {
+        id = id,
+        label = label,
+        description = moodle.description,
+        level = level,
+        maxLevel = maxLevel,
+        valence = moodle.valence,
+        source = moodle.source,
+    }
+end
+
+local function collectLifestyle(player, result, seen)
+    if not isActive(SOURCES.lifestyle.id) then return end
+
+    local modData = player:getModData()
+    local moodles = type(modData) == "table" and modData.LSMoodles or nil
+    if type(moodles) ~= "table" then return end
+
+    for name, state in pairs(moodles) do
+        if type(state) == "table" then
+            local level = normalizeLevel(state.Level, 4)
+            local alignment = state.Alignment
+            local valence = alignment == "Good" and "good"
+                or alignment == "Bad" and "bad"
+                or nil
+
+            if level ~= nil and valence ~= nil then
+                local labelKey = "Moodles_" .. tostring(name) .. "_L" .. tostring(level)
+                local descKey = labelKey .. "_desc"
+                addMoodle(result, seen, {
+                    id = SOURCES.lifestyle.id .. ":" .. tostring(name),
+                    label = translated(labelKey, humanize(name)),
+                    description = translated(descKey, nil),
+                    level = level,
+                    maxLevel = 4,
+                    valence = valence,
+                    source = SOURCES.lifestyle,
+                })
+            end
+        end
+    end
+end
+
+local function collectMoodleFramework(player, result, seen)
+    if not isActive("MoodleFramework") or type(MF) ~= "table" then return end
+    if type(MF.MoodlesStorage) ~= "table" or type(MF.MoodleData) ~= "table" then return end
+
+    local playerNum = player:getPlayerNum()
+    local objects = MF.MoodlesStorage[playerNum]
+    local dataRoot = MF.MoodleData[tostring(player)]
+    local states = type(dataRoot) == "table" and dataRoot.Moodles or nil
+    if type(objects) ~= "table" or type(states) ~= "table" then return end
+
+    for name, object in pairs(objects) do
+        local state = states[name]
+        if type(state) == "table" and not (type(object) == "table" and object.disable) then
+            local level = normalizeLevel(state.Level, 4)
+            local alignment = tonumber(state.GoodBadNeutral)
+            local valence = alignment == 1 and "good"
+                or alignment == 2 and "bad"
+                or nil
+
+            if level ~= nil and valence ~= nil then
+                local source = MOODLE_FRAMEWORK_SOURCES[name]
+                    or SOURCES.moodle_framework
+                local alignmentText = valence == "good" and "Good" or "Bad"
+                local titleKey = "Moodles_" .. tostring(name) .. "_"
+                    .. alignmentText .. "_lvl" .. tostring(level)
+                local descKey = "Moodles_" .. tostring(name) .. "_"
+                    .. alignmentText .. "_desc_lvl" .. tostring(level)
+                local objectTitle = type(object) == "table"
+                    and tableText(object.title, valence, level)
+                    or nil
+                local objectDescription = type(object) == "table"
+                    and tableText(object.desc, valence, level)
+                    or nil
+
+                addMoodle(result, seen, {
+                    id = source.id .. ":" .. tostring(name),
+                    label = objectTitle or translated(titleKey, humanize(name)),
+                    description = objectDescription or translated(descKey, nil),
+                    level = level,
+                    maxLevel = 4,
+                    valence = valence,
+                    source = source,
+                })
+            end
+        end
+    end
+end
+
+local function collectDrugTime(player, result, seen)
+    if not isActive(SOURCES.drugtime.id) then return end
+
+    local modData = player:getModData()
+    if type(modData) ~= "table" then return end
+
+    local definitions = {
+        { name = "Stoned", level = modData.DT_StonedStage, valence = "good" },
+        { name = "Hard", level = modData.DT_HardStage, valence = "bad" },
+    }
+
+    for _, definition in ipairs(definitions) do
+        local level = normalizeLevel(definition.level, 3)
+        if level ~= nil then
+            local alignment = definition.valence == "good" and "Good" or "Bad"
+            local titleKey = "Moodles_" .. definition.name .. "_"
+                .. alignment .. "_lvl" .. tostring(level)
+            local descKey = "Moodles_" .. definition.name .. "_"
+                .. alignment .. "_desc_lvl" .. tostring(level)
+
+            addMoodle(result, seen, {
+                id = SOURCES.drugtime.id .. ":" .. definition.name,
+                label = translated(titleKey, humanize(definition.name)),
+                description = translated(descKey, nil),
+                level = level,
+                maxLevel = 3,
+                valence = definition.valence,
+                source = SOURCES.drugtime,
+            })
+        end
+    end
+end
+
+local function isPureMultiplayerClient()
+    if isClient == nil or isServer == nil then return false end
+    return isClient() and not isServer()
+end
+
+local function collectNaturesCall(player, result, seen)
+    if not isActive(SOURCES.natures_call.id) then return end
+
+    local modData = player:getModData()
+    local state = type(modData) == "table" and modData.NaturesCall or nil
+    if type(state) ~= "table" then return end
+
+    local snapshot = state
+    if isPureMultiplayerClient() then
+        if type(state.ownerSnapshot) ~= "table" then return end
+        snapshot = state.ownerSnapshot
+    end
+
+    local states = snapshot.moodles
+    if type(states) ~= "table" then return end
+
+    local traits = snapshot.traitModifiers or state.traitModifiers or {}
+
+    for _, definition in ipairs(NATURES_CALL_MOODLES) do
+        local rawLevel = tonumber(states[definition.key])
+        local hidden = (definition.name == "NCBladder"
+                and traits.majorBladderIncontinence == true)
+            or (definition.name == "NCBowel"
+                and traits.majorBowelIncontinence == true)
+
+        if rawLevel ~= nil and not hidden then
+            local valence = definition.valence
+            if definition.signed then
+                valence = rawLevel > 0 and "good"
+                    or rawLevel < 0 and "bad"
+                    or nil
+            end
+
+            local level = normalizeLevel(rawLevel, definition.maxLevel)
+            if level ~= nil and valence ~= nil then
+                local alignment = valence == "good" and "Good" or "Bad"
+                local titleKey = "Moodles_" .. definition.name .. "_"
+                    .. alignment .. "_lvl" .. tostring(level)
+                local descKey = "Moodles_" .. definition.name .. "_"
+                    .. alignment .. "_desc_lvl" .. tostring(level)
+
+                addMoodle(result, seen, {
+                    id = SOURCES.natures_call.id .. ":" .. definition.name,
+                    label = translated(titleKey, humanize(definition.name)),
+                    description = translated(descKey, nil),
+                    level = level,
+                    maxLevel = definition.maxLevel,
+                    valence = valence,
+                    source = SOURCES.natures_call,
+                })
+            end
+        end
+    end
+end
+
+local COLLECTORS = {
+    collectLifestyle,
+    collectMoodleFramework,
+    collectDrugTime,
+    collectNaturesCall,
+}
+
+function Adapter.collect(player)
+    if player == nil or player.getModData == nil then return nil end
+
+    local result = {}
+    local seen = {}
+
+    -- A compatibility edge in one source must not suppress moodles from the
+    -- other installed mods. These catches stay source-local and read-only.
+    for _, collector in ipairs(COLLECTORS) do
+        pcall(collector, player, result, seen)
+    end
+
+    if #result == 0 then return nil end
+
+    table.sort(result, function(left, right)
+        return left.id < right.id
+    end)
+    return result
+end
+
+return Adapter
