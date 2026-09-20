@@ -1,0 +1,46 @@
+[h1]PZ Pulse Expanded - Changelog[/h1]
+
+[h2]Version 1.2.0 - Stat Bar Icons[/h2]
+
+[list]
+[*][b]Added a corresponding moodle icon to every built-in stat bar.[/b]
+[*]Vanilla Needs+ stats and Discomfort now use their matching PZ Pulse moodle icons.
+[*]Nature's Call Bladder and Bowel use their original source-mod icons.
+[*]Lifestyle: Hobbies Hygiene Need, Take A Bath And Shower Body Grime, and Brush Your Damn Teeth Dental Hygiene use their corresponding source-mod icons.
+[*]Preserved nullable behavior: if a source mod is inactive or a value or icon cannot be read safely, that individual item is omitted or degrades safely without breaking the panel.
+[*]Added automated coverage for all 18 currently supported built-in stat rows.
+[/list]
+
+[hr][/hr]
+
+[h2]Version 1.1.0 - PZ Pulse-Style Moodles and Expanded Mod Support[/h2]
+
+[list]
+[*][b]Redesigned the Needs Expanded moodle area to match the original PZ Pulse panel.[/b]
+[*]Active moodles now appear as their original glyph on PZ Pulse's colored moodle circle, with the current level shown in the bottom-right corner.
+[*]Reduced the padding between the moodle area and the status bars for a more compact layout.
+[*]Added or expanded active-moodle support for Lifestyle: Hobbies, Take A Bath And Shower, Moodle Framework, Nature's Call, DrugTime 89, Medicine Moodles, Brush Your Damn Teeth, Infirmities, and The Mutants.
+[*]Added source-aware handling for recognized mod moodles while retaining generic Moodle Framework support for unknown registrations.
+[*]Kept every optional moodle and stat independently nullable. Missing mods, unsynchronized data, or unreadable values no longer prevent the rest of the panel from rendering.
+[*]Kept all integrations read-only: PZ Pulse Expanded does not create, initialize, or mutate another mod's player data to display it.
+[*]Added an automated artwork build step so the Workshop package embeds the committed source-mod moodle glyphs consistently.
+[/list]
+
+[h2]Third-Party Moodle Artwork Added in 1.1.0[/h2]
+
+To reproduce supported moodles faithfully, version 1.1.0 added only the moodle glyph artwork required by these integrations:
+
+[list]
+[*][b]Lifestyle: Hobbies[/b] - all 63 PNG moodle glyphs from its common/media/ui/moodles folder.
+[*][b]Take A Bath And Shower[/b] - BodyGrime, CoolingBody, FeelingGaze, WarmingBody, and Wet_Bathing.
+[*][b]Infirmities[/b] - its nine Panic, Tremors, Addiction, and Withdrawal moodle glyphs.
+[*][b]Medicine Moodles[/b] - Antibiotics, Antidepressants, BetaBlockers, LemonGrass, Painkillers, and SleepingTablets.
+[*][b]Brush Your Damn Teeth[/b] - BYDT_mouth_state.
+[*][b]The Mutants[/b] - PZTheMutants_Puked.
+[*][b]DrugTime 89[/b] - all six DT_Hard and DT_Stoned level glyphs.
+[*][b]Nature's Call[/b] - CheckPants, PissBladder, StoolIcon, SoiledClothing, both Gut Health states, Stomach Cramp, and Acid Reflux.
+[/list]
+
+PZ Pulse's vanilla glyphs and colored moodle circles are reused from the required [url=https://steamcommunity.com/sharedfiles/filedetails/?id=3753700423]PZ Pulse[/url] mod at runtime and are not copied into PZ Pulse Expanded.
+
+[b]All third-party artwork remains the property of its respective creator. No ownership is claimed. If a mod author or rights holder asks for their artwork or integration to be removed, contact me and I will remove it promptly.[/b]
