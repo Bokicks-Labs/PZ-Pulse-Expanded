@@ -1,0 +1,98 @@
+/*
+ * Needs Expanded
+ *
+ * All selectors are prefixed to avoid leaking styles into PZ Pulse or other
+ * extension panels.
+ */
+
+.needs-expanded-rows {
+    display: grid;
+    grid-template-columns: auto minmax(0, max-content) 1fr 5ch;
+    column-gap: 8px;
+    row-gap: 6px;
+    align-items: center;
+}
+
+.needs-expanded-section-title {
+    margin: 0 0 6px;
+    padding-bottom: 4px;
+    border-bottom: 1px solid var(--line);
+    color: var(--muted);
+    font-size: 0.85em;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+}
+
+.needs-expanded-moodles {
+    margin-bottom: 10px;
+}
+
+.needs-expanded-row {
+    display: contents;
+}
+
+.needs-expanded-icon {
+    width: var(--need-icon-size, 20px);
+    height: var(--need-icon-size, 20px);
+    object-fit: contain;
+    image-rendering: pixelated;
+}
+
+.needs-expanded-icon-blank {
+    visibility: hidden;
+}
+
+.needs-expanded-moodle-dot {
+    width: 10px;
+    height: 10px;
+    margin: 5px;
+    border-radius: 50%;
+    box-shadow: 0 0 0 1px var(--line);
+}
+
+.needs-expanded-moodle-dot.good {
+    background: var(--ok);
+}
+
+.needs-expanded-moodle-dot.bad {
+    background: var(--danger);
+}
+
+.needs-expanded-label {
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.needs-expanded-bar {
+    min-width: 40px;
+    height: 12px;
+    background: #000;
+    border: 1px solid var(--line);
+    overflow: hidden;
+}
+
+.needs-expanded-fill {
+    display: block;
+    height: 100%;
+    transition: width 0.25s ease;
+}
+
+.needs-expanded-fill.ok {
+    background: var(--ok);
+}
+
+.needs-expanded-fill.warn {
+    background: var(--warn);
+}
+
+.needs-expanded-fill.danger {
+    background: var(--danger);
+}
+
+.needs-expanded-value {
+    text-align: right;
+    font-variant-numeric: lining-nums tabular-nums;
+    color: var(--muted);
+}

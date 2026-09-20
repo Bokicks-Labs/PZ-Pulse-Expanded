@@ -1,0 +1,110 @@
+local adapterPath = "42/media/lua/client/PZPulseExpanded/NaturesCallAdapter.lua"
+
+local active = true
+local client = false
+local server = false
+
+function getActivatedMods()
+    return {
+        contains = function(_, modId)
+            return active and modId == "NC_NaturesCall"
+        end,
+    }
+end
+
+function isClient()
+    return client
+end
+
+function isServer()
+    return server
+end
+
+function getPlayer()
+    error("adapter must use the supplied player")
+end
+
+local Adapter = dofile(adapterPath)
+
+local function playerWith(modData)
+    return {
+        getModData = function()
+            return modData
+        end,
+    }
+end
+
+local function assertNil(value, message)
+    assert(value == nil, message or "expected nil")
+end
+
+local function assertEqual(actual, expected, message)
+    assert(actual == expected, (message or "values differ")
+        .. ": expected " .. tostring(expected) .. ", got " .. tostring(actual))
+end
+
+active = false
+assertNil(Adapter.collect(playerWith({
+    NaturesCall = { bladderFill = 10, bowelFill = 20 },
+})), "inactive mod must not expose stale state")
+
+active = true
+assertNil(Adapter.collect(playerWith({})), "absent source state")
+assertNil(Adapter.collect(playerWith({ NaturesCall = {} })), "uninitialized source state")
+
+local localState = {
+    bladderFill = 0,
+    bowelFill = 120,
+    traitModifiers = {},
+}
+local localModData = { NaturesCall = localState }
+local localValues = Adapter.collect(playerWith(localModData))
+assertEqual(localValues.bladder, 0, "valid local zero must remain visible")
+assertEqual(localValues.bowel, 120, "source maximum must remain raw")
+assertEqual(localModData.NaturesCall, localState, "adapter must not replace source state")
+assertEqual(localState.bladderFill, 0, "adapter must not mutate source values")
+
+local partialValues = Adapter.collect(playerWith({
+    NaturesCall = { bladderFill = "bad", bowelFill = 0 },
+}))
+assertNil(partialValues.bladder, "malformed individual fill must be omitted")
+assertEqual(partialValues.bowel, 0, "another valid fill must survive")
+
+local hiddenLocal = Adapter.collect(playerWith({
+    NaturesCall = {
+        bladderFill = 50,
+        bowelFill = 60,
+        traitModifiers = { majorBladderIncontinence = true },
+    },
+}))
+assertNil(hiddenLocal.bladder, "source-hidden local meter must be omitted")
+assertEqual(hiddenLocal.bowel, 60, "unrelated local meter must survive")
+
+client = true
+server = false
+assertNil(Adapter.collect(playerWith({
+    NaturesCall = { bladderFill = 0, bowelFill = 0 },
+})), "pure client defaults are not authoritative before owner sync")
+
+local syncedState = {
+    bladderFill = 0,
+    bowelFill = 0,
+    ownerSnapshot = {
+        bladderFill = 0,
+        bowelFill = 60,
+        traitModifiers = {},
+    },
+}
+local syncedValues = Adapter.collect(playerWith({ NaturesCall = syncedState }))
+assertEqual(syncedValues.bladder, 0, "synced zero must remain visible")
+assertEqual(syncedValues.bowel, 60, "synced bowel fill")
+
+local hiddenSynced = Adapter.collect(playerWith({
+    NaturesCall = {
+        ownerSnapshot = { bladderFill = -1, bowelFill = 25 },
+    },
+}))
+assertNil(hiddenSynced.bladder, "negative source-hidden snapshot must be omitted")
+assertEqual(hiddenSynced.bowel, 25, "unrelated synchronized meter must survive")
+
+print("Nature's Call adapter fixtures passed")

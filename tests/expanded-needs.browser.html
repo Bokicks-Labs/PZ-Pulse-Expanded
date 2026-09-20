@@ -1,0 +1,106 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <title>Needs Expanded browser fixture</title>
+    <style>
+        :root {
+            --ink: #ececec;
+            --muted: #a7a7a7;
+            --line: #505050;
+            --ok: #55bd6a;
+            --warn: #e0ad3d;
+            --danger: #df5b5b;
+            --need-icon-size: 20px;
+        }
+
+        body {
+            box-sizing: border-box;
+            width: 720px;
+            margin: 0;
+            padding: 24px;
+            background: #181818;
+            color: var(--ink);
+            font: 14px/1.3 system-ui, sans-serif;
+        }
+
+        #fixture {
+            padding: 16px;
+            border: 1px solid var(--line);
+            background: #242424;
+        }
+    </style>
+    <link rel="stylesheet" href="../42/media/web/expanded-needs.css">
+</head>
+<body>
+    <main id="fixture"></main>
+    <script>
+        function esc(value) {
+            return String(value == null ? "" : value)
+                .replace(/&/g, "&amp;")
+                .replace(/</g, "&lt;")
+                .replace(/>/g, "&gt;")
+                .replace(/"/g, "&quot;");
+        }
+    </script>
+    <script src="../42/media/web/expanded-needs.js"></script>
+    <script>
+        const needs = [
+            ["Hunger", 8, true, "status_hunger"],
+            ["Thirst", 18, true, "status_thirst"],
+            ["Fatigue", 30, true, "mood_sleepy"],
+            ["Stamina", 35, false, "status_difficultybreathing"],
+            ["Boredom", 42, true, "mood_bored"],
+            ["Stress", 52, true, "mood_stressed"],
+            ["Panic", 62, true, "mood_panicked"],
+            ["Unhappiness", 70, true, "mood_sad"],
+            ["Pain", 76, true, "mood_pained"],
+            ["Sickness", 82, true, "mood_nauseous"],
+            ["Wetness", 91, true, "status_wet"],
+            ["Drunkenness", 100, true, "mood_drunk"]
+        ].map(([label, value, badHigh, icon]) => ({ label, value, badHigh, icon }));
+
+        document.getElementById("fixture").innerHTML = renderNeedsExpanded({
+            needs,
+            needs_expanded: {
+                discomfort: 27.42,
+                natures_call: { bladder: 60, bowel: 0 },
+                optional_mod_stats: {
+                    lifestyle_hygiene_need: 67,
+                    tasab_body_grime: 38,
+                    bydt_dental_hygiene: 0.82
+                },
+                custom_moodles: [
+                    {
+                        id: "LifestyleHobbies:MindfulState",
+                        label: "Mindful",
+                        description: "Your mind is calm and focused.",
+                        level: 2,
+                        maxLevel: 4,
+                        valence: "good",
+                        source: { type: "mod", id: "LifestyleHobbies", name: "Lifestyle: Hobbies" }
+                    },
+                    {
+                        id: "TakeABathAndShowerNew:BodyGrime",
+                        label: "Body Grime",
+                        description: "You should wash soon.",
+                        level: 3,
+                        maxLevel: 4,
+                        valence: "bad",
+                        source: { type: "mod", id: "TakeABathAndShowerNew", name: "Take A Bath And Shower" }
+                    },
+                    {
+                        id: "DrugTime89:Stoned",
+                        label: "Lightly Stoned",
+                        description: "Relaxed and less stressed.",
+                        level: 1,
+                        maxLevel: 3,
+                        valence: "good",
+                        source: { type: "mod", id: "DrugTime89", name: "DrugTime 89" }
+                    }
+                ]
+            }
+        });
+    </script>
+</body>
+</html>
