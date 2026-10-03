@@ -65,8 +65,7 @@ local withoutNature = spec.collect(player)
 assert(withoutNature.discomfort == 12.35)
 assert(withoutNature.natures_call == nil, "inactive optional mod must not erase Discomfort")
 
--- An unexpected adapter failure is contained, logged once by production code,
--- and permanently disabled for the session rather than retried every export.
+-- Exceptions retain a recent result briefly and collection retries.
 local calls = 0
 PZPulseExpanded_NaturesCallAdapter.collect = function()
     calls = calls + 1
@@ -75,9 +74,21 @@ end
 active = true
 
 local firstFailure = spec.collect(player)
-local afterDisable = spec.collect(player)
 assert(firstFailure.discomfort == 12.35 and firstFailure.natures_call == nil)
-assert(afterDisable.discomfort == 12.35 and afterDisable.natures_call == nil)
-assert(calls == 1, "failed adapter should not flood subsequent export ticks")
+for _ = 2, PZPulseExpanded_NaturesCallAdapter.MAX_MISSED_READS do
+    spec.collect(player)
+end
+assert(calls == PZPulseExpanded_NaturesCallAdapter.MAX_MISSED_READS,
+    "failed adapter must remain retryable")
+PZPulseExpanded_NaturesCallAdapter.collect = function()
+    return { bladder = 61, bowel = 2 }
+end
+assert(spec.collect(player).natures_call.bladder == 61,
+    "adapter recovers after exceptions")
+PZPulseExpanded_NaturesCallAdapter.collect = function()
+    error("fixture intermittent failure")
+end
+assert(spec.collect(player).natures_call.bladder == 61,
+    "one exception retains a recently valid reading")
 
 print("Needs Expanded Lua collector fixtures passed")

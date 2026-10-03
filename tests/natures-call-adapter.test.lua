@@ -107,4 +107,32 @@ local hiddenSynced = Adapter.collect(playerWith({
 assertNil(hiddenSynced.bladder, "negative source-hidden snapshot must be omitted")
 assertEqual(hiddenSynced.bowel, 25, "unrelated synchronized meter must survive")
 
+local intermittentState = {
+    ownerSnapshot = { bladderFill = 45, bowelFill = 70 },
+}
+local intermittentPlayer = playerWith({ NaturesCall = intermittentState })
+assertEqual(Adapter.collect(intermittentPlayer).bladder, 45)
+intermittentState.ownerSnapshot = { bladderFill = "bad", bowelFill = 71 }
+for _ = 1, Adapter.MAX_MISSED_READS - 1 do
+    local values = Adapter.collect(intermittentPlayer)
+    assertEqual(values.bladder, 45, "brief invalid reads retain last valid fill")
+    assertEqual(values.bowel, 71, "good fills continue to update")
+end
+assertNil(Adapter.collect(intermittentPlayer).bladder,
+    "sustained invalid reads eventually hide the broken meter")
+intermittentState.ownerSnapshot = { bladderFill = 46, bowelFill = 72 }
+assertEqual(Adapter.collect(intermittentPlayer).bladder, 46,
+    "recovered fill becomes visible again")
+intermittentState.ownerSnapshot = { bladderFill = -1, bowelFill = 73 }
+assertNil(Adapter.collect(intermittentPlayer).bladder,
+    "explicit source-hidden fill must hide immediately")
+
+intermittentState.ownerSnapshot = nil
+assertEqual(Adapter.collect(intermittentPlayer).bowel, 73,
+    "brief owner snapshot loss retains synced values")
+active = false
+assertNil(Adapter.collect(intermittentPlayer), "inactive mod clears retained values")
+active = true
+assertNil(Adapter.collect(intermittentPlayer), "reactivation needs a fresh snapshot")
+
 print("Nature's Call adapter fixtures passed")

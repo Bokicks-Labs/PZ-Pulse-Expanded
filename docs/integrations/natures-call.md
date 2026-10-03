@@ -59,10 +59,18 @@ major-trait flags in local/server-authoritative state.
 
 ## Failure behavior and icons
 
-Missing mod state, an unsynchronized owner snapshot, or one invalid fill omits
-only the unavailable Nature's Call row. An unexpected adapter error disables
-only that adapter for the rest of the session and emits one bounded diagnostic;
-vanilla Needs+ rows and Discomfort continue rendering.
+Before the first valid reading, missing mod state or an unsynchronized owner
+snapshot omits the unavailable row. After a valid reading, each meter retains
+its last value through four consecutive missing or invalid reads and hides on
+the fifth. A fresh valid reading resets that count. Negative fills and major
+incontinence flags explicitly hide their meter immediately; an inactive mod
+also clears retained readings. The history belongs to the supplied player and
+does not modify Nature's Call state.
+
+An unexpected adapter error is retried on the next export. The collector
+briefly retains its last successful result under the same five-failure limit
+and emits one bounded diagnostic per session. Vanilla Needs+ rows and
+Discomfort continue rendering.
 
 PZ Pulse's browser icon map is a private, vanilla-oriented surface and no
 Nature's Call keys were verified there. These two rows therefore use the

@@ -38,23 +38,34 @@ local function stat(stats, name, default)
     return safe(function() return stats:get(e) end, default)
 end
 
--- Nature's Call is optional. Disable only its adapter after an unexpected
--- failure so a bad compatibility edge cannot remove vanilla needs or
--- Discomfort. Kahlua can print caught errors, so this path logs at most once
--- and never retries for the rest of the session.
-local natureCallAdapterFailed = false
+-- Retry a failed read on the next export. Keep the most recent successful
+-- result briefly so one exception does not make the meters blink.
+local natureCallLast = setmetatable({}, { __mode = "k" })
+local natureCallErrorLogged = false
 
 local function collectNaturesCall(player)
-    if natureCallAdapterFailed or NaturesCallAdapter == nil then return nil end
+    if NaturesCallAdapter == nil then return nil end
 
     local ok, values = pcall(NaturesCallAdapter.collect, player)
-    if ok then return values end
+    if ok then
+        natureCallLast[player] = values and { values = values, misses = 0 } or nil
+        return values
+    end
 
-    natureCallAdapterFailed = true
-    local reason = tostring(values or "unknown error")
-    if #reason > 240 then reason = reason:sub(1, 240) .. "..." end
-    print("[PZ_Pulse_Expanded] Nature's Call adapter disabled: " .. reason)
-    return nil
+    if not natureCallErrorLogged then
+        local reason = tostring(values or "unknown error")
+        if #reason > 240 then reason = reason:sub(1, 240) .. "..." end
+        print("[PZ_Pulse_Expanded] Nature's Call collection failed: " .. reason)
+        natureCallErrorLogged = true
+    end
+    local previous = natureCallLast[player]
+    if previous == nil then return nil end
+    previous.misses = previous.misses + 1
+    if previous.misses >= NaturesCallAdapter.MAX_MISSED_READS then
+        natureCallLast[player] = nil
+        return nil
+    end
+    return previous.values
 end
 
 local optionalAdapterFailures = {}

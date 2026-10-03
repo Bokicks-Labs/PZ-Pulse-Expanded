@@ -12,6 +12,35 @@ Adapter.MOD_ID = "NC_NaturesCall"
 Adapter.SOURCE_NAME = "Nature's Call"
 Adapter.MIN_FILL = 0
 Adapter.MAX_FILL = 120
+Adapter.MAX_MISSED_READS = 5
+
+-- Keep a short history per supplied player. Weak keys avoid retaining players
+-- after a world/session change.
+local recent = setmetatable({}, { __mode = "k" })
+
+local function remember(player, key, value, hidden)
+    local history = recent[player]
+    if history == nil then
+        history = {}
+        recent[player] = history
+    end
+    if hidden then
+        history[key] = nil
+        return nil
+    end
+    if value ~= nil then
+        history[key] = { value = value, misses = 0 }
+        return value
+    end
+    local previous = history[key]
+    if previous == nil then return nil end
+    previous.misses = previous.misses + 1
+    if previous.misses >= Adapter.MAX_MISSED_READS then
+        history[key] = nil
+        return nil
+    end
+    return previous.value
+end
 
 local function finiteNumber(value)
     if type(value) ~= "number" and type(value) ~= "string" then
@@ -53,35 +82,41 @@ end
 -- initialized yet. A numeric zero is valid and must remain distinguishable
 -- from a missing field.
 function Adapter.collect(player)
-    if not isActive() then return nil end
+    if not isActive() then
+        recent = setmetatable({}, { __mode = "k" })
+        return nil
+    end
     if player == nil or player.getModData == nil then return nil end
 
     local playerModData = player:getModData()
-    if type(playerModData) ~= "table" then return nil end
+    if type(playerModData) ~= "table" then playerModData = {} end
 
     local state = playerModData.NaturesCall
-    if type(state) ~= "table" then return nil end
+    if type(state) ~= "table" then state = {} end
 
     local snapshot = state
     if isPureMultiplayerClient() then
         -- Nature's Call initializes a client-side table with zeroes before the
         -- server sends authoritative state. ownerSnapshot is the source mod's
         -- explicit synchronization-ready marker and avoids inventing zeroes.
-        if type(state.ownerSnapshot) ~= "table" then return nil end
-        snapshot = state.ownerSnapshot
+        snapshot = type(state.ownerSnapshot) == "table" and state.ownerSnapshot or {}
     end
 
     local traitModifiers = snapshot.traitModifiers or state.traitModifiers or {}
-    local bladder = visibleFill(
+    local bladder = remember(player, "bladder", visibleFill(
         snapshot,
         "bladderFill",
         traitModifiers.majorBladderIncontinence == true
-    )
-    local bowel = visibleFill(
+    ), traitModifiers.majorBladderIncontinence == true or
+        finiteNumber(snapshot.bladderFill) ~= nil and
+        finiteNumber(snapshot.bladderFill) < Adapter.MIN_FILL)
+    local bowel = remember(player, "bowel", visibleFill(
         snapshot,
         "bowelFill",
         traitModifiers.majorBowelIncontinence == true
-    )
+    ), traitModifiers.majorBowelIncontinence == true or
+        finiteNumber(snapshot.bowelFill) ~= nil and
+        finiteNumber(snapshot.bowelFill) < Adapter.MIN_FILL)
 
     if bladder == nil and bowel == nil then return nil end
 
