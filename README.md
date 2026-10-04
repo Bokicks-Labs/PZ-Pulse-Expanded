@@ -96,3 +96,10 @@ upload to Steam. The initial
 after the first successful publish. On the Workshop item page, also add
 [PZ Pulse](https://steamcommunity.com/sharedfiles/filedetails/?id=3753700423)
 as a required item so subscribers receive the dependency automatically.
+
+## Multiplayer development builds
+
+Use `Scripts/build-dev-bundle.ps1` to create a separate local test mod and ZIP
+without touching the public Workshop staging folder or publishing to Steam.
+See [`docs/multiplayer-development.md`](docs/multiplayer-development.md) for
+server and client installation steps.
