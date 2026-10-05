@@ -99,6 +99,12 @@ as a required item so subscribers receive the dependency automatically.
 
 ## Multiplayer development builds
 
+For local single-player testing, run `Scripts/toggle-pz-junction.ps1`. It creates
+`%UserProfile%\Zomboid\mods\PZPulseExpandedLocalDev` pointing at a copied dev bundle
+with mod ID `PZ_Pulse_Expanded_Dev`. Run it again to remove the junction; each
+new activation creates a fresh copy under the ignored `artifacts/dev` folder.
+Enable the dev ID and disable the public ID in the test mod list.
+
 Use `Scripts/build-dev-bundle.ps1` to create a separate local test mod and ZIP
 without touching the public Workshop staging folder or publishing to Steam.
 See [`docs/multiplayer-development.md`](docs/multiplayer-development.md) for

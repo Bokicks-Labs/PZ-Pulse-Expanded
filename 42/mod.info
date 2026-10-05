@@ -5,6 +5,6 @@ description=Expands PZ Pulse's second-screen Needs panel with active vanilla and
 poster=poster.png
 icon=icon.png
 category=features
-modversion=1.2.0
+modversion=1.2.1
 versionMin=42.20.0
 require=PZ_Pulse

@@ -1,4 +1,6 @@
 package.path = "42/media/lua/client/?.lua;" .. package.path
+local now = 100000
+function getTimestampMs() return now end
 
 PZ_Pulse_EXT = {}
 CharacterStat = { DISCOMFORT = {} }
@@ -67,6 +69,7 @@ assert(withoutNature.natures_call == nil, "inactive optional mod must not erase 
 
 -- Exceptions retain a recent result briefly and collection retries.
 local calls = 0
+local originalCollect = PZPulseExpanded_NaturesCallAdapter.collect
 PZPulseExpanded_NaturesCallAdapter.collect = function()
     calls = calls + 1
     error("fixture adapter failure")
@@ -75,14 +78,14 @@ active = true
 
 local firstFailure = spec.collect(player)
 assert(firstFailure.discomfort == 12.35 and firstFailure.natures_call == nil)
-for _ = 2, PZPulseExpanded_NaturesCallAdapter.MAX_MISSED_READS do
+for _ = 2, 10 do
     spec.collect(player)
 end
-assert(calls == PZPulseExpanded_NaturesCallAdapter.MAX_MISSED_READS,
+assert(calls == 10,
     "failed adapter must remain retryable")
-PZPulseExpanded_NaturesCallAdapter.collect = function()
-    return { bladder = 61, bowel = 2 }
-end
+PZPulseExpanded_NaturesCallAdapter.collect = originalCollect
+sourceState.bladderFill = 61
+sourceState.bowelFill = 2
 assert(spec.collect(player).natures_call.bladder == 61,
     "adapter recovers after exceptions")
 PZPulseExpanded_NaturesCallAdapter.collect = function()
@@ -90,5 +93,21 @@ PZPulseExpanded_NaturesCallAdapter.collect = function()
 end
 assert(spec.collect(player).natures_call.bladder == 61,
     "one exception retains a recently valid reading")
+now = now + 90001
+assert(spec.collect(player).natures_call == nil,
+    "repeated exceptions beyond grace period hide stale Nature's Call values")
+
+PZPulseExpanded_NaturesCallAdapter.collect = originalCollect
+assert(spec.collect(player).discomfort == 12.35)
+local originalStats = player.getStats
+player.getStats = function() error("temporary stat failure") end
+assert(spec.collect(player).discomfort == 12.35,
+    "a failed Discomfort read should retain its last valid value")
+now = now + 90001
+assert(spec.collect(player).discomfort == nil,
+    "persistently failed Discomfort reads should expire")
+player.getStats = originalStats
+assert(spec.collect(player).discomfort == 12.35,
+    "Discomfort should recover after a valid reading")
 
 print("Needs Expanded Lua collector fixtures passed")

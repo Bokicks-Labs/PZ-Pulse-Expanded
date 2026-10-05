@@ -1,4 +1,6 @@
 package.path = "42/media/lua/client/?.lua;" .. package.path
+local now = 100000
+function getTimestampMs() return now end
 
 local active = {
     LifestyleHobbies = true,
@@ -105,6 +107,23 @@ local stats = statsAdapter.collect(player)
 assert(stats.lifestyle_hygiene_need == 67)
 assert(stats.tasab_body_grime == 38)
 assert(stats.bydt_dental_hygiene == 0.82)
+
+modData.hygieneNeed = nil
+modData.tabas_BodyGrime = "bad"
+modData.BrushYourDamnTeeth.dentalHygiene = nil
+local retained = statsAdapter.collect(player)
+assert(retained.lifestyle_hygiene_need == 67)
+assert(retained.tasab_body_grime == 38)
+assert(retained.bydt_dental_hygiene == 0.82)
+now = now + 90001
+assert(statsAdapter.collect(player) == nil,
+    "persistently missing optional stats should expire")
+modData.hygieneNeed = 68
+assert(statsAdapter.collect(player).lifestyle_hygiene_need == 68)
+active.LifestyleHobbies = false
+assert(statsAdapter.collect(player) == nil, "disabled source must clear history")
+active.LifestyleHobbies = true
+assert(statsAdapter.collect(player).lifestyle_hygiene_need == 68)
 
 local moodles = moodleAdapter.collect(player)
 assert(type(moodles) == "table")

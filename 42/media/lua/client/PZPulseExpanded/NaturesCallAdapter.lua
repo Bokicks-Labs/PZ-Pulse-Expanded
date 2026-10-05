@@ -7,53 +7,13 @@
 PZPulseExpanded_NaturesCallAdapter = PZPulseExpanded_NaturesCallAdapter or {}
 
 local Adapter = PZPulseExpanded_NaturesCallAdapter
+local StatUtils = require("PZPulseExpanded/StatUtils")
 
 Adapter.MOD_ID = "NC_NaturesCall"
 Adapter.SOURCE_NAME = "Nature's Call"
 Adapter.MIN_FILL = 0
 Adapter.MAX_FILL = 120
-Adapter.MAX_MISSED_READS = 5
-
--- Keep a short history per supplied player. Weak keys avoid retaining players
--- after a world/session change.
-local recent = setmetatable({}, { __mode = "k" })
-
-local function remember(player, key, value, hidden)
-    local history = recent[player]
-    if history == nil then
-        history = {}
-        recent[player] = history
-    end
-    if hidden then
-        history[key] = nil
-        return nil
-    end
-    if value ~= nil then
-        history[key] = { value = value, misses = 0 }
-        return value
-    end
-    local previous = history[key]
-    if previous == nil then return nil end
-    previous.misses = previous.misses + 1
-    if previous.misses >= Adapter.MAX_MISSED_READS then
-        history[key] = nil
-        return nil
-    end
-    return previous.value
-end
-
-local function finiteNumber(value)
-    if type(value) ~= "number" and type(value) ~= "string" then
-        return nil
-    end
-
-    local number = tonumber(value)
-    if number == nil or number ~= number or number == math.huge or number == -math.huge then
-        return nil
-    end
-
-    return number
-end
+local syncedPlayers = setmetatable({}, { __mode = "k" })
 
 local function isActive()
     if getActivatedMods == nil then return false end
@@ -69,13 +29,27 @@ local function isPureMultiplayerClient()
     return isClient() and not isServer()
 end
 
-local function visibleFill(snapshot, key, hiddenByTrait)
-    if hiddenByTrait then return nil end
-
-    local value = finiteNumber(snapshot[key])
-    if value == nil or value < Adapter.MIN_FILL then return nil end
-
-    return value
+local function collectValues(player, state, snapshot, active)
+    local source = snapshot or state or {}
+    local traits = source.traitModifiers or (state and state.traitModifiers) or {}
+    if type(traits) ~= "table" then traits = {} end
+    local values = {}
+    for _, definition in ipairs({
+        { output = "bladder", field = "bladderFill", trait = "majorBladderIncontinence" },
+        { output = "bowel", field = "bowelFill", trait = "majorBowelIncontinence" },
+    }) do
+        local raw = source[definition.field]
+        local number = StatUtils.finiteNumber(raw)
+        local hidden = traits[definition.trait] == true
+            or (number ~= nil and number < Adapter.MIN_FILL)
+        local value = StatUtils.sample(
+            player, "natures_call:" .. definition.output,
+            not hidden and number or nil, active, hidden
+        )
+        if value ~= nil then values[definition.output] = value end
+    end
+    if values.bladder == nil and values.bowel == nil then return nil end
+    return values
 end
 
 -- Return raw source values, or nil when the mod/state is absent or has not
@@ -83,47 +57,41 @@ end
 -- from a missing field.
 function Adapter.collect(player)
     if not isActive() then
-        recent = setmetatable({}, { __mode = "k" })
+        if player ~= nil then
+            syncedPlayers[player] = nil
+            collectValues(player, nil, nil, false)
+        end
         return nil
     end
-    if player == nil or player.getModData == nil then return nil end
+    if player == nil then return nil end
+    if player.getModData == nil then return Adapter.missing(player) end
 
-    local playerModData = player:getModData()
+    local ok, playerModData = pcall(player.getModData, player)
+    if not ok then playerModData = nil end
     if type(playerModData) ~= "table" then playerModData = {} end
 
     local state = playerModData.NaturesCall
-    if type(state) ~= "table" then state = {} end
+    if type(state) ~= "table" then state = nil end
 
-    local snapshot = state
+    local snapshot = nil
     if isPureMultiplayerClient() then
-        -- Nature's Call initializes a client-side table with zeroes before the
-        -- server sends authoritative state. ownerSnapshot is the source mod's
-        -- explicit synchronization-ready marker and avoids inventing zeroes.
-        snapshot = type(state.ownerSnapshot) == "table" and state.ownerSnapshot or {}
+        -- Nature's Call initializes zero defaults before the first server
+        -- snapshot. After that first authoritative view, its own UI falls back
+        -- to local fills during snapshot gaps; do the same without mutating it.
+        snapshot = state and type(state.ownerSnapshot) == "table"
+            and state.ownerSnapshot or nil
+        if snapshot ~= nil then syncedPlayers[player] = true end
+        if not syncedPlayers[player] then
+            return collectValues(player, nil, nil, false)
+        end
     end
+    return collectValues(player, state, snapshot, true)
+end
 
-    local traitModifiers = snapshot.traitModifiers or state.traitModifiers or {}
-    local bladder = remember(player, "bladder", visibleFill(
-        snapshot,
-        "bladderFill",
-        traitModifiers.majorBladderIncontinence == true
-    ), traitModifiers.majorBladderIncontinence == true or
-        finiteNumber(snapshot.bladderFill) ~= nil and
-        finiteNumber(snapshot.bladderFill) < Adapter.MIN_FILL)
-    local bowel = remember(player, "bowel", visibleFill(
-        snapshot,
-        "bowelFill",
-        traitModifiers.majorBowelIncontinence == true
-    ), traitModifiers.majorBowelIncontinence == true or
-        finiteNumber(snapshot.bowelFill) ~= nil and
-        finiteNumber(snapshot.bowelFill) < Adapter.MIN_FILL)
-
-    if bladder == nil and bowel == nil then return nil end
-
-    local values = {}
-    if bladder ~= nil then values.bladder = bladder end
-    if bowel ~= nil then values.bowel = bowel end
-    return values
+function Adapter.missing(player)
+    local active = isActive()
+    if not active and player ~= nil then syncedPlayers[player] = nil end
+    return collectValues(player, nil, nil, active)
 end
 
 return Adapter

@@ -1,4 +1,7 @@
+package.path = "42/media/lua/client/?.lua;" .. package.path
 local adapterPath = "42/media/lua/client/PZPulseExpanded/NaturesCallAdapter.lua"
+local now = 100000
+function getTimestampMs() return now end
 
 local active = true
 local client = false
@@ -113,13 +116,14 @@ local intermittentState = {
 local intermittentPlayer = playerWith({ NaturesCall = intermittentState })
 assertEqual(Adapter.collect(intermittentPlayer).bladder, 45)
 intermittentState.ownerSnapshot = { bladderFill = "bad", bowelFill = 71 }
-for _ = 1, Adapter.MAX_MISSED_READS - 1 do
+for _ = 1, 10 do
     local values = Adapter.collect(intermittentPlayer)
-    assertEqual(values.bladder, 45, "brief invalid reads retain last valid fill")
+    assertEqual(values.bladder, 45, "many brief invalid reads retain last valid fill")
     assertEqual(values.bowel, 71, "good fills continue to update")
 end
+now = now + 90001
 assertNil(Adapter.collect(intermittentPlayer).bladder,
-    "sustained invalid reads eventually hide the broken meter")
+    "invalid reads past the grace period hide the broken meter")
 intermittentState.ownerSnapshot = { bladderFill = 46, bowelFill = 72 }
 assertEqual(Adapter.collect(intermittentPlayer).bladder, 46,
     "recovered fill becomes visible again")

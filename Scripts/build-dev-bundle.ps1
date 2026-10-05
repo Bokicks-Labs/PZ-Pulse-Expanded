@@ -39,6 +39,7 @@ if (([regex]::Matches($infoText, '(?m)^id=PZ_Pulse_Expanded$')).Count -ne 1 -or
 $infoText = [regex]::Replace($infoText, '(?m)^id=PZ_Pulse_Expanded$', "id=$devId")
 $infoText = [regex]::Replace($infoText, '(?m)^name=PZ Pulse Expanded$', 'name=PZ Pulse Expanded (Dev)')
 $collectorText = $collectorText.Replace('mod = "PZ_Pulse_Expanded",', "mod = `"$devId`",")
+
 [IO.File]::WriteAllText($modInfo, $infoText, [Text.UTF8Encoding]::new($false))
 [IO.File]::WriteAllText($collector, $collectorText, [Text.UTF8Encoding]::new($false))
 

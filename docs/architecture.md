@@ -151,6 +151,13 @@ Each input, stat, and moodle degrades independently. A missing mod or malformed
 optional value omits only that item; it does not erase valid rows from any
 other source. The shared payload is never mutated.
 
+Continuous Lua stat bars retain each player's last valid value through a
+configurable real-time grace period when a read fails. The setting is in
+Options → Mods → PZ Pulse Expanded. A bar needs one valid reading before it
+can be retained; disabled source mods and intentionally hidden stats clear
+immediately. Moodles and PZ Pulse's private vanilla `d.needs` collection keep
+their own behavior.
+
 ## Error philosophy
 
 Expected missing or invalid data should degrade predictably.

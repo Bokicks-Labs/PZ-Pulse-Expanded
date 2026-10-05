@@ -1,5 +1,17 @@
 [h1]PZ Pulse Expanded - Changelog[/h1]
 
+[h2]Version 1.2.1 - Stable Continuous Stat Bars[/h2]
+
+[list]
+[*][b]Fixed Nature's Call Bladder and Bowel bars disappearing during multiplayer snapshot gaps.[/b]
+[*]After the first server snapshot, valid local Nature's Call values keep the bars updated while the owner snapshot is temporarily absent.
+[*]Discomfort and supported optional mod stat bars now retain their last valid values through brief failed reads. Persistently missing values still disappear.
+[*]Added a Missing stat grace period setting under Options > Mods > PZ Pulse Expanded. Default: 90 seconds; set it to 0 to disable retention.
+[*]Disabled mods and intentionally hidden stats still disappear immediately. Moodle behavior is unchanged.
+[/list]
+
+[hr][/hr]
+
 [h2]Version 1.2.0 - Stat Bar Icons[/h2]
 
 [list]

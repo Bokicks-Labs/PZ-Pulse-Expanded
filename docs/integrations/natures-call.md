@@ -47,10 +47,10 @@ The adapter reads the player supplied by PZ Pulse and never calls
 or update source-mod state.
 
 In single-player/server-authoritative contexts, the adapter reads the existing
-`NaturesCall` table. On a pure multiplayer client, it requires
+`NaturesCall` table. On a pure multiplayer client, it requires the first
 `NaturesCall.ownerSnapshot`; the source mod creates local zero defaults before
-the first server synchronization, so treating those defaults as real would
-confuse “not initialized yet” with a valid zero.
+the first server synchronization. After that snapshot, the adapter follows
+Nature's Call's own fallback to local fills when the owner snapshot disappears.
 
 Nature's Call intentionally hides a bladder or bowel meter for the matching
 major-incontinence trait. Its synchronized snapshot represents that as a
@@ -61,14 +61,16 @@ major-trait flags in local/server-authoritative state.
 
 Before the first valid reading, missing mod state or an unsynchronized owner
 snapshot omits the unavailable row. After a valid reading, each meter retains
-its last value through four consecutive missing or invalid reads and hides on
-the fifth. A fresh valid reading resets that count. Negative fills and major
+its last value during brief missing or invalid reads. The duration is set by
+**Missing stat grace period (seconds)** in Options → Mods → PZ Pulse Expanded
+(90 seconds by default, 0 to disable retention). A fresh valid reading resets
+the timer. Negative fills and major
 incontinence flags explicitly hide their meter immediately; an inactive mod
 also clears retained readings. The history belongs to the supplied player and
 does not modify Nature's Call state.
 
 An unexpected adapter error is retried on the next export. The collector
-briefly retains its last successful result under the same five-failure limit
+briefly retains its last successful result under the same grace period
 and emits one bounded diagnostic per session. Vanilla Needs+ rows and
 Discomfort continue rendering.
 

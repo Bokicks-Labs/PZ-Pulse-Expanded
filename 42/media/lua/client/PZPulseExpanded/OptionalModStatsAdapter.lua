@@ -7,18 +7,7 @@ PZPulseExpanded_OptionalModStatsAdapter =
     PZPulseExpanded_OptionalModStatsAdapter or {}
 
 local Adapter = PZPulseExpanded_OptionalModStatsAdapter
-
-local function finiteNumber(value)
-    if type(value) ~= "number" and type(value) ~= "string" then return nil end
-
-    local number = tonumber(value)
-    if number == nil or number ~= number
-        or number == math.huge or number == -math.huge then
-        return nil
-    end
-
-    return number
-end
+local StatUtils = require("PZPulseExpanded/StatUtils")
 
 local function isActive(modId)
     if getActivatedMods == nil then return false end
@@ -29,44 +18,38 @@ local function isActive(modId)
     return mods:contains(modId)
 end
 
-local function add(values, key, value)
-    value = finiteNumber(value)
-    if value == nil then return false end
+local function add(values, player, key, raw, active)
+    local value = StatUtils.sample(player, key, raw, active, false)
+    if value ~= nil then values[key] = value end
+end
 
-    values[key] = value
-    return true
+local function collectValues(player, modData, missing)
+    local values = {}
+    local teeth = type(modData.BrushYourDamnTeeth) == "table"
+        and modData.BrushYourDamnTeeth or {}
+    add(values, player, "lifestyle_hygiene_need",
+        not missing and modData.hygieneNeed or nil, isActive("LifestyleHobbies"))
+    add(values, player, "tasab_body_grime",
+        not missing and modData.tabas_BodyGrime or nil, isActive("TakeABathAndShowerNew"))
+    add(values, player, "bydt_dental_hygiene",
+        not missing and teeth.dentalHygiene or nil, isActive("BrushYourDamnTeeth"))
+    if next(values) == nil then return nil end
+    return values
 end
 
 function Adapter.collect(player)
-    if player == nil or player.getModData == nil then return nil end
-
-    local modData = player:getModData()
-    if type(modData) ~= "table" then return nil end
-
-    local values = {}
-    local hasValues = false
-
-    if isActive("LifestyleHobbies") then
-        hasValues = add(values, "lifestyle_hygiene_need", modData.hygieneNeed)
-            or hasValues
+    if player == nil then return nil end
+    local modData = nil
+    if player.getModData ~= nil then
+        local ok, data = pcall(player.getModData, player)
+        if ok and type(data) == "table" then modData = data end
     end
+    return collectValues(player, modData or {}, false)
+end
 
-    if isActive("TakeABathAndShowerNew") then
-        hasValues = add(values, "tasab_body_grime", modData.tabas_BodyGrime)
-            or hasValues
-    end
-
-    if isActive("BrushYourDamnTeeth")
-        and type(modData.BrushYourDamnTeeth) == "table" then
-        hasValues = add(
-            values,
-            "bydt_dental_hygiene",
-            modData.BrushYourDamnTeeth.dentalHygiene
-        ) or hasValues
-    end
-
-    if not hasValues then return nil end
-    return values
+function Adapter.missing(player)
+    if player == nil then return nil end
+    return collectValues(player, {}, true)
 end
 
 return Adapter

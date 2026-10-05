@@ -6,10 +6,12 @@ PZ_Pulse_EXT = PZ_Pulse_EXT or {}
 require("PZPulseExpanded/NaturesCallAdapter")
 require("PZPulseExpanded/OptionalModStatsAdapter")
 require("PZPulseExpanded/CustomMoodleAdapter")
+require("PZPulseExpanded/StatUtils")
 
 local NaturesCallAdapter = PZPulseExpanded_NaturesCallAdapter
 local OptionalModStatsAdapter = PZPulseExpanded_OptionalModStatsAdapter
 local CustomMoodleAdapter = PZPulseExpanded_CustomMoodleAdapter
+local StatUtils = PZPulseExpanded_StatUtils
 
 -- Helper shape adapted from PZ Pulse's reference extension.
 -- Round collected floats so insignificant engine jitter does not defeat
@@ -38,19 +40,14 @@ local function stat(stats, name, default)
     return safe(function() return stats:get(e) end, default)
 end
 
--- Retry a failed read on the next export. Keep the most recent successful
--- result briefly so one exception does not make the meters blink.
-local natureCallLast = setmetatable({}, { __mode = "k" })
+-- Retry unexpected adapter errors; the stat-specific history owns brief gaps.
 local natureCallErrorLogged = false
 
 local function collectNaturesCall(player)
     if NaturesCallAdapter == nil then return nil end
 
     local ok, values = pcall(NaturesCallAdapter.collect, player)
-    if ok then
-        natureCallLast[player] = values and { values = values, misses = 0 } or nil
-        return values
-    end
+    if ok then return values end
 
     if not natureCallErrorLogged then
         local reason = tostring(values or "unknown error")
@@ -58,17 +55,26 @@ local function collectNaturesCall(player)
         print("[PZ_Pulse_Expanded] Nature's Call collection failed: " .. reason)
         natureCallErrorLogged = true
     end
-    local previous = natureCallLast[player]
-    if previous == nil then return nil end
-    previous.misses = previous.misses + 1
-    if previous.misses >= NaturesCallAdapter.MAX_MISSED_READS then
-        natureCallLast[player] = nil
-        return nil
-    end
-    return previous.values
+    local fallbackOk, fallback = pcall(NaturesCallAdapter.missing, player)
+    return fallbackOk and fallback or nil
 end
 
 local optionalAdapterFailures = {}
+
+local function collectContinuousOptional(player)
+    local label = "optional mod stats"
+    local ok, values = pcall(OptionalModStatsAdapter.collect, player)
+    if ok then return values end
+
+    if not optionalAdapterFailures[label] then
+        optionalAdapterFailures[label] = true
+        local reason = tostring(values or "unknown error")
+        if #reason > 240 then reason = reason:sub(1, 240) .. "..." end
+        print("[PZ_Pulse_Expanded] " .. label .. " collection skipped: " .. reason)
+    end
+    local fallbackOk, fallback = pcall(OptionalModStatsAdapter.missing, player)
+    return fallbackOk and fallback or nil
+end
 
 local function collectOptional(adapter, player, label)
     if optionalAdapterFailures[label] then return nil end
@@ -96,7 +102,9 @@ local function needsExpandedCollector(player)
     local stats = safe(function() return player:getStats() end)
     local values = {}
 
-    local discomfort = round2(stat(stats, "DISCOMFORT"))
+    local discomfort = StatUtils.sample(
+        player, "discomfort", round2(stat(stats, "DISCOMFORT")), true, false
+    )
     if discomfort ~= nil then
         values.discomfort = discomfort
     end
@@ -106,11 +114,7 @@ local function needsExpandedCollector(player)
         values.natures_call = naturesCall
     end
 
-    local optionalModStats = collectOptional(
-        OptionalModStatsAdapter,
-        player,
-        "optional mod stats"
-    )
+    local optionalModStats = collectContinuousOptional(player)
     if optionalModStats ~= nil then
         values.optional_mod_stats = optionalModStats
     end
