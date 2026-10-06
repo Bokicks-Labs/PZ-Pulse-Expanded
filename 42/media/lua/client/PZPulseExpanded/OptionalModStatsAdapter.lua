@@ -33,7 +33,11 @@ local function collectValues(player, modData, missing)
         not missing and modData.tabas_BodyGrime or nil, isActive("TakeABathAndShowerNew"))
     add(values, player, "bydt_dental_hygiene",
         not missing and teeth.dentalHygiene or nil, isActive("BrushYourDamnTeeth"))
-    if next(values) == nil then return nil end
+    if values.lifestyle_hygiene_need == nil
+        and values.tasab_body_grime == nil
+        and values.bydt_dental_hygiene == nil then
+        return nil
+    end
     return values
 end
 

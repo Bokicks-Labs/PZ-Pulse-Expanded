@@ -103,6 +103,8 @@ ModMedicineMoodles = {
 local statsAdapter = require("PZPulseExpanded/OptionalModStatsAdapter")
 local moodleAdapter = require("PZPulseExpanded/CustomMoodleAdapter")
 
+-- The reported multiplayer runtime had no callable next() global.
+next = nil
 local stats = statsAdapter.collect(player)
 assert(stats.lifestyle_hygiene_need == 67)
 assert(stats.tasab_body_grime == 38)
