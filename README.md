@@ -78,6 +78,20 @@ PZ Map integration is not currently planned. PZ Map does not expose a stable pub
 
 This can be revisited if an appropriate public API becomes available.
 
+## Version bumps
+
+Choose the release impact yourself: `patch` for a compatible fix, `minor` for a
+compatible feature, or `major` for a breaking change. From this repo, run:
+
+```powershell
+.\Scripts\bump-version.ps1 -Bump patch -Title 'Optional Stat Fix' -Notes @('Keep supported stat bars visible after transient read failures.') -WhatIf
+```
+
+Remove `-WhatIf` to write the next version. The script updates `42/mod.info`,
+the PZ Pulse registration version, and the Steam changelog. It refuses to
+bump when those version fields disagree. Review and edit the generated
+changelog before publishing.
+
 ## Workshop staging
 
 After testing the current source, stage a verified Workshop upload with:
