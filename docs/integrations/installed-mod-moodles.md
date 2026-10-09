@@ -15,6 +15,9 @@ can read without initializing or mutating their state.
 Each field is nullable. The collector preserves numeric zero but omits the row
 when the mod is inactive, its state table has not initialized, or the individual
 value is not finite.
+The Lifestyle Hygiene Need row is also omitted when CW Modpack Compatibility's
+**Disable Lifestyle personal hygiene need** sandbox option is enabled. TASAB
+Body Grime and BYDT Dental Hygiene remain independent.
 
 ## Active moodles
 

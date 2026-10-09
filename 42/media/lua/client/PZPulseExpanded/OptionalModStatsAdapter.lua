@@ -23,12 +23,26 @@ local function add(values, player, key, raw, active)
     if value ~= nil then values[key] = value end
 end
 
+local function lifestyleHygieneHidden()
+    if not (isActive("CWModpackCompatibility")
+        or isActive("CWModpackCompatibility_dev")) then
+        return false
+    end
+    local ownership = CWModpackCompatibility and CWModpackCompatibility.LifestyleOwnership
+    if not (ownership and type(ownership.isLifestyleHygieneDisabled) == "function") then
+        return false
+    end
+    local ok, disabled = pcall(ownership.isLifestyleHygieneDisabled)
+    return ok and disabled == true
+end
+
 local function collectValues(player, modData, missing)
     local values = {}
     local teeth = type(modData.BrushYourDamnTeeth) == "table"
         and modData.BrushYourDamnTeeth or {}
     add(values, player, "lifestyle_hygiene_need",
-        not missing and modData.hygieneNeed or nil, isActive("LifestyleHobbies"))
+        not missing and modData.hygieneNeed or nil,
+        isActive("LifestyleHobbies") and not lifestyleHygieneHidden())
     add(values, player, "tasab_body_grime",
         not missing and modData.tabas_BodyGrime or nil, isActive("TakeABathAndShowerNew"))
     add(values, player, "bydt_dental_hygiene",

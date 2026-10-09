@@ -110,6 +110,20 @@ assert(stats.lifestyle_hygiene_need == 67)
 assert(stats.tasab_body_grime == 38)
 assert(stats.bydt_dental_hygiene == 0.82)
 
+active.CWModpackCompatibility = true
+assert(statsAdapter.collect(player).lifestyle_hygiene_need == 67,
+    "older CW versions must not hide Lifestyle hygiene")
+CWModpackCompatibility = {
+    LifestyleOwnership = { isLifestyleHygieneDisabled = function() return true end },
+}
+local hidden = statsAdapter.collect(player)
+assert(hidden.lifestyle_hygiene_need == nil)
+assert(hidden.tasab_body_grime == 38)
+assert(hidden.bydt_dental_hygiene == 0.82)
+CWModpackCompatibility.LifestyleOwnership.isLifestyleHygieneDisabled = function() return false end
+active.CWModpackCompatibility = false
+assert(statsAdapter.collect(player).lifestyle_hygiene_need == 67)
+
 modData.hygieneNeed = nil
 modData.tabas_BodyGrime = "bad"
 modData.BrushYourDamnTeeth.dentalHygiene = nil
