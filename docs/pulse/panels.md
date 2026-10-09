@@ -48,8 +48,10 @@ The implemented deterministic row order is:
    Stress, Panic, Unhappiness, Pain, Sickness, Wetness, and Drunkenness
 2. vanilla Discomfort
 3. optional Nature's Call Bladder and Bowel fills
-4. optional continuous mod stats: Lifestyle Hygiene Need, TASAB Body Grime,
-   and Brush Your Damn Teeth Dental Hygiene
+4. vanilla Nicotine Withdrawal, Idleness, and Poison
+5. optional continuous mod stats: Lifestyle Hygiene Need, TASAB Body Grime,
+   Brush Your Damn Teeth Dental Hygiene, DrugTime 89 intensities, Infirmities
+   addiction levels, and Caffeine Makes Sense caffeine load
 
 PZ Pulse's `d.needs` shape is a private dependency. The current adapter targets
 the exact ordered collector contract verified in PZ Pulse 1.1.3 and validates
@@ -59,11 +61,19 @@ uninitialized mod does not create a zero bar.
 
 ## Stat visibility
 
-Needs Expanded is intentionally allowed to contain a broad set of live player stats.
+Needs Expanded's PZ Pulse gear menu contains a **Choose bars** button. It opens
+a flat, alphabetical list with one checkbox per continuous bar. Choices apply
+immediately and persist in this browser's local storage. An inactive source mod
+leaves its choices visible but dimmed and disabled; their saved values remain
+available if the mod becomes active later. Infirmities choices are also disabled
+when its addiction system is off. Missing per-player state does not make an
+active mod's checkbox unavailable.
 
-The player should eventually be able to hide individual stats they do not want.
-
-PZ Pulse supports extension-defined panel options, but its current public API limits an extension panel to a small fixed number of options. PZ Pulse Expanded should therefore keep visibility as an internal stat-level concept rather than coupling the renderer directly to one PZ Pulse option per stat.
+The button is a narrow integration with PZ Pulse 1.1.3's private `.panel-settings`
+markup. PZ Pulse's public extension options accept only `bool`, `number`, and
+`choice` entries (eight at most), so there is no action-button declaration.
+PZ Pulse Expanded restores its button if PZ Pulse rebuilds the gear contents.
+An upstream action-button option would replace this private integration.
 
 Normalized Stats include the intended field:
 

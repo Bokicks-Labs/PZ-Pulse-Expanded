@@ -250,7 +250,13 @@ const PLAYER_STAT_DEFINITIONS = {
         visibleByDefault: true,
 
         source: PROJECT_ZOMBOID_SOURCE
-    }
+    },
+    nicotine_withdrawal: { label: "Nicotine Withdrawal", min: 0, max: 1, badHigh: true,
+        iconKey: "mood_hungover", source: PROJECT_ZOMBOID_SOURCE },
+    idleness: { label: "Idleness", min: 0, max: 1, badHigh: true,
+        iconKey: "status_sedated", source: PROJECT_ZOMBOID_SOURCE },
+    poison: { label: "Poison", min: 0, max: 100, badHigh: true,
+        iconKey: "mood_nauseous", source: PROJECT_ZOMBOID_SOURCE }
 };
 
 const NATURES_CALL_STAT_DEFINITIONS = {
@@ -306,7 +312,25 @@ const OPTIONAL_MOD_STAT_DEFINITIONS = {
         iconKey: "teeth/BYDT_MouthState",
         visibleByDefault: true,
         source: BRUSH_YOUR_DAMN_TEETH_SOURCE
-    }
+    },
+    drugtime_stoned: { label: "Stoned Intensity", min: 0, max: 140, badHigh: true,
+        iconKey: "drugtime/DT_Stoned_1", source: { type: "mod", id: "DrugTime89", name: "DrugTime 89" } },
+    drugtime_hard: { label: "Hard Drug Intensity", min: 0, max: 160, badHigh: true,
+        iconKey: "drugtime/DT_Hard_1", source: { type: "mod", id: "DrugTime89", name: "DrugTime 89" } },
+    addiction_alcohol: { label: "Alcohol Addiction", min: 0, max: 100, badHigh: true,
+        source: { type: "mod", id: "twbInfirmities", name: "Infirmities" } },
+    addiction_nicotine: { label: "Nicotine Addiction", min: 0, max: 100, badHigh: true,
+        source: { type: "mod", id: "twbInfirmities", name: "Infirmities" } },
+    addiction_caffeine: { label: "Caffeine Addiction", min: 0, max: 100, badHigh: true,
+        source: { type: "mod", id: "twbInfirmities", name: "Infirmities" } },
+    addiction_painkillers: { label: "Painkiller Addiction", min: 0, max: 100, badHigh: true,
+        source: { type: "mod", id: "twbInfirmities", name: "Infirmities" } },
+    addiction_sleeping_pills: { label: "Sleeping Pill Addiction", min: 0, max: 100, badHigh: true,
+        source: { type: "mod", id: "twbInfirmities", name: "Infirmities" } },
+    addiction_amphetamines: { label: "Amphetamine Addiction", min: 0, max: 100, badHigh: true,
+        source: { type: "mod", id: "twbInfirmities", name: "Infirmities" } },
+    caffeine_load: { label: "Caffeine Load", min: 0, max: 4, badHigh: true,
+        source: { type: "mod", id: "CaffeineMakesSense", name: "Caffeine Makes Sense" } }
 };
 
 /*
@@ -728,7 +752,15 @@ function adaptNaturesCallStats(values) {
  * @returns {PlayerStat[]}
  */
 function adaptOptionalModStats(values) {
-    return buildPlayerStats(values, OPTIONAL_MOD_STAT_DEFINITIONS);
+    const definitions = { ...OPTIONAL_MOD_STAT_DEFINITIONS };
+    if (isValidObject(values) && isFiniteNumber(values.caffeine_load_max)
+        && Number(values.caffeine_load_max) > 0) {
+        definitions.caffeine_load = {
+            ...definitions.caffeine_load,
+            max: Number(values.caffeine_load_max)
+        };
+    }
+    return buildPlayerStats(values, definitions);
 }
 
 /**
@@ -1158,6 +1190,121 @@ function renderMoodleBadge(moodle) {
  * @param {*} d
  * @returns {string}
  */
+const BAR_CHOICES = [
+    ...PZ_PULSE_NEED_DEFINITIONS.map(({ id, label }) => ({ id, label, mod: null })),
+    ...Object.entries(PLAYER_STAT_DEFINITIONS).map(([id, def]) =>
+        ({ id, label: def.label, mod: null })),
+    ...Object.entries(NATURES_CALL_STAT_DEFINITIONS).map(([id, def]) =>
+        ({ id, label: def.label, mod: "NC_NaturesCall", source: def.source.name })),
+    ...Object.entries(OPTIONAL_MOD_STAT_DEFINITIONS).map(([id, def]) =>
+        ({ id, label: def.label, mod: def.source.id, source: def.source.name }))
+].sort((a, b) => a.label.localeCompare(b.label));
+
+const BAR_SETTINGS_KEY = "pz_pulse_expanded.needs_expanded.bars.v1";
+let barPreferences = {};
+try {
+    if (typeof localStorage !== "undefined") {
+        const saved = JSON.parse(localStorage.getItem(BAR_SETTINGS_KEY) || "{}");
+        if (isValidObject(saved)) barPreferences = saved;
+    }
+} catch (_) { /* Browser storage can be unavailable; defaults still work. */ }
+let barAvailability = {};
+let barModal = null;
+let observedGear = null;
+
+function barVisible(id) {
+    return barPreferences[id] !== false;
+}
+
+function saveBarPreferences() {
+    try {
+        if (typeof localStorage !== "undefined") {
+            localStorage.setItem(BAR_SETTINGS_KEY, JSON.stringify(barPreferences));
+        }
+    } catch (_) { /* Continue with the current session's choices. */ }
+}
+
+function renderBarChoices() {
+    if (!barModal) return;
+    const list = barModal.querySelector(".needs-expanded-chooser-list");
+    if (!list) return;
+    list.innerHTML = BAR_CHOICES.map(choice => {
+        const available = !choice.mod || barAvailability[choice.mod] === true;
+        const suffix = choice.mod ? ` <small>${esc(choice.source)}</small>` : "";
+        return `<label class="needs-expanded-choice${available ? "" : " needs-expanded-choice-unavailable"}">` +
+            `<input type="checkbox" data-bar-id="${esc(choice.id)}"` +
+            `${barVisible(choice.id) ? " checked" : ""}${available ? "" : " disabled"}>` +
+            `<span>${esc(choice.label)}${suffix}</span></label>`;
+    }).join("");
+}
+
+function closeBarChooser() {
+    if (!barModal) return;
+    barModal.remove();
+    barModal = null;
+}
+
+function openBarChooser() {
+    if (barModal || typeof document === "undefined") return;
+    barModal = document.createElement("div");
+    barModal.className = "needs-expanded-chooser-backdrop";
+    barModal.innerHTML = `<div class="needs-expanded-chooser" role="dialog" aria-modal="true" ` +
+        `aria-label="Choose continuous bars"><header><strong>Choose bars</strong>` +
+        `<button type="button" class="needs-expanded-chooser-close" aria-label="Close">×</button></header>` +
+        `<div class="needs-expanded-chooser-list"></div>` +
+        `<footer><button type="button" class="needs-expanded-chooser-done">Done</button></footer></div>`;
+    barModal.addEventListener("click", event => {
+        if (event.target === barModal || event.target.closest(".needs-expanded-chooser-close")
+            || event.target.closest(".needs-expanded-chooser-done")) closeBarChooser();
+    });
+    barModal.addEventListener("keydown", event => {
+        if (event.key === "Escape") closeBarChooser();
+    });
+    barModal.addEventListener("change", event => {
+        const input = event.target.closest("input[data-bar-id]");
+        if (!input || input.disabled) return;
+        barPreferences[input.getAttribute("data-bar-id")] = input.checked;
+        saveBarPreferences();
+        if (typeof updateContent === "function") updateContent(window.PZ_DATA);
+    });
+    document.body.appendChild(barModal);
+    renderBarChoices();
+    barModal.querySelector(".needs-expanded-chooser-close").focus();
+}
+
+// PZ Pulse 1.1.3 rebuilds the gear's contents in place on language changes.
+// This adapter owns only the Needs Expanded menu and restores one button.
+function ensureBarChooserButton() {
+    if (typeof document === "undefined") return;
+    const panel = document.querySelector(
+        '[data-panel="pz_pulse_expanded__needs_expanded"], ' +
+        '[data-panel="pz_pulse_expanded_dev__needs_expanded"]'
+    );
+    const gear = panel && panel.querySelector(".panel-settings");
+    if (!gear) return;
+    const installButton = () => {
+        if (gear.querySelector(".needs-expanded-choose-button")) return;
+        const button = document.createElement("button");
+        button.type = "button";
+        button.className = "needs-expanded-choose-button";
+        button.textContent = "Choose bars…";
+        button.addEventListener("click", event => {
+            event.stopPropagation();
+            openBarChooser();
+        });
+        const reset = gear.querySelector(".ps-reset");
+        gear.insertBefore(button, reset || null);
+    };
+    if (observedGear !== gear) {
+        observedGear = gear;
+        if (typeof MutationObserver !== "undefined") {
+            const observer = new MutationObserver(installButton);
+            observer.observe(gear, { childList: true });
+        }
+    }
+    installButton();
+}
+
 function renderNeedsExpanded(d) {
     if (!isValidObject(d)) {
         return "";
@@ -1166,6 +1313,9 @@ function renderNeedsExpanded(d) {
     const values = isValidObject(d.needs_expanded)
         ? d.needs_expanded
         : {};
+    barAvailability = isValidObject(values.active_mods) ? values.active_mods : {};
+    ensureBarChooserButton();
+    if (barModal) renderBarChoices();
 
     // Deterministic display order: PZ Pulse's vanilla Needs+ rows, our
     // Discomfort row, then optional compatibility-adapter rows.
@@ -1177,6 +1327,7 @@ function renderNeedsExpanded(d) {
     const stats = [
         ...adaptPzPulseNeeds(d.needs),
         ...buildPlayerStats(values, PLAYER_STAT_DEFINITIONS),
+        ...buildPlayerStats(values.vanilla_stats, PLAYER_STAT_DEFINITIONS),
         ...adaptNaturesCallStats(values.natures_call),
         ...adaptOptionalModStats(values.optional_mod_stats)
     ];
@@ -1198,6 +1349,7 @@ function renderNeedsExpanded(d) {
     const statRows = [];
 
     for (const stat of stats) {
+        if (!barVisible(stat.id)) continue;
         const row = renderPlayerStatRow(stat);
 
         if (row !== null) {

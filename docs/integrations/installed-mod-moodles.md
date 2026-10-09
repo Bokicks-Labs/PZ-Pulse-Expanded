@@ -11,6 +11,18 @@ can read without initializing or mutating their state.
 | Lifestyle: Hobbies | `LifestyleHobbies` | Hygiene Need | `0..100` | higher is worse |
 | Take A Bath And Shower | `TakeABathAndShowerNew` | Body Grime | `0..100` | higher is worse |
 | Brush Your Damn Teeth | `BrushYourDamnTeeth` | Dental Hygiene | `0..1` | higher is better |
+| DrugTime 89 | `DrugTime89` | Stoned Intensity | `0..140` | higher is worse |
+| DrugTime 89 | `DrugTime89` | Hard Drug Intensity | `0..160` | higher is worse |
+| Infirmities | `twbInfirmities` | Alcohol, nicotine, caffeine, painkiller, sleeping-pill, and amphetamine addiction | `0..100` each | higher is worse |
+| Caffeine Makes Sense | `CaffeineMakesSense` | Caffeine Load | `0..MaxCaffeineLevel` | higher is worse |
+
+The panel also reads vanilla Nicotine Withdrawal (`0..1`), Idleness (`0..1`),
+and Poison (`0..100`). These have active gameplay writers or consumers in the
+installed Build 42 game and mod sources and are absent from PZ Pulse's other
+panels. Infirmities bars require its addiction sandbox system to be enabled.
+Caffeine Makes Sense uses an existing server snapshot on a multiplayer client;
+other contexts calculate the load from its existing dose state without
+initializing it.
 
 Each field is nullable. The collector preserves numeric zero but omits the row
 when the mod is inactive, its state table has not initialized, or the individual

@@ -15,11 +15,15 @@ function escapeHtml(value) {
         .replace(/"/g, "&quot;");
 }
 
-function loadRenderer() {
+function loadRenderer(savedBars = null) {
     const context = vm.createContext({
         console,
         esc: escapeHtml,
-        window: {}
+        window: {},
+        localStorage: {
+            getItem: () => savedBars === null ? null : JSON.stringify(savedBars),
+            setItem: () => {}
+        }
     });
 
     vm.runInContext(`${source}\n;globalThis.__test = {
@@ -34,7 +38,9 @@ function loadRenderer() {
         renderNeedsExpanded,
         renderMoodleBadge,
         renderPlayerStatRow,
-        statBarClass
+        statBarClass,
+        BAR_CHOICES,
+        renderBarChoices
     };`, context, { filename: scriptPath });
 
     return { context, api: context.__test };
@@ -97,6 +103,73 @@ test("renders all vanilla Needs+ rows, Discomfort, and Nature's Call exactly onc
     assert.equal(JSON.stringify(payload), before, "shared payload was mutated");
     assert.match(html, /Source: Project Zomboid/);
     assert.match(html, /Source: Nature's Call/);
+});
+
+test("renders the agreed new bars once and honors independent saved choices", () => {
+    const { api } = loadRenderer({ addiction_alcohol: false, idleness: false });
+    const html = api.renderNeedsExpanded({ needs_expanded: {
+        vanilla_stats: { nicotine_withdrawal: 0.3, idleness: 0.4, poison: 12 },
+        optional_mod_stats: {
+            drugtime_stoned: 70, drugtime_hard: 80,
+            addiction_alcohol: 50, addiction_nicotine: 40,
+            addiction_caffeine: 30, addiction_painkillers: 20,
+            addiction_sleeping_pills: 10, addiction_amphetamines: 0,
+            caffeine_load: 2, caffeine_load_max: 8
+        }
+    }});
+    assert.equal(api.BAR_CHOICES.length, 30);
+    assert.equal(count(html, 'class="needs-expanded-row"'), 10);
+    assert.equal(countLabel(html, "Nicotine Withdrawal"), 1);
+    assert.equal(countLabel(html, "Poison"), 1);
+    assert.equal(countLabel(html, "Caffeine Load"), 1);
+    assert.equal(countLabel(html, "Alcohol Addiction"), 0);
+    assert.equal(countLabel(html, "Idleness"), 0);
+});
+
+test("adds one chooser button to this panel's gear and restores it after a menu rebuild", () => {
+    const { api, context } = loadRenderer();
+    let button = null;
+    let observed = null;
+    const gear = {
+        querySelector(selector) {
+            return selector === ".needs-expanded-choose-button" ? button : null;
+        },
+        insertBefore(node) { button = node; }
+    };
+    context.document = {
+        querySelector(selector) {
+            assert.match(selector, /pz_pulse_expanded__needs_expanded/);
+            return { querySelector: () => gear };
+        },
+        createElement() {
+            return { addEventListener() {} };
+        }
+    };
+    context.MutationObserver = class {
+        constructor(callback) { observed = callback; }
+        observe() {}
+    };
+    api.renderNeedsExpanded({ needs: vanillaNeeds() });
+    assert.equal(button.textContent, "Choose bars…");
+    const first = button;
+    api.renderNeedsExpanded({ needs: vanillaNeeds() });
+    assert.equal(button, first, "normal renders do not add duplicate buttons");
+    button = null;
+    observed();
+    assert.equal(button.textContent, "Choose bars…");
+    assert.notEqual(button, first, "a rebuilt gear gets a fresh button");
+});
+
+test("unavailable mod bars have disabled checkboxes without losing their choice", () => {
+    const { api, context } = loadRenderer({ drugtime_stoned: false });
+    context.__list = { innerHTML: "" };
+    vm.runInContext(`barModal = { querySelector: () => __list };
+        barAvailability = { DrugTime89: false, twbInfirmities: true };`, context);
+    api.renderBarChoices();
+    const html = context.__list.innerHTML;
+    assert.match(html, /data-bar-id="drugtime_stoned" disabled/);
+    assert.match(html, /data-bar-id="addiction_alcohol" checked/);
+    assert.doesNotMatch(html, /data-bar-id="addiction_alcohol" checked disabled/);
 });
 
 test("normalizes source ranges and applies direction-aware semantic colors", () => {

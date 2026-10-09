@@ -109,6 +109,41 @@ local function needsExpandedCollector(player)
         values.discomfort = discomfort
     end
 
+    local vanilla = {}
+    for _, definition in ipairs({
+        { "NICOTINE_WITHDRAWAL", "nicotine_withdrawal" },
+        { "IDLENESS", "idleness" },
+        { "POISON", "poison" },
+    }) do
+        local key = definition[2]
+        local value = StatUtils.sample(player, key,
+            round2(stat(stats, definition[1])), true, false)
+        if value ~= nil then vanilla[key] = value end
+    end
+    if vanilla.nicotine_withdrawal ~= nil
+        or vanilla.idleness ~= nil or vanilla.poison ~= nil then
+        values.vanilla_stats = vanilla
+    end
+
+    -- Availability is independent of a first valid stat reading. The browser
+    -- uses it to disable choices for mods absent from this game's mod list.
+    local active = {}
+    local mods = getActivatedMods and getActivatedMods() or nil
+    for _, modId in ipairs({
+        "NC_NaturesCall", "LifestyleHobbies", "TakeABathAndShowerNew",
+        "BrushYourDamnTeeth", "DrugTime89", "twbInfirmities",
+        "CaffeineMakesSense",
+    }) do
+        active[modId] = mods ~= nil and mods.contains ~= nil
+            and mods:contains(modId) or false
+    end
+    if active.twbInfirmities and (SandboxVars == nil
+        or SandboxVars.Infirmities == nil
+        or SandboxVars.Infirmities.StartAddictiveSystem ~= true) then
+        active.twbInfirmities = false
+    end
+    values.active_mods = active
+
     local naturesCall = collectNaturesCall(player)
     if naturesCall ~= nil then
         values.natures_call = naturesCall
@@ -141,7 +176,7 @@ end
 table.insert(PZ_Pulse_EXT, {
     api = 1,
     mod = "PZ_Pulse_Expanded",
-    version = "1.2.2",
+    version = "1.3.0",
     id = "needs_expanded",
     title = "Needs Expanded",
     cls = "info",

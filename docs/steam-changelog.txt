@@ -1,5 +1,15 @@
 [h1]PZ Pulse Expanded - Changelog[/h1]
 
+[h2]Version 1.3.0 - More Continuous Bars and Show Hide Options[/h2]
+
+[list]
+[*]Added 12 continuous bars from DrugTime 89, Infirmities, Caffeine Makes Sense, and supported vanilla stats.
+[*]Added Choose bars… to the Needs Expanded gear menu, with an individual checkbox for every bar.
+[*]Saved bar choices in the browser; choices for inactive mods appear disabled and are retained for later.
+[/list]
+
+[hr][/hr]
+
 [h2]Version 1.2.2 - Lifestyle Hygiene Ownership[/h2]
 
 [list]

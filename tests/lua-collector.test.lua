@@ -3,7 +3,7 @@ local now = 100000
 function getTimestampMs() return now end
 
 PZ_Pulse_EXT = {}
-CharacterStat = { DISCOMFORT = {} }
+CharacterStat = { DISCOMFORT = {}, NICOTINE_WITHDRAWAL = {}, IDLENESS = {}, POISON = {} }
 
 local active = true
 
@@ -37,8 +37,14 @@ local player = {
     getStats = function()
         return {
             get = function(_, enum)
-                assert(enum == CharacterStat.DISCOMFORT)
-                return 12.345
+                local readings = {
+                    [CharacterStat.DISCOMFORT] = 12.345,
+                    [CharacterStat.NICOTINE_WITHDRAWAL] = 0.25,
+                    [CharacterStat.IDLENESS] = 0,
+                    [CharacterStat.POISON] = 5,
+                }
+                assert(readings[enum] ~= nil)
+                return readings[enum]
             end,
         }
     end,
@@ -57,6 +63,11 @@ assert(spec.render == "renderNeedsExpanded")
 
 local collected = spec.collect(player)
 assert(collected.discomfort == 12.35, "Discomfort should be rounded, not rescaled")
+assert(collected.vanilla_stats.nicotine_withdrawal == 0.25)
+assert(collected.vanilla_stats.idleness == 0)
+assert(collected.vanilla_stats.poison == 5)
+assert(collected.active_mods.NC_NaturesCall == true)
+assert(collected.active_mods.DrugTime89 == false)
 assert(collected.natures_call.bladder == 60)
 assert(collected.natures_call.bowel == 0, "valid Nature's Call zero should survive")
 assert(sourceState.bladderFill == 60 and sourceState.bowelFill == 0,
