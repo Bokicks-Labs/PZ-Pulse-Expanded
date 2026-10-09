@@ -1,5 +1,15 @@
 [h1]PZ Pulse Expanded - Changelog[/h1]
 
+[h2]Version 1.2.2 - Lifestyle Hygiene Ownership[/h2]
+
+[list]
+[*]Hide the Lifestyle hygiene stat bar when an active CW Modpack Compatibility mod disables Lifestyle's hygiene need.
+[*]Keep Take A Bath And Shower body grime and Brush Your Damn Teeth dental hygiene bars independent of that setting.
+[*]Fix optional stat collection in the Project Zomboid Lua runtime so supported mod bars no longer disappear with a repeated console error.
+[/list]
+
+[hr][/hr]
+
 [h2]Version 1.2.1 - Stable Continuous Stat Bars[/h2]
 
 [list]
