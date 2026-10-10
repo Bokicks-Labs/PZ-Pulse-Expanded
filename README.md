@@ -63,7 +63,9 @@ the panel. See the installed-mod inventory in
 
 - [`docs/architecture.md`](docs/architecture.md) — project architecture, scope, and stability boundaries.
 - [`docs/workshop-description.md`](docs/workshop-description.md) — player-facing Steam Workshop description.
-- [`docs/steam-changelog.txt`](docs/steam-changelog.txt) — ready-to-paste Steam BBCode changelog.
+- [`docs/steam-changelog.txt`](docs/steam-changelog.txt) — Steam-formatted changelog template. The version title and notes supplied to the version bump script must be plain text; the script adds the Steam BBCode structure.
+- Steam Workshop descriptions may use Steam BBCode such as `[b]`, `[h2]`, `[list]`, and `[url]`. Keep version titles and notes plain text; the changelog generator applies Steam formatting.
+- Steam Workshop descriptions may use Steam BBCode such as `[b]`, `[h2]`, `[list]`, and `[url]`. Steam changelog fields expect plain text; avoid Markdown and BBCode in changelog entries.
 - [`docs/pulse/data-model.md`](docs/pulse/data-model.md) — normalized browser-side data models.
 - [`docs/pulse/provider-api.md`](docs/pulse/provider-api.md) — draft third-party provider API.
 - [`docs/pulse/panels.md`](docs/pulse/panels.md) — panel responsibilities and rendering behavior.
