@@ -73,6 +73,24 @@ assert(collected.natures_call.bowel == 0, "valid Nature's Call zero should survi
 assert(sourceState.bladderFill == 60 and sourceState.bowelFill == 0,
     "collector must not mutate source state")
 
+-- The game's localized, level-specific moodle text supplements PZ Pulse's
+-- vanilla moodle payload without altering the game's moodle state.
+MoodleType = { HUNGRY = {}, FOOD_EATEN = {} }
+player.getMoodles = function()
+    return { getMoodleLevel = function(_, enum)
+        return enum == MoodleType.HUNGRY and 3 or 4
+    end }
+end
+getText = function(key)
+    if key == "Moodles_Hungry_desc_lvl3" then return "Hunger makes you weak." end
+    if key == "Moodles_FoodEaten_desc_lvl4" then return "You feel full." end
+    return key
+end
+local described = spec.collect(player)
+assert(described.vanilla_moodle_descriptions["status_hunger:bad"] == "Hunger makes you weak.")
+assert(described.vanilla_moodle_descriptions["status_hunger:good"] == "You feel full.")
+MoodleType, getText, player.getMoodles = nil, nil, nil
+
 active = false
 local withoutNature = spec.collect(player)
 assert(withoutNature.discomfort == 12.35)

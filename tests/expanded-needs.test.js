@@ -15,13 +15,22 @@ function escapeHtml(value) {
         .replace(/"/g, "&quot;");
 }
 
-function loadRenderer(savedBars = null) {
+function loadRenderer(savedBars = null, options = null, savedPins = null) {
+    let now = 1000;
+    let pending = null;
     const context = vm.createContext({
         console,
         esc: escapeHtml,
         window: {},
+        Date: { now: () => now },
+        o: name => options ? options[name] : undefined,
+        setTimeout: (callback, delay) => { pending = { callback, due: now + delay }; return 1; },
+        clearTimeout: () => { pending = null; },
         localStorage: {
-            getItem: () => savedBars === null ? null : JSON.stringify(savedBars),
+            getItem: key => {
+                const value = key.includes("pins.v1") ? savedPins : savedBars;
+                return value === null ? null : JSON.stringify(value);
+            },
             setItem: () => {}
         }
     });
@@ -40,11 +49,105 @@ function loadRenderer(savedBars = null) {
         renderPlayerStatRow,
         statBarClass,
         BAR_CHOICES,
-        renderBarChoices
+        BAR_GROUPS,
+        renderBarChoices,
+        setBarGroupVisible
     };`, context, { filename: scriptPath });
 
-    return { context, api: context.__test };
+    return {
+        context,
+        api: context.__test,
+        advance(ms) {
+            now += ms;
+            if (pending && pending.due <= now) {
+                const callback = pending.callback;
+                pending = null;
+                callback();
+            }
+        },
+        pending: () => pending
+    };
 }
+
+test("auto-hide waits after a bar returns to zero and flash expires on a timer", () => {
+    const renderer = loadRenderer(null, {
+        auto_hide_zero: true,
+        zero_hide_delay: 5,
+        flash_increases: true,
+        flash_seconds: 2
+    });
+    const payload = { needs: vanillaNeeds(), needs_expanded: {} };
+    renderer.context.window.PZ_DATA = payload;
+    let lastHtml = "";
+    renderer.context.updateContent = data => { lastHtml = renderer.api.renderNeedsExpanded(data); };
+
+    let html = renderer.api.renderNeedsExpanded(payload);
+    assert.equal(countLabel(html, "Hunger"), 0);
+    assert.equal(countLabel(html, "Stamina"), 1);
+
+    payload.needs[0].value = 15;
+    html = renderer.api.renderNeedsExpanded(payload);
+    assert.equal(countLabel(html, "Hunger"), 1);
+    assert.match(html, /needs-expanded-bar-flash/);
+    assert.equal(renderer.pending().due, 3000);
+
+    renderer.advance(1000);
+    payload.needs[0].value = 16;
+    html = renderer.api.renderNeedsExpanded(payload);
+    assert.match(html, /needs-expanded-bar-flash/);
+    assert.equal(renderer.pending().due, 3000, "later increases do not restart the flash");
+
+    renderer.advance(1000);
+    assert.equal(count(lastHtml, "needs-expanded-bar-flash"), 0);
+
+    payload.needs[0].value = 20;
+    html = renderer.api.renderNeedsExpanded(payload);
+    assert.equal(count(html, "needs-expanded-bar-flash"), 0);
+
+    payload.needs[0].value = 0;
+    html = renderer.api.renderNeedsExpanded(payload);
+    assert.equal(countLabel(html, "Hunger"), 1);
+    assert.equal(renderer.pending().due, 8000);
+    renderer.advance(5000);
+    assert.equal(countLabel(lastHtml, "Hunger"), 0);
+});
+
+test("auto-hide respects zero-is-bad bars and individual bar choices", () => {
+    const { api } = loadRenderer({ hunger: false }, {
+        auto_hide_zero: true,
+        zero_hide_delay: 5,
+        flash_increases: false
+    });
+    const needs = vanillaNeeds();
+    needs[3].value = 0;
+    const html = api.renderNeedsExpanded({ needs, needs_expanded: {} });
+    assert.equal(countLabel(html, "Hunger"), 0);
+    assert.equal(countLabel(html, "Stamina"), 1);
+    assert.equal(count(html, "needs-expanded-bar-flash"), 0);
+});
+
+test("pins keep zero bars visible and suppress reveal flashes", () => {
+    const renderer = loadRenderer(null, {
+        auto_hide_zero: true,
+        flash_increases: true,
+        flash_seconds: 3
+    }, { hunger: true });
+    const payload = { needs: vanillaNeeds(), needs_expanded: {} };
+    let html = renderer.api.renderNeedsExpanded(payload);
+    assert.equal(countLabel(html, "Hunger"), 1);
+    payload.needs[0].value = 10;
+    html = renderer.api.renderNeedsExpanded(payload);
+    assert.equal(count(html, "needs-expanded-bar-flash"), 0);
+});
+
+test("flash setting has no effect without auto-hide", () => {
+    const renderer = loadRenderer(null, { auto_hide_zero: false, flash_increases: true });
+    const payload = { needs: vanillaNeeds(), needs_expanded: {} };
+    renderer.api.renderNeedsExpanded(payload);
+    payload.needs[0].value = 10;
+    const html = renderer.api.renderNeedsExpanded(payload);
+    assert.equal(count(html, "needs-expanded-bar-flash"), 0);
+});
 
 function vanillaNeeds() {
     return [
@@ -121,7 +224,7 @@ test("renders the agreed new bars once and honors independent saved choices", ()
     assert.equal(count(html, 'class="needs-expanded-row"'), 10);
     assert.equal(countLabel(html, "Nicotine Withdrawal"), 1);
     assert.equal(countLabel(html, "Poison"), 1);
-    assert.equal(countLabel(html, "Caffeine Load"), 1);
+    assert.equal(countLabel(html, "Caffeine Level"), 1);
     assert.equal(countLabel(html, "Alcohol Addiction"), 0);
     assert.equal(countLabel(html, "Idleness"), 0);
 });
@@ -170,6 +273,58 @@ test("unavailable mod bars have disabled checkboxes without losing their choice"
     assert.match(html, /data-bar-id="drugtime_stoned" disabled/);
     assert.match(html, /data-bar-id="addiction_alcohol" checked/);
     assert.doesNotMatch(html, /data-bar-id="addiction_alcohol" checked disabled/);
+    assert.match(html, /data-bar-group="DrugTime89" disabled/);
+    assert.match(html, /data-bar-group="twbInfirmities" checked/);
+    assert.match(html, /data-bar-pin="addiction_alcohol"/);
+    assert.match(html, /data-bar-pin="drugtime_stoned" disabled/);
+});
+
+test("Caffeine Level has a bundled coffee icon and effect tooltip", () => {
+    const { api } = loadRenderer();
+    const html = api.renderNeedsExpanded({ needs_expanded: {
+        optional_mod_stats: { caffeine_load: 1, caffeine_load_max: 4,
+            addiction_caffeine: 2 }
+    }});
+    assert.equal(countLabel(html, "Caffeine Level"), 1);
+    assert.match(html, /data:image\/png;base64,/);
+    assert.match(html, /separate from Infirmities/);
+    assert.match(html, /worsen fatigue during withdrawal/);
+});
+
+test("source toggle changes every bar in that source and preserves individual overrides", () => {
+    const { api, context } = loadRenderer();
+    vm.runInContext(`barAvailability = { twbInfirmities: true, DrugTime89: false };`, context);
+    assert.equal(api.setBarGroupVisible("twbInfirmities", false), true);
+    assert.equal(api.BAR_GROUPS.find(group => group.id === "twbInfirmities").choices.length, 6);
+    assert.equal(api.setBarGroupVisible("DrugTime89", false), false);
+    const hidden = api.renderNeedsExpanded({ needs_expanded: {
+        optional_mod_stats: { addiction_alcohol: 20, addiction_caffeine: 30 }
+    }});
+    assert.equal(countLabel(hidden, "Alcohol Addiction"), 0);
+    assert.equal(countLabel(hidden, "Caffeine Addiction"), 0);
+    vm.runInContext(`barPreferences.addiction_caffeine = true;`, context);
+    const partial = api.renderNeedsExpanded({ needs_expanded: {
+        optional_mod_stats: { addiction_alcohol: 20, addiction_caffeine: 30 }
+    }});
+    assert.equal(countLabel(partial, "Alcohol Addiction"), 0);
+    assert.equal(countLabel(partial, "Caffeine Addiction"), 1);
+});
+
+test("addiction bars use their bundled moodle icons and Poison differs from Sickness", () => {
+    const { api, context } = loadRenderer();
+    context.window.PZ_MOODLE_ICONS = { mood_dead: "poison-skull", mood_nauseous: "sick-face" };
+    const html = api.renderNeedsExpanded({ needs_expanded: {
+        vanilla_stats: { poison: 10 },
+        optional_mod_stats: {
+            addiction_alcohol: 1, addiction_amphetamines: 1,
+            addiction_caffeine: 1, addiction_nicotine: 1,
+            addiction_painkillers: 1, addiction_sleeping_pills: 1
+        }
+    }});
+    assert.match(html, /src="poison-skull"/);
+    assert.doesNotMatch(html, /src="sick-face"/);
+    assert.equal(count(html, 'class="needs-expanded-icon"'), 7);
+    assert.doesNotMatch(html, /needs-expanded-icon-blank/);
 });
 
 test("normalizes source ranges and applies direction-aware semantic colors", () => {
@@ -407,7 +562,10 @@ test("renders PZ Pulse vanilla moodles through the same icon badge layout", () =
     };
 
     const html = api.renderNeedsExpanded({
-        moodles: [{ label: "Very Hungry", level: 3, icon: "status_hunger", valence: "bad" }]
+        moodles: [{ label: "Very Hungry", level: 3, icon: "status_hunger", valence: "bad" }],
+        needs_expanded: { vanilla_moodle_descriptions: {
+            "status_hunger:bad": "The game says hunger is severe."
+        } }
     });
 
     assert.equal(api.adaptPzPulseMoodles(null).length, 0);
@@ -415,4 +573,12 @@ test("renders PZ Pulse vanilla moodles through the same icon badge layout", () =
     assert.match(html, /src="circle"/);
     assert.match(html, /src="glyph"/);
     assert.match(html, /<b>3<\/b>/);
+    assert.match(html, /The game says hunger is severe/);
+    assert.match(html, /Severe, prolonged starvation/);
+
+    const fed = api.renderNeedsExpanded({
+        moodles: [{ label: "Well fed", level: 3, icon: "status_hunger", valence: "good" }]
+    });
+    assert.match(fed, /positive eating state/);
+    assert.doesNotMatch(fed, /Severe, prolonged starvation/);
 });
