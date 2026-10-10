@@ -979,49 +979,110 @@ function formatStatValue(stat, format) {
 
 }
 
-/**
- * Returns the semantic color state for a PlayerStat bar.
- *
- * These thresholds mirror the current PZ Pulse Needs+ presentation and are
- * dashboard styling thresholds, not Project Zomboid Moodle thresholds.
- *
- * @param {PlayerStat} stat
- * @returns {"ok"|"warn"|"danger"|null}
- */
-function statBarClass(stat) {
+// Build 42.20 MoodleStat and installed source-mod fallback thresholds, in
+// normalized 0..100 bar scale. Equality rules follow each source's comparison.
+// The active moodle below takes precedence if a mod changes its thresholds.
+const BAR_LEVELS = {
+    hunger: { above: [15, 25, 45, 70] },
+    thirst: { above: [12, 25, 70, 84] },
+    fatigue: { above: [60, 70, 80, 90] },
+    endurance: { atOrBelow: [75, 50, 25, 10] },
+    boredom: { above: [25, 50, 75, 90] },
+    panic: { above: [6, 30, 65, 80] },
+    unhappiness: { above: [20, 45, 60, 80] },
+    pain: { above: [10, 20, 50, 75] },
+    sickness: { above: [25, 50, 75, 90] },
+    wetness: { above: [15, 40, 70, 90] },
+    intoxication: { above: [10, 30, 50, 70] },
+    discomfort: { atOrAbove: [20, 40, 60, 80] },
+    natures_call_bladder: { atOrAbove: [70 / 120 * 100, 95 / 120 * 100], above: [100 / 120 * 100] },
+    natures_call_bowel: { atOrAbove: [70 / 120 * 100, 95 / 120 * 100], above: [100 / 120 * 100] },
+    lifestyle_hygiene_need: { belowGood: [40, 30, 20, 10], above: [60, 70, 80, 90] },
+    tasab_body_grime: { atOrAboveLevels: [[45, 2], [75, 3], [90, 4]] },
+    drugtime_stoned: { aboveGood: [0], atOrAboveGood: [50, 75] },
+    drugtime_hard: { above: [0], atOrAbove: [50, 75] }
+};
+
+const BAR_MOODLE_IDS = {
+    hunger: ["project_zomboid:status_hunger"],
+    thirst: ["project_zomboid:status_thirst"],
+    fatigue: ["project_zomboid:mood_sleepy"],
+    endurance: ["project_zomboid:status_difficultybreathing"],
+    boredom: ["project_zomboid:mood_bored"],
+    stress: ["project_zomboid:mood_stressed"],
+    panic: ["project_zomboid:mood_panicked"],
+    unhappiness: ["project_zomboid:mood_sad"],
+    pain: ["project_zomboid:mood_pained"],
+    sickness: ["project_zomboid:mood_nauseous"],
+    wetness: ["project_zomboid:status_wet"],
+    intoxication: ["project_zomboid:mood_drunk"],
+    discomfort: ["project_zomboid:mood_discomfort"],
+    natures_call_bladder: ["NC_NaturesCall:NCBladder"],
+    natures_call_bowel: ["NC_NaturesCall:NCBowel"],
+    lifestyle_hygiene_need: ["LifestyleHobbies:HygieneGood", "LifestyleHobbies:HygieneBad"],
+    tasab_body_grime: ["TakeABathAndShowerNew:BodyGrime"],
+    bydt_dental_hygiene: ["BrushYourDamnTeeth:BYDT_MouthState"],
+    drugtime_stoned: ["DrugTime89:Stoned"],
+    drugtime_hard: ["DrugTime89:Hard"],
+    addiction_alcohol: ["twbInfirmities:AddictedToAlcohol"],
+    addiction_nicotine: ["twbInfirmities:AddictedToNicotine"],
+    addiction_caffeine: ["twbInfirmities:AddictedToCaffeine"],
+    addiction_painkillers: ["twbInfirmities:AddictedToPainkillers"],
+    addiction_sleeping_pills: ["twbInfirmities:AddictedToSleepingPills"],
+    addiction_amphetamines: ["twbInfirmities:AddictedToAmp"]
+};
+
+const MOODLE_ONLY_COLORS = new Set([
+    "stress", "bydt_dental_hygiene", "addiction_alcohol", "addiction_nicotine",
+    "addiction_caffeine", "addiction_painkillers", "addiction_sleeping_pills",
+    "addiction_amphetamines"
+]);
+
+function colorForLevel(level, maxLevel, valence) {
+    if (level <= 0) return "ok";
+    const normalized = maxLevel <= 1 ? 4 : maxLevel === 2
+        ? [0, 1, 4][Math.min(2, level)]
+        : maxLevel === 3 ? [0, 1, 3, 4][Math.min(3, level)]
+        : Math.min(4, level);
+    return `${valence === "good" ? "good" : "bad"}${normalized}`;
+}
+
+function statBarClass(stat, moodles = []) {
     const percent = normalizePercent(stat);
+    if (percent === null || typeof stat.badHigh !== "boolean") return null;
 
-    if (percent === null) {
-        return null;
+    const ids = BAR_MOODLE_IDS[stat.id] || [];
+    const active = moodles.find(moodle => ids.includes(moodle.id)
+        && (stat.id !== "hunger" || moodle.valence === "bad"));
+    if (active && isValidMoodle(active)) {
+        const max = stat.id.startsWith("addiction_") ? 1 : Number(active.maxLevel);
+        return colorForLevel(Number(active.level), max, active.valence);
     }
+    if (MOODLE_ONLY_COLORS.has(stat.id)) return "ok";
 
-    // Strict boolean validation prevents values such as the string "false"
-    // from being treated as truthy and silently reversing bar semantics.
-    if (typeof stat.badHigh !== "boolean") {
-        return null;
-    }
-
-    if (stat.badHigh) {
-        if (percent >= 75) {
-            return "danger";
+    const profile = BAR_LEVELS[stat.id];
+    if (profile) {
+        let bad = 0;
+        let good = 0;
+        for (const threshold of profile.above || []) if (percent > threshold) bad += 1;
+        for (const threshold of profile.atOrAbove || []) if (percent >= threshold) bad += 1;
+        for (const threshold of profile.atOrBelow || []) if (percent <= threshold) bad += 1;
+        for (const [threshold, level] of profile.atOrAboveLevels || []) {
+            if (percent >= threshold) bad = level;
         }
-
-        if (percent >= 50) {
-            return "warn";
-        }
-
-        return "ok";
+        for (const threshold of profile.belowGood || []) if (percent < threshold) good += 1;
+        for (const threshold of profile.aboveGood || []) if (percent > threshold) good += 1;
+        for (const threshold of profile.atOrAboveGood || []) if (percent >= threshold) good += 1;
+        if (good) return colorForLevel(good, stat.id === "drugtime_stoned" ? 3 : 4, "good");
+        return colorForLevel(bad, profile.atOrAboveLevels ? 4
+            : profile.atOrAbove && stat.id.startsWith("natures_call_") ? 3
+            : stat.id === "drugtime_hard" ? 3 : 4, "bad");
     }
 
-    if (percent <= 25) {
-        return "danger";
-    }
-
-    if (percent < 50) {
-        return "warn";
-    }
-
-    return "ok";
+    // No corresponding moodle (or its state depends on something other than
+    // this bar). Use a visual severity scale without claiming moodle parity.
+    const severity = stat.badHigh ? percent : 100 - percent;
+    return colorForLevel(Math.max(0, Math.ceil(severity / 20) - 1), 4, "bad");
 }
 
 /**
@@ -1140,6 +1201,106 @@ function formatMoodleTooltip(moodle) {
     return lines.join("\n");
 }
 
+// PZ Pulse replaces this panel's innerHTML whenever a stat changes. A native
+// title tooltip belongs to the replaced node and therefore disappears while
+// the pointer is still hovering it. Keep one tooltip outside the panel instead.
+let tooltipTexts = new Map();
+let tooltipElement = null;
+let activeTooltipId = null;
+let pendingTooltipId = null;
+let tooltipTimer = null;
+let tooltipPointerX = 0;
+let tooltipPointerY = 0;
+const TOOLTIP_DELAY_MS = 650;
+
+function cancelPendingTooltip() {
+    if (tooltipTimer !== null && typeof clearTimeout === "function") clearTimeout(tooltipTimer);
+    tooltipTimer = null;
+    pendingTooltipId = null;
+}
+
+function hideNeedsTooltip() {
+    cancelPendingTooltip();
+    activeTooltipId = null;
+    if (tooltipElement) tooltipElement.hidden = true;
+}
+
+function positionNeedsTooltip(x, y) {
+    if (!tooltipElement || typeof window === "undefined") return;
+    const width = tooltipElement.offsetWidth || 0;
+    const height = tooltipElement.offsetHeight || 0;
+    tooltipElement.style.left = `${Math.max(8, Math.min(x + 14, window.innerWidth - width - 8))}px`;
+    tooltipElement.style.top = `${Math.max(8, Math.min(y + 18, window.innerHeight - height - 8))}px`;
+}
+
+function handleNeedsTooltipPointer(event) {
+    if (!tooltipElement) return;
+    const target = event.target && typeof event.target.closest === "function"
+        ? event.target.closest("[data-needs-tip-id]") : null;
+    const id = target && target.getAttribute("data-needs-tip-id");
+    const content = id && tooltipTexts.get(id);
+    if (!content) {
+        hideNeedsTooltip();
+        return;
+    }
+    tooltipPointerX = event.clientX;
+    tooltipPointerY = event.clientY;
+    if (activeTooltipId === id) {
+        if (tooltipElement.textContent !== content) tooltipElement.textContent = content;
+        positionNeedsTooltip(event.clientX, event.clientY);
+        return;
+    }
+    if (pendingTooltipId !== id) {
+        cancelPendingTooltip();
+        pendingTooltipId = id;
+        tooltipTimer = setTimeout(() => {
+            tooltipTimer = null;
+            if (pendingTooltipId !== id || !tooltipTexts.has(id)) return;
+            if (typeof document.elementFromPoint === "function") {
+                const underPointer = document.elementFromPoint(tooltipPointerX, tooltipPointerY);
+                const hovered = underPointer && typeof underPointer.closest === "function"
+                    ? underPointer.closest("[data-needs-tip-id]") : null;
+                if (!hovered || hovered.getAttribute("data-needs-tip-id") !== id) {
+                    pendingTooltipId = null;
+                    return;
+                }
+            }
+            pendingTooltipId = null;
+            activeTooltipId = id;
+            tooltipElement.textContent = tooltipTexts.get(id);
+            tooltipElement.hidden = false;
+            positionNeedsTooltip(tooltipPointerX, tooltipPointerY);
+        }, TOOLTIP_DELAY_MS);
+    }
+    if (activeTooltipId !== null) {
+        activeTooltipId = null;
+        tooltipElement.hidden = true;
+    }
+    positionNeedsTooltip(event.clientX, event.clientY);
+}
+
+function ensureNeedsTooltip() {
+    if (tooltipElement || typeof document === "undefined"
+        || !document.body || typeof document.addEventListener !== "function") return;
+    tooltipElement = document.createElement("div");
+    tooltipElement.className = "needs-expanded-tooltip";
+    tooltipElement.hidden = true;
+    document.body.appendChild(tooltipElement);
+    document.addEventListener("mousemove", handleNeedsTooltipPointer, true);
+    document.addEventListener("mouseover", handleNeedsTooltipPointer, true);
+    if (typeof window !== "undefined" && typeof window.addEventListener === "function") {
+        window.addEventListener("blur", hideNeedsTooltip);
+    }
+}
+
+function refreshNeedsTooltip() {
+    if (pendingTooltipId && !tooltipTexts.has(pendingTooltipId)) cancelPendingTooltip();
+    if (!activeTooltipId || !tooltipElement) return;
+    const content = tooltipTexts.get(activeTooltipId);
+    if (!content) hideNeedsTooltip();
+    else if (tooltipElement.textContent !== content) tooltipElement.textContent = content;
+}
+
 /*
   ____                _
  |  _ \ ___ _ __   __| | ___ _ __ ___ _ __ ___
@@ -1159,14 +1320,14 @@ function formatMoodleTooltip(moodle) {
  * @param {PlayerStat} stat
  * @returns {string|null}
  */
-function renderPlayerStatRow(stat, flash = false) {
+function renderPlayerStatRow(stat, flash = false, moodles = []) {
     if (!isValidPlayerStat(stat)) {
         return null;
     }
 
     const percent = normalizePercent(stat);
     const formattedValue = formatStatValue(stat, "percentage");
-    const barClass = statBarClass(stat);
+    const barClass = statBarClass(stat, moodles);
 
     if (
         percent === null ||
@@ -1180,36 +1341,38 @@ function renderPlayerStatRow(stat, flash = false) {
     // source-mod moodle art. Missing data still degrades safely to a spacer.
     const iconUri = resolveMoodleGlyph(stat.iconKey);
 
-    const iconHtml =
-        typeof iconUri === "string" && iconUri.trim() !== ""
-            ? `<img class="needs-expanded-icon" src="${esc(iconUri)}" alt="">`
-            : `<span class="needs-expanded-icon needs-expanded-icon-blank"></span>`;
-
     const tooltip = formatStatTooltip(stat);
 
     if (tooltip === null) {
         return null;
     }
 
+    const tipId = `stat:${stat.id}`;
+    tooltipTexts.set(tipId, tooltip);
+    const tipAttributes = `data-needs-tip-id="${esc(tipId)}"`;
+    const iconHtml =
+        typeof iconUri === "string" && iconUri.trim() !== ""
+            ? `<img class="needs-expanded-icon" ${tipAttributes} src="${esc(iconUri)}" alt="">`
+            : `<span class="needs-expanded-icon needs-expanded-icon-blank" ${tipAttributes}></span>`;
+
     return `
     <div
         class="needs-expanded-row"
-        title="${esc(tooltip)}"
     >
         ${iconHtml}
 
-        <span class="needs-expanded-label">
+        <span class="needs-expanded-label" ${tipAttributes}>
             ${esc(stat.label)}
         </span>
 
-        <span class="needs-expanded-bar${flash ? " needs-expanded-bar-flash" : ""}">
+        <span class="needs-expanded-bar${flash ? " needs-expanded-bar-flash" : ""}" ${tipAttributes}>
             <span
                 class="needs-expanded-fill ${barClass}"
                 style="width:${percent}%"
             ></span>
         </span>
 
-        <span class="needs-expanded-value">
+        <span class="needs-expanded-value" ${tipAttributes}>
             ${esc(formattedValue)}
         </span>
     </div>
@@ -1256,11 +1419,14 @@ function renderMoodleBadge(moodle) {
     }
 
     if (!glyph) {
-        return `<span class="needs-expanded-moodle-fallback" title="${esc(tooltip)}">${esc(moodle.label)} (${level})</span>`;
+        tooltipTexts.set(`moodle:${moodle.id}`, tooltip);
+        return `<span class="needs-expanded-moodle-fallback" data-needs-tip-id="${esc(`moodle:${moodle.id}`)}">${esc(moodle.label)} (${level})</span>`;
     }
 
+    tooltipTexts.set(`moodle:${moodle.id}`, tooltip);
+
     return `
-    <span class="needs-expanded-moodle-badge" title="${esc(tooltip)}">
+    <span class="needs-expanded-moodle-badge" data-needs-tip-id="${esc(`moodle:${moodle.id}`)}">
         ${circle ? `<img class="needs-expanded-moodle-bg" src="${esc(circle)}" alt="">` : ""}
         <img class="needs-expanded-moodle-glyph" src="${esc(glyph)}" alt="">
         <b>${level}</b>
@@ -1279,14 +1445,21 @@ function renderMoodleBadge(moodle) {
  * @returns {string}
  */
 const BAR_CHOICES = [
-    ...PZ_PULSE_NEED_DEFINITIONS.map(({ id, label }) => ({ id, label, mod: null })),
+    ...PZ_PULSE_NEED_DEFINITIONS.map(({ id, label, iconKey }) => ({ id, label, iconKey, mod: null })),
     ...Object.entries(PLAYER_STAT_DEFINITIONS).map(([id, def]) =>
-        ({ id, label: def.label, mod: null })),
+        ({ id, label: def.label, iconKey: def.iconKey, mod: null })),
     ...Object.entries(NATURES_CALL_STAT_DEFINITIONS).map(([id, def]) =>
-        ({ id, label: def.label, mod: "NC_NaturesCall", source: def.source.name })),
+        ({ id, label: def.label, iconKey: def.iconKey, mod: "NC_NaturesCall", source: def.source.name })),
     ...Object.entries(OPTIONAL_MOD_STAT_DEFINITIONS).map(([id, def]) =>
-        ({ id, label: def.label, mod: def.source.id, source: def.source.name }))
+        ({ id, label: def.label, iconKey: def.iconKey, mod: def.source.id, source: def.source.name }))
 ].sort((a, b) => a.label.localeCompare(b.label));
+
+function barChoiceIcon(choice) {
+    const uri = resolveMoodleGlyph(choice.iconKey);
+    return uri
+        ? `<img class="needs-expanded-choice-icon" src="${esc(uri)}" alt="">`
+        : `<span class="needs-expanded-choice-icon" aria-hidden="true"></span>`;
+}
 
 const BAR_GROUPS = [
     { id: "project_zomboid", label: "Project Zomboid", choices: BAR_CHOICES.filter(choice => !choice.mod) },
@@ -1299,20 +1472,49 @@ const BAR_GROUPS = [
         .sort((a, b) => a.label.localeCompare(b.label))
 ];
 
+const DEFAULT_BAR_ORDER = [
+    ...PZ_PULSE_NEED_DEFINITIONS.map(def => def.id),
+    ...Object.keys(PLAYER_STAT_DEFINITIONS),
+    ...Object.keys(NATURES_CALL_STAT_DEFINITIONS),
+    ...Object.keys(OPTIONAL_MOD_STAT_DEFINITIONS)
+];
+
+function normalizeBarOrder(saved) {
+    const known = new Set(DEFAULT_BAR_ORDER);
+    const ordered = [];
+    const seen = new Set();
+    if (Array.isArray(saved)) {
+        for (const id of saved) {
+            if (typeof id === "string" && known.has(id) && !seen.has(id)) {
+                ordered.push(id);
+                seen.add(id);
+            }
+        }
+    }
+    for (const id of DEFAULT_BAR_ORDER) {
+        if (!seen.has(id)) ordered.push(id);
+    }
+    return ordered;
+}
+
 const BAR_SETTINGS_KEY = "pz_pulse_expanded.needs_expanded.bars.v1";
 const BAR_PINS_KEY = "pz_pulse_expanded.needs_expanded.pins.v1";
+const BAR_ORDER_KEY = "pz_pulse_expanded.needs_expanded.order.v1";
 let barPreferences = {};
 let barPins = {};
+let barOrder = DEFAULT_BAR_ORDER.slice();
 try {
     if (typeof localStorage !== "undefined") {
         const saved = JSON.parse(localStorage.getItem(BAR_SETTINGS_KEY) || "{}");
         if (isValidObject(saved)) barPreferences = saved;
         const savedPins = JSON.parse(localStorage.getItem(BAR_PINS_KEY) || "{}");
         if (isValidObject(savedPins)) barPins = savedPins;
+        barOrder = normalizeBarOrder(JSON.parse(localStorage.getItem(BAR_ORDER_KEY) || "null"));
     }
 } catch (_) { /* Browser storage can be unavailable; defaults still work. */ }
 let barAvailability = {};
 let barModal = null;
+let barChooserMode = "visibility";
 let observedGear = null;
 
 const BAR_TIMING_DEFAULTS = {
@@ -1371,6 +1573,26 @@ function saveBarPreferences() {
     } catch (_) { /* Continue with the current session's choices. */ }
 }
 
+function moveBar(id, direction) {
+    const index = barOrder.indexOf(id);
+    const next = index + direction;
+    if (index < 0 || next < 0 || next >= barOrder.length) return false;
+    [barOrder[index], barOrder[next]] = [barOrder[next], barOrder[index]];
+    try {
+        if (typeof localStorage !== "undefined") {
+            localStorage.setItem(BAR_ORDER_KEY, JSON.stringify(barOrder));
+        }
+    } catch (_) { /* The order still applies for this session. */ }
+    return true;
+}
+
+function resetBarOrder() {
+    barOrder = DEFAULT_BAR_ORDER.slice();
+    try {
+        if (typeof localStorage !== "undefined") localStorage.removeItem(BAR_ORDER_KEY);
+    } catch (_) { /* The default order still applies for this session. */ }
+}
+
 function setBarGroupVisible(groupId, visible) {
     const group = BAR_GROUPS.find(item => item.id === groupId);
     if (!group || (group.id !== "project_zomboid"
@@ -1384,6 +1606,21 @@ function renderBarChoices() {
     if (!barModal) return;
     const list = barModal.querySelector(".needs-expanded-chooser-list");
     if (!list) return;
+    if (barChooserMode === "order") {
+        const choices = new Map(BAR_CHOICES.map(choice => [choice.id, choice]));
+        list.innerHTML = `<button type="button" class="needs-expanded-order-reset">Reset order</button>` +
+            barOrder.map((id, index) => {
+            const choice = choices.get(id);
+            if (!choice) return "";
+            const source = choice.source || "Project Zomboid";
+            return `<div class="needs-expanded-order-line">` +
+                `<span class="needs-expanded-order-name"><span class="needs-expanded-order-number">${index + 1}.</span>` +
+                `${barChoiceIcon(choice)}<span>${esc(choice.label)} <small>${esc(source)}</small></span></span>` +
+                `<button type="button" data-bar-move="-1" data-bar-id="${esc(id)}" aria-label="Move ${esc(choice.label)} up"${index === 0 ? " disabled" : ""}>↑</button>` +
+                `<button type="button" data-bar-move="1" data-bar-id="${esc(id)}" aria-label="Move ${esc(choice.label)} down"${index === barOrder.length - 1 ? " disabled" : ""}>↓</button></div>`;
+        }).join("");
+        return;
+    }
     list.innerHTML = BAR_GROUPS.map(group => {
         const available = group.id === "project_zomboid"
             || barAvailability[group.id] === true;
@@ -1396,7 +1633,7 @@ function renderBarChoices() {
             `<div class="needs-expanded-choice-line"><label class="needs-expanded-choice${available ? "" : " needs-expanded-choice-unavailable"}">` +
             `<input type="checkbox" data-bar-id="${esc(choice.id)}"` +
             `${barVisible(choice.id) ? " checked" : ""}${available ? "" : " disabled"}>` +
-            `<span>${esc(choice.label)}</span></label>` +
+            `${barChoiceIcon(choice)}<span>${esc(choice.label)}</span></label>` +
             `<label class="needs-expanded-choice-pin${available ? "" : " needs-expanded-choice-unavailable"}" ` +
             `title="Keep this bar visible at zero when auto-hide is enabled">` +
             `<input type="checkbox" data-bar-pin="${esc(choice.id)}"` +
@@ -1419,6 +1656,7 @@ function closeBarChooser() {
     if (!barModal) return;
     barModal.remove();
     barModal = null;
+    barChooserMode = "visibility";
 }
 
 function openBarChooser() {
@@ -1426,14 +1664,44 @@ function openBarChooser() {
     barModal = document.createElement("div");
     barModal.className = "needs-expanded-chooser-backdrop";
     barModal.innerHTML = `<div class="needs-expanded-chooser" role="dialog" aria-modal="true" ` +
-        `aria-label="Choose continuous bars"><header><strong>Choose bars</strong>` +
+        `aria-label="Manage Stat Bars"><header><strong>Manage Stat Bars</strong>` +
         `<button type="button" class="needs-expanded-chooser-close" aria-label="Close">×</button></header>` +
         `<div class="needs-expanded-chooser-hint">Show each bar and optionally pin it at zero.</div>` +
+        `<button type="button" class="needs-expanded-order-toggle">Order Bars…</button>` +
         `<div class="needs-expanded-chooser-list"></div>` +
         `<footer><button type="button" class="needs-expanded-chooser-done">Done</button></footer></div>`;
     barModal.addEventListener("click", event => {
         if (event.target === barModal || event.target.closest(".needs-expanded-chooser-close")
-            || event.target.closest(".needs-expanded-chooser-done")) closeBarChooser();
+            || event.target.closest(".needs-expanded-chooser-done")) {
+            closeBarChooser();
+            return;
+        }
+        const toggle = event.target.closest(".needs-expanded-order-toggle");
+        if (toggle) {
+            barChooserMode = barChooserMode === "order" ? "visibility" : "order";
+            toggle.textContent = barChooserMode === "order" ? "Show and Pin Bars…" : "Order Bars…";
+            barModal.querySelector(".needs-expanded-chooser-hint").textContent = barChooserMode === "order"
+                ? "Move bars one place at a time. Hidden and unavailable bars keep their positions."
+                : "Show each bar and optionally pin it at zero.";
+            renderBarChoices();
+            return;
+        }
+        if (event.target.closest(".needs-expanded-order-reset")) {
+            resetBarOrder();
+            renderBarChoices();
+            if (typeof updateContent === "function") updateContent(window.PZ_DATA);
+            barModal.querySelector(".needs-expanded-order-reset").focus();
+            return;
+        }
+        const move = event.target.closest("button[data-bar-move]");
+        if (move && !move.disabled && moveBar(move.getAttribute("data-bar-id"),
+            Number(move.getAttribute("data-bar-move")))) {
+            renderBarChoices();
+            if (typeof updateContent === "function") updateContent(window.PZ_DATA);
+            const replacement = barModal.querySelector(
+                `button[data-bar-move="${move.getAttribute("data-bar-move")}"][data-bar-id="${move.getAttribute("data-bar-id")}"]`);
+            if (replacement) replacement.focus();
+        }
     });
     barModal.addEventListener("keydown", event => {
         if (event.key === "Escape") closeBarChooser();
@@ -1481,7 +1749,7 @@ function ensureBarChooserButton() {
         const button = document.createElement("button");
         button.type = "button";
         button.className = "needs-expanded-choose-button";
-        button.textContent = "Choose bars…";
+        button.textContent = "Manage Stat Bars…";
         button.addEventListener("click", event => {
             event.stopPropagation();
             openBarChooser();
@@ -1501,18 +1769,24 @@ function ensureBarChooserButton() {
 
 function renderNeedsExpanded(d) {
     if (!isValidObject(d)) {
+        tooltipTexts = new Map();
+        hideNeedsTooltip();
         return "";
     }
+
+    tooltipTexts = new Map();
+    ensureNeedsTooltip();
 
     const values = isValidObject(d.needs_expanded)
         ? d.needs_expanded
         : {};
-    barAvailability = isValidObject(values.active_mods) ? values.active_mods : {};
+    const nextAvailability = isValidObject(values.active_mods) ? values.active_mods : {};
+    const availabilityChanged = JSON.stringify(nextAvailability) !== JSON.stringify(barAvailability);
+    barAvailability = nextAvailability;
     ensureBarChooserButton();
-    if (barModal) renderBarChoices();
+    if (barModal && availabilityChanged) renderBarChoices();
 
-    // Deterministic display order: PZ Pulse's vanilla Needs+ rows, our
-    // Discomfort row, then optional compatibility-adapter rows.
+    // Source adapters supply values; saved bar IDs determine row order.
     const moodles = [
         ...adaptPzPulseMoodles(d.moodles, values.vanilla_moodle_descriptions),
         ...adaptCustomMoodles(values.custom_moodles)
@@ -1525,8 +1799,12 @@ function renderNeedsExpanded(d) {
         ...adaptNaturesCallStats(values.natures_call),
         ...adaptOptionalModStats(values.optional_mod_stats)
     ];
+    const orderIndex = new Map(barOrder.map((id, index) => [id, index]));
+    stats.sort((a, b) => (orderIndex.get(a.id) ?? barOrder.length)
+        - (orderIndex.get(b.id) ?? barOrder.length));
 
     if (moodles.length === 0 && stats.length === 0) {
+        hideNeedsTooltip();
         return "";
     }
 
@@ -1585,7 +1863,7 @@ function renderNeedsExpanded(d) {
         }
         const flashing = eligible && flashIncreases && now < timing.flashUntil;
         if (flashing) keepDeadline(timing.flashUntil);
-        const row = renderPlayerStatRow(stat, flashing);
+        const row = renderPlayerStatRow(stat, flashing, moodles);
 
         if (row !== null) {
             statRows.push(row);
@@ -1596,8 +1874,10 @@ function renderNeedsExpanded(d) {
         if (!seen.has(id)) barTiming.delete(id);
     }
     scheduleBarTiming(nextDeadline);
+    refreshNeedsTooltip();
 
     if (moodleBadges.length === 0 && statRows.length === 0) {
+        hideNeedsTooltip();
         return "";
     }
 

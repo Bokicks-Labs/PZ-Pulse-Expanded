@@ -13,17 +13,6 @@ local OptionalModStatsAdapter = PZPulseExpanded_OptionalModStatsAdapter
 local CustomMoodleAdapter = PZPulseExpanded_CustomMoodleAdapter
 local StatUtils = PZPulseExpanded_StatUtils
 
--- Helper shape adapted from PZ Pulse's reference extension.
--- Round collected floats so insignificant engine jitter does not defeat
--- PZ Pulse's serialized-payload change gate and cause unnecessary disk writes.
-local function round2(number)
-    number = tonumber(number)
-    if number == nil or number ~= number or number == math.huge or number == -math.huge then
-        return nil
-    end
-    return math.floor(number * 100 + 0.5) / 100
-end
-
 -- Keep catches narrow. Kahlua may still print caught errors to console.txt, so
 -- callers should test for missing enums/getters before relying on pcall.
 local function safe(fn, default)
@@ -159,7 +148,7 @@ local function needsExpandedCollector(player)
     values.vanilla_moodle_descriptions = collectVanillaMoodleDescriptions(player)
 
     local discomfort = StatUtils.sample(
-        player, "discomfort", round2(stat(stats, "DISCOMFORT")), true, false
+        player, "discomfort", stat(stats, "DISCOMFORT"), true, false
     )
     if discomfort ~= nil then
         values.discomfort = discomfort
@@ -173,7 +162,7 @@ local function needsExpandedCollector(player)
     }) do
         local key = definition[2]
         local value = StatUtils.sample(player, key,
-            round2(stat(stats, definition[1])), true, false)
+            stat(stats, definition[1]), true, false)
         if value ~= nil then vanilla[key] = value end
     end
     if vanilla.nicotine_withdrawal ~= nil

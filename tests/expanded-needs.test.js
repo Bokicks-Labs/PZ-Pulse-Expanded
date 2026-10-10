@@ -15,7 +15,7 @@ function escapeHtml(value) {
         .replace(/"/g, "&quot;");
 }
 
-function loadRenderer(savedBars = null, options = null, savedPins = null) {
+function loadRenderer(savedBars = null, options = null, savedPins = null, savedOrder = null) {
     let now = 1000;
     let pending = null;
     const context = vm.createContext({
@@ -28,10 +28,12 @@ function loadRenderer(savedBars = null, options = null, savedPins = null) {
         clearTimeout: () => { pending = null; },
         localStorage: {
             getItem: key => {
-                const value = key.includes("pins.v1") ? savedPins : savedBars;
+                const value = key.includes("pins.v1") ? savedPins
+                    : key.includes("order.v1") ? savedOrder : savedBars;
                 return value === null ? null : JSON.stringify(value);
             },
-            setItem: () => {}
+            setItem: () => {},
+            removeItem: () => {}
         }
     });
 
@@ -51,7 +53,12 @@ function loadRenderer(savedBars = null, options = null, savedPins = null) {
         BAR_CHOICES,
         BAR_GROUPS,
         renderBarChoices,
-        setBarGroupVisible
+        setBarGroupVisible,
+        moveBar,
+        resetBarOrder,
+        normalizeBarOrder,
+        getBarOrder: () => barOrder.slice(),
+        tooltipText: id => tooltipTexts.get(id)
     };`, context, { filename: scriptPath });
 
     return {
@@ -175,10 +182,8 @@ function compactHtml(html) {
 }
 
 function countLabel(html, label) {
-    return count(
-        compactHtml(html),
-        `class="needs-expanded-label"> ${label} </span>`
-    );
+    const escaped = label.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+    return (compactHtml(html).match(new RegExp(`class="needs-expanded-label"[^>]*> ${escaped} </span>`, "g")) || []).length;
 }
 
 test("renders all vanilla Needs+ rows, Discomfort, and Nature's Call exactly once in order", () => {
@@ -204,8 +209,92 @@ test("renders all vanilla Needs+ rows, Discomfort, and Nature's Call exactly onc
     assert.ok(html.indexOf("Hunger") < html.indexOf("Discomfort"));
     assert.ok(html.indexOf("Discomfort") < html.indexOf("Bladder"));
     assert.equal(JSON.stringify(payload), before, "shared payload was mutated");
-    assert.match(html, /Source: Project Zomboid/);
-    assert.match(html, /Source: Nature's Call/);
+    assert.match(api.tooltipText("stat:hunger"), /Source: Project Zomboid/);
+    assert.match(api.tooltipText("stat:natures_call_bladder"), /Source: Nature's Call/);
+});
+
+test("keeps a Nature's Call tooltip visible across stat updates", () => {
+    const renderer = loadRenderer();
+    const listeners = {};
+    const tooltipNodes = [];
+    renderer.context.document = {
+        body: { appendChild: node => tooltipNodes.push(node) },
+        createElement: () => ({ style: {}, hidden: true, textContent: "", offsetWidth: 100, offsetHeight: 50 }),
+        addEventListener: (name, handler) => { listeners[name] = handler; },
+        querySelector: () => null
+    };
+    renderer.context.window.innerWidth = 800;
+    renderer.context.window.innerHeight = 600;
+    renderer.api.renderNeedsExpanded({ needs_expanded: { natures_call: { bladder: 60 } } });
+    const target = { closest: () => ({ getAttribute: () => "stat:natures_call_bladder" }) };
+    listeners.mouseover({ target, clientX: 40, clientY: 50 });
+    assert.equal(tooltipNodes.length, 1);
+    assert.equal(tooltipNodes[0].hidden, true, "tooltip waits before opening");
+    renderer.api.renderNeedsExpanded({ needs_expanded: { natures_call: { bladder: 60.5 } } });
+    renderer.advance(649);
+    assert.equal(tooltipNodes[0].hidden, true);
+    renderer.advance(1);
+    assert.equal(tooltipNodes[0].hidden, false);
+    assert.match(tooltipNodes[0].textContent, /60\.5/);
+    assert.match(tooltipNodes[0].textContent, /Source: Nature's Call/);
+
+    renderer.api.renderNeedsExpanded({ needs_expanded: { natures_call: { bladder: 61 } } });
+    assert.equal(tooltipNodes[0].hidden, false);
+    assert.match(tooltipNodes[0].textContent, /61/);
+    listeners.mousemove({ target: { closest: () => null }, clientX: 40, clientY: 50 });
+    assert.equal(tooltipNodes[0].hidden, true);
+});
+
+test("tooltip delay cancels when the pointer leaves before it opens", () => {
+    const renderer = loadRenderer();
+    const listeners = {};
+    const tooltip = { style: {}, hidden: true, textContent: "", offsetWidth: 100, offsetHeight: 50 };
+    renderer.context.document = {
+        body: { appendChild() {} }, createElement: () => tooltip,
+        addEventListener: (name, handler) => { listeners[name] = handler; },
+        querySelector: () => null
+    };
+    renderer.context.window.innerWidth = 800;
+    renderer.context.window.innerHeight = 600;
+    renderer.api.renderNeedsExpanded({ needs_expanded: { natures_call: { bladder: 60 } } });
+    listeners.mouseover({ target: { closest: () => ({ getAttribute: () => "stat:natures_call_bladder" }) }, clientX: 1, clientY: 1 });
+    listeners.mousemove({ target: { closest: () => null }, clientX: 1, clientY: 1 });
+    renderer.advance(700);
+    assert.equal(tooltip.hidden, true);
+});
+
+test("bar order validates saved IDs and reorders visible rows", () => {
+    const { api } = loadRenderer(null, null, null,
+        ["natures_call_bladder", "hunger", "hunger", "unknown", 12]);
+    assert.equal(api.getBarOrder()[0], "natures_call_bladder");
+    assert.equal(api.getBarOrder()[1], "hunger");
+    assert.equal(api.getBarOrder().length, api.BAR_CHOICES.length);
+    const payload = { needs: vanillaNeeds(), needs_expanded: { natures_call: { bladder: 60 } } };
+    let html = api.renderNeedsExpanded(payload);
+    assert.ok(html.indexOf("Bladder") < html.indexOf("Hunger"));
+    assert.equal(api.moveBar("hunger", -1), true);
+    html = api.renderNeedsExpanded(payload);
+    assert.ok(html.indexOf("Hunger") < html.indexOf("Bladder"));
+    assert.equal(api.moveBar("unknown", 1), false);
+    api.resetBarOrder();
+    assert.equal(api.getBarOrder()[0], "hunger");
+    assert.equal(api.normalizeBarOrder({ invalid: true }).length, api.BAR_CHOICES.length);
+});
+
+test("order view lists every bar and disables moves at the ends", () => {
+    const { api, context } = loadRenderer();
+    context.window.PZ_MOODLE_ICONS = { status_hunger: "hunger-icon" };
+    context.__list = { innerHTML: "" };
+    vm.runInContext(`barModal = { querySelector: () => __list };
+        barChooserMode = "order"; barAvailability = {};`, context);
+    api.renderBarChoices();
+    const html = context.__list.innerHTML;
+    assert.equal(count(html, 'class="needs-expanded-order-line"'), api.BAR_CHOICES.length);
+    assert.match(html, /data-bar-move="-1" data-bar-id="hunger"[^>]* disabled/);
+    assert.match(html, /data-bar-move="1" data-bar-id="caffeine_load"[^>]* disabled/);
+    assert.match(html, /Reset order/);
+    assert.match(html, /src="hunger-icon"/);
+    assert.equal(count(html, 'class="needs-expanded-choice-icon"'), api.BAR_CHOICES.length);
 });
 
 test("renders the agreed new bars once and honors independent saved choices", () => {
@@ -253,18 +342,19 @@ test("adds one chooser button to this panel's gear and restores it after a menu 
         observe() {}
     };
     api.renderNeedsExpanded({ needs: vanillaNeeds() });
-    assert.equal(button.textContent, "Choose bars…");
+    assert.equal(button.textContent, "Manage Stat Bars…");
     const first = button;
     api.renderNeedsExpanded({ needs: vanillaNeeds() });
     assert.equal(button, first, "normal renders do not add duplicate buttons");
     button = null;
     observed();
-    assert.equal(button.textContent, "Choose bars…");
+    assert.equal(button.textContent, "Manage Stat Bars…");
     assert.notEqual(button, first, "a rebuilt gear gets a fresh button");
 });
 
 test("unavailable mod bars have disabled checkboxes without losing their choice", () => {
     const { api, context } = loadRenderer({ drugtime_stoned: false });
+    context.window.PZ_MOODLE_ICONS = { status_hunger: "hunger-icon" };
     context.__list = { innerHTML: "" };
     vm.runInContext(`barModal = { querySelector: () => __list };
         barAvailability = { DrugTime89: false, twbInfirmities: true };`, context);
@@ -277,6 +367,8 @@ test("unavailable mod bars have disabled checkboxes without losing their choice"
     assert.match(html, /data-bar-group="twbInfirmities" checked/);
     assert.match(html, /data-bar-pin="addiction_alcohol"/);
     assert.match(html, /data-bar-pin="drugtime_stoned" disabled/);
+    assert.match(html, /src="hunger-icon"/);
+    assert.equal(count(html, 'class="needs-expanded-choice-icon"'), api.BAR_CHOICES.length);
 });
 
 test("Caffeine Level has a bundled coffee icon and effect tooltip", () => {
@@ -287,8 +379,8 @@ test("Caffeine Level has a bundled coffee icon and effect tooltip", () => {
     }});
     assert.equal(countLabel(html, "Caffeine Level"), 1);
     assert.match(html, /data:image\/png;base64,/);
-    assert.match(html, /separate from Infirmities/);
-    assert.match(html, /worsen fatigue during withdrawal/);
+    assert.match(api.tooltipText("stat:caffeine_load"), /separate from Infirmities/);
+    assert.match(api.tooltipText("stat:addiction_caffeine"), /worsen fatigue during withdrawal/);
 });
 
 test("source toggle changes every bar in that source and preserves individual overrides", () => {
@@ -339,8 +431,109 @@ test("normalizes source ranges and applies direction-aware semantic colors", () 
     });
 
     assert.equal(api.normalizePercent(highBad), 50);
-    assert.equal(api.statBarClass(highBad), "warn");
-    assert.equal(api.statBarClass(highGood), "danger");
+    assert.equal(api.statBarClass(highBad), "bad2");
+    assert.equal(api.statBarClass(highGood), "bad3");
+    assert.equal(api.statBarClass(api.buildPlayerStat("high_bad", 24, {
+        label: "High bad", min: 0, max: 120, badHigh: true,
+        source: { type: "mod", id: "test", name: "Test" }
+    })), "ok");
+});
+
+test("vanilla bar colors change at each Build 42 moodle threshold", () => {
+    const { api } = loadRenderer();
+    const cases = [
+        ["hunger", [15, 25, 45, 70]],
+        ["thirst", [12, 25, 70, 84]],
+        ["fatigue", [60, 70, 80, 90]],
+        ["boredom", [25, 50, 75, 90]],
+        ["panic", [6, 30, 65, 80]],
+        ["unhappiness", [20, 45, 60, 80]],
+        ["pain", [10, 20, 50, 75]],
+        ["sickness", [25, 50, 75, 90]],
+        ["wetness", [15, 40, 70, 90]],
+        ["intoxication", [10, 30, 50, 70]]
+    ];
+    const stat = (id, value, badHigh = true) => api.buildPlayerStat(id, value, {
+        label: id, min: 0, max: 100, badHigh,
+        source: { type: "base_game", id: "project_zomboid", name: "Project Zomboid" }
+    });
+    for (const [id, thresholds] of cases) {
+        assert.equal(api.statBarClass(stat(id, 0)), "ok", id);
+        thresholds.forEach((threshold, index) => {
+            assert.equal(api.statBarClass(stat(id, threshold)),
+                index === 0 ? "ok" : `bad${index}`, `${id} equality ${threshold}`);
+            assert.equal(api.statBarClass(stat(id, threshold + 0.01)),
+                `bad${index + 1}`, `${id} above ${threshold}`);
+        });
+    }
+    assert.equal(api.statBarClass(stat("endurance", 75.01, false)), "ok");
+    assert.equal(api.statBarClass(stat("endurance", 75, false)), "bad1");
+    assert.equal(api.statBarClass(stat("endurance", 50, false)), "bad2");
+    assert.equal(api.statBarClass(stat("endurance", 25, false)), "bad3");
+    assert.equal(api.statBarClass(stat("endurance", 10, false)), "bad4");
+    [20, 40, 60, 80].forEach((threshold, index) => {
+        assert.equal(api.statBarClass(stat("discomfort", threshold - 0.01)),
+            index === 0 ? "ok" : `bad${index}`);
+        assert.equal(api.statBarClass(stat("discomfort", threshold)), `bad${index + 1}`);
+    });
+});
+
+test("mod bar levels follow their source thresholds and active moodles", () => {
+    const { api } = loadRenderer();
+    const stat = (id, value, max = 100, badHigh = true) => api.buildPlayerStat(id, value, {
+        label: id, min: 0, max, badHigh,
+        source: { type: "mod", id: "test", name: "Test" }
+    });
+    assert.equal(api.statBarClass(stat("natures_call_bladder", 69.99, 120)), "ok");
+    assert.equal(api.statBarClass(stat("natures_call_bladder", 70, 120)), "bad1");
+    assert.equal(api.statBarClass(stat("natures_call_bladder", 95, 120)), "bad3");
+    assert.equal(api.statBarClass(stat("natures_call_bladder", 100, 120)), "bad3");
+    assert.equal(api.statBarClass(stat("natures_call_bladder", 100.01, 120)), "bad4");
+    assert.equal(api.statBarClass(stat("lifestyle_hygiene_need", 9.99)), "good4");
+    assert.equal(api.statBarClass(stat("lifestyle_hygiene_need", 30)), "good1");
+    assert.equal(api.statBarClass(stat("lifestyle_hygiene_need", 40)), "ok");
+    assert.equal(api.statBarClass(stat("lifestyle_hygiene_need", 60)), "ok");
+    assert.equal(api.statBarClass(stat("lifestyle_hygiene_need", 90.01)), "bad4");
+    assert.equal(api.statBarClass(stat("tasab_body_grime", 45)), "bad2");
+    assert.equal(api.statBarClass(stat("tasab_body_grime", 75)), "bad3");
+    assert.equal(api.statBarClass(stat("tasab_body_grime", 90)), "bad4");
+    assert.equal(api.statBarClass(stat("drugtime_stoned", 105, 140)), "good4");
+    assert.equal(api.statBarClass(stat("drugtime_hard", 120, 160)), "bad4");
+
+    const active = (id, level, valence = "bad", maxLevel = 4) => ({
+        id, label: id, level, maxLevel, valence,
+        source: { type: "mod", id: "test", name: "Test" }
+    });
+    assert.equal(api.statBarClass(stat("bydt_dental_hygiene", 0.9, 1, false),
+        [active("BrushYourDamnTeeth:BYDT_MouthState", 4)]), "bad4");
+    assert.equal(api.statBarClass(stat("addiction_alcohol", 20),
+        [active("twbInfirmities:AddictedToAlcohol", 1)]), "bad4");
+    assert.equal(api.statBarClass(stat("addiction_alcohol", 95)), "ok");
+    assert.equal(api.statBarClass(stat("stress", 95)), "ok");
+    assert.equal(api.statBarClass(stat("stress", 5),
+        [active("project_zomboid:mood_stressed", 3)]), "bad3");
+    assert.equal(api.statBarClass(stat("endurance", 90, 100, false),
+        [active("project_zomboid:status_difficultybreathing", 2)]), "bad2");
+    assert.equal(api.statBarClass(stat("hunger", 5),
+        [active("project_zomboid:status_hunger", 3, "good")]), "ok");
+});
+
+test("rendered bars use active moodle colors and every severity has a style", () => {
+    const { api } = loadRenderer();
+    const needs = vanillaNeeds();
+    needs[3].value = 90;
+    const html = api.renderNeedsExpanded({
+        needs,
+        moodles: [{ label: "Out of Breath", level: 1,
+            icon: "status_difficultybreathing", valence: "bad" }]
+    });
+    assert.match(html, /needs-expanded-fill bad1"\s+style="width:90%"/);
+
+    const css = fs.readFileSync(path.join(__dirname, "..", "42", "media", "web", "expanded-needs.css"), "utf8");
+    for (const color of ["ok", "good1", "good2", "good3", "good4",
+        "bad1", "bad2", "bad3", "bad4"]) {
+        assert.match(css, new RegExp(`\\.needs-expanded-fill\\.${color}\\s*\\{`), color);
+    }
 });
 
 test("keeps valid zeroes and skips malformed individual source values", () => {
@@ -358,7 +551,7 @@ test("keeps valid zeroes and skips malformed individual source values", () => {
         }
     });
 
-    assert.match(compactHtml(html), /needs-expanded-value"> 0% <\/span>/);
+    assert.match(compactHtml(html), /needs-expanded-value"[^>]*> 0% <\/span>/);
     assert.equal(countLabel(html, "Hunger"), 1);
     assert.equal(countLabel(html, "Discomfort"), 1);
     assert.equal(countLabel(html, "Bladder"), 1);
@@ -404,8 +597,8 @@ test("renders optional mod stats independently and omits missing or malformed va
     assert.equal(countLabel(html, "Hygiene Need"), 1);
     assert.equal(countLabel(html, "Body Grime"), 0);
     assert.equal(countLabel(html, "Dental Hygiene"), 1);
-    assert.match(html, /Source: Lifestyle: Hobbies/);
-    assert.match(html, /Source: Brush Your Damn Teeth/);
+    assert.match(api.tooltipText("stat:lifestyle_hygiene_need"), /Source: Lifestyle: Hobbies/);
+    assert.match(api.tooltipText("stat:bydt_dental_hygiene"), /Source: Brush Your Damn Teeth/);
 });
 
 test("renders only active valid modded moodles with level and provenance", () => {
@@ -456,14 +649,14 @@ test("renders only active valid modded moodles with level and provenance", () =>
 
     assert.equal(api.adaptCustomMoodles(moodles).length, 2);
     assert.equal(count(html, "needs-expanded-moodle-badge"), 2);
-    assert.match(html, /Body Grime/);
-    assert.match(html, /Cooling Body/);
+    assert.match(api.tooltipText("moodle:TakeABathAndShowerNew:BodyGrime"), /Body Grime/);
+    assert.match(api.tooltipText("moodle:TakeABathAndShowerNew:CoolingBody"), /Cooling Body/);
     assert.doesNotMatch(html, /Inactive/);
     assert.doesNotMatch(html, /Malformed/);
     assert.doesNotMatch(html, /Active Moodles/);
     assert.match(html, /<b>3<\/b>/);
     assert.doesNotMatch(html, /needs-expanded-moodle-row/);
-    assert.match(html, /Source: Take A Bath And Shower/);
+    assert.match(api.tooltipText("moodle:TakeABathAndShowerNew:BodyGrime"), /Source: Take A Bath And Shower/);
     assert.equal(JSON.stringify(moodles), before, "moodle payload was mutated");
 });
 
@@ -507,7 +700,7 @@ test("uses icon spacers when globals or keys are missing and escapes HTML", () =
     assert.match(withoutMap, /needs-expanded-icon-blank/);
     assert.doesNotMatch(withoutMap, /<Unsafe/);
     assert.match(withoutMap, /&lt;Unsafe &amp; &quot;label&quot;&gt;/);
-    assert.match(withoutMap, /Source: Source &quot;name&quot;/);
+    assert.match(api.tooltipText("stat:unsafe"), /Source: Source "name"/);
 
     context.window.PZ_MOODLE_ICONS = { unsafe_icon: 'icon" onerror="bad' };
     const withMap = api.renderPlayerStatRow(stat);
@@ -573,12 +766,12 @@ test("renders PZ Pulse vanilla moodles through the same icon badge layout", () =
     assert.match(html, /src="circle"/);
     assert.match(html, /src="glyph"/);
     assert.match(html, /<b>3<\/b>/);
-    assert.match(html, /The game says hunger is severe/);
-    assert.match(html, /Severe, prolonged starvation/);
+    assert.match(api.tooltipText("moodle:project_zomboid:status_hunger"), /The game says hunger is severe/);
+    assert.match(api.tooltipText("moodle:project_zomboid:status_hunger"), /Severe, prolonged starvation/);
 
     const fed = api.renderNeedsExpanded({
         moodles: [{ label: "Well fed", level: 3, icon: "status_hunger", valence: "good" }]
     });
-    assert.match(fed, /positive eating state/);
-    assert.doesNotMatch(fed, /Severe, prolonged starvation/);
+    assert.match(api.tooltipText("moodle:project_zomboid:status_hunger"), /positive eating state/);
+    assert.doesNotMatch(api.tooltipText("moodle:project_zomboid:status_hunger"), /Severe, prolonged starvation/);
 });

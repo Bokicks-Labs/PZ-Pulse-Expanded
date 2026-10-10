@@ -67,6 +67,12 @@ assertEqual(localValues.bowel, 120, "source maximum must remain raw")
 assertEqual(localModData.NaturesCall, localState, "adapter must not replace source state")
 assertEqual(localState.bladderFill, 0, "adapter must not mutate source values")
 
+local preciseState = { bladderFill = 78.21247329711908, bowelFill = 0 }
+local preciseValues = Adapter.collect(playerWith({ NaturesCall = preciseState }))
+assertEqual(preciseValues.bladder, 78.21, "Nature's Call payload must be rounded")
+assertEqual(preciseState.bladderFill, 78.21247329711908,
+    "rounding must not mutate source state")
+
 local partialValues = Adapter.collect(playerWith({
     NaturesCall = { bladderFill = "bad", bowelFill = 0 },
 }))

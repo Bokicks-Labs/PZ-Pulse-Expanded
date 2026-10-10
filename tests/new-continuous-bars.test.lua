@@ -13,7 +13,8 @@ CaffeineMakesSense = { Runtime = {
     getWorldAgeMinutes = function() return 600 end,
     getOptions = function() return { MaxCaffeineLevel = 8 } end,
     getLoadTotals = function(state, time, options)
-        assert(time == 600 and options.MaxCaffeineLevel == 8)
+        assert(time == 600 and (options.MaxCaffeineLevel == 8
+            or options.MaxCaffeineLevel == 8.76543))
         return state.load
     end,
 } }
@@ -32,6 +33,15 @@ assert(values.addiction_alcohol == 1 and values.addiction_nicotine == 2)
 assert(values.addiction_caffeine == 3 and values.addiction_painkillers == 4)
 assert(values.addiction_sleeping_pills == 5 and values.addiction_amphetamines == 6)
 assert(values.caffeine_load == 2 and values.caffeine_load_max == 8)
+
+modData.addictions.nicotine = 2.34567
+modData.CaffeineMakesSenseState.load = 2.34567
+CaffeineMakesSense.Runtime.getOptions = function()
+    return { MaxCaffeineLevel = 8.76543 }
+end
+values = adapter.collect(player)
+assert(values.addiction_nicotine == 2.35)
+assert(values.caffeine_load == 2.35 and values.caffeine_load_max == 8.77)
 
 -- Missing source state retains a prior reading briefly; disabling the source
 -- or its sandbox system invalidates that history immediately.

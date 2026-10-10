@@ -91,7 +91,8 @@ local function collectValues(player, modData, missing)
             if ok and type(snapshot) == "table" then
                 caffeine = finite(snapshot.rawStimLoad, 0, 100)
                 if caffeine ~= nil then
-                    values.caffeine_load_max = finite(snapshot.maxCaffeine, 0.01, 100) or 4
+                    values.caffeine_load_max = StatUtils.round2(
+                        finite(snapshot.maxCaffeine, 0.01, 100)) or 4
                 end
             end
         end
@@ -106,7 +107,8 @@ local function collectValues(player, modData, missing)
         end)
         if ok then caffeine = finite(load, 0, 100) end
         if caffeine ~= nil then
-            values.caffeine_load_max = finite(maxLoad, 0.01, 100) or 4
+            values.caffeine_load_max = StatUtils.round2(
+                finite(maxLoad, 0.01, 100)) or 4
         end
     end
     add(values, player, "caffeine_load", caffeine, caffeineActive)

@@ -17,6 +17,12 @@ function Utils.finiteNumber(value)
     return number
 end
 
+function Utils.round2(value)
+    local number = Utils.finiteNumber(value)
+    if number == nil then return nil end
+    return math.floor(number * 100 + 0.5) / 100
+end
+
 function Utils.nowMs()
     if getTimestampMs == nil then return nil end
     local ok, value = pcall(getTimestampMs)
@@ -35,7 +41,7 @@ function Utils.sample(player, key, rawValue, active, hidden)
         return nil
     end
 
-    local value = Utils.finiteNumber(rawValue)
+    local value = Utils.round2(rawValue)
     local now = Utils.nowMs()
     if value ~= nil then
         if now ~= nil then

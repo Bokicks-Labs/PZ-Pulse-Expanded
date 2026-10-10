@@ -17,6 +17,11 @@ local Utils = require("PZPulseExpanded/StatUtils")
 local player = {}
 assert(Utils.sample(player, "a", nil, true, false) == nil)
 assert(Utils.sample(player, "a", 42, true, false) == 42)
+assert(Utils.sample(player, "precision", 78.21247329711908, true, false) == 78.21,
+    "collected stat values must have at most two decimal places")
+assert(Utils.sample(player, "precision", 78.215, true, false) == 78.22)
+assert(Utils.sample(player, "precision", nil, true, false) == 78.22,
+    "retained values must already be rounded")
 now = now + 29000
 assert(Utils.sample(player, "a", nil, true, false) == 42)
 now = now + 1001

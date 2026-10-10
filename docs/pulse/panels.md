@@ -22,7 +22,10 @@ exposed through Moodle Framework. Level zero is omitted. Each moodle is a PZ
 Pulse-style layered icon badge with the current level in its bottom-right
 corner; its tooltip includes source provenance. Moodle badges use 87.5% of
 PZ Pulse's moodle icon size, while stat icons use 120% of its need icon size.
-The moodle-to-stat gap is 10px.
+The moodle-to-stat gap is 10px. Moodle badges have a larger hover area than
+their artwork. Stat and moodle tooltips use one persistent overlay outside the
+panel body so frequent data updates do not restart the browser's hover timer.
+They open after a 650 ms hover delay; leaving before then cancels the tooltip.
 
 ## Stat section
 
@@ -45,16 +48,68 @@ The shared row grid is expected to align:
 3. bar
 4. formatted value
 
-The implemented deterministic row order is:
+### Bar colors
+
+Bar fill colors follow the active matching moodle level whenever that moodle
+is present in the payload. This takes precedence over numeric thresholds, so
+runtime threshold changes and delayed or latched mod moodles stay visually in
+step with the displayed moodle. Level 0 uses PZ Pulse's green. Four bad levels
+use PZ Pulse's yellow, an intermediate orange, PZ Pulse's red, and dark red;
+the maximum bad level is always dark red. Positive moodles use four green
+shades, ending in dark green. Three-level moodles use yellow, red, and dark
+red, or corresponding green shades.
+
+When a matching moodle is absent, the following value thresholds come from
+the installed Build 42.20 `MoodleStat` class and source-mod moodle code.
+Vanilla Needs+ thresholds use the percentage in PZ Pulse's payload;
+Discomfort uses its own 0..100 value. `>` means the color changes just above
+the listed value.
+
+| Bars | Level-change thresholds |
+|---|---|
+| Hunger | >15, >25, >45, >70 |
+| Thirst | >12, >25, >70, >84 |
+| Fatigue | >60, >70, >80, >90 |
+| Stamina | ≤75, ≤50, ≤25, ≤10 remaining |
+| Boredom | >25, >50, >75, >90 |
+| Panic | >6, >30, >65, >80 |
+| Unhappiness | >20, >45, >60, >80 |
+| Pain | >10, >20, >50, >75 |
+| Sickness | >25, >50, >75, >90 |
+| Wetness | >15, >40, >70, >90 |
+| Drunkenness | >10, >30, >50, >70 |
+| Discomfort | ≥20, ≥40, ≥60, ≥80 |
+| Nature's Call bladder and bowel | ≥70, ≥95, >100 of 120 fill |
+| Lifestyle Hygiene Need | good: <40, <30, <20, <10; bad: >60, >70, >80, >90 |
+| TASAB Body Grime | ≥45 (level 2), ≥75 (level 3), ≥90 (level 4) |
+| DrugTime 89 Stoned / Hard | >0, ≥70 / ≥80, ≥105 / ≥120 |
+
+The vanilla Stress moodle reads the game's nicotine stress value, which is not
+the same as the exported Stress bar. Its color follows the active moodle level.
+Infirmities addiction moodles latch after source-specific thresholds, so their
+current level is read from the active moodle rather than inferred from the
+addiction number. Brush Your Damn Teeth's mouth moodle is based on time since
+brushing, not Dental Hygiene; its active level controls the bar color. Nicotine
+Withdrawal, Idleness, Poison, and Caffeine Level have no direct moodle level
+for their displayed value, so they use a general five-step severity scale.
+
+The default row order is:
 
 1. PZ Pulse Needs+ vanilla stats: Hunger, Thirst, Fatigue, Stamina, Boredom,
    Stress, Panic, Unhappiness, Pain, Sickness, Wetness, and Drunkenness
 2. vanilla Discomfort
-3. optional Nature's Call Bladder and Bowel fills
-4. vanilla Nicotine Withdrawal, Idleness, and Poison
+3. vanilla Nicotine Withdrawal, Idleness, and Poison
+4. optional Nature's Call Bladder and Bowel fills
 5. optional continuous mod stats: Lifestyle Hygiene Need, TASAB Body Grime,
    Brush Your Damn Teeth Dental Hygiene, DrugTime 89 intensities, Infirmities
    addiction levels, and Caffeine Makes Sense Caffeine Level
+
+The **Order bars…** view in the chooser moves each bar up or down one position,
+including hidden or currently unavailable bars. Order is stored by stable stat
+ID in a separate browser local-storage key. Saved IDs are validated, duplicates
+and unknown IDs are discarded, and newly added bars append in default order.
+**Reset order** restores the default. Visibility and pin choices are independent
+of order.
 
 PZ Pulse's `d.needs` shape is a private dependency. The current adapter targets
 the exact ordered collector contract verified in PZ Pulse 1.1.3 and validates
@@ -64,11 +119,12 @@ uninitialized mod does not create a zero bar.
 
 ## Stat visibility
 
-Needs Expanded's PZ Pulse gear menu contains a **Choose bars** button. It opens
+Needs Expanded's PZ Pulse gear menu contains a **Manage Stat Bars…** button. It opens
 a source-organized list with one checkbox for each source and one for every
 continuous bar. A source checkbox switches all of that source's bars together;
 individual checkboxes remain independent. Choices apply immediately and persist
-in this browser's local storage. An inactive source mod
+in this browser's local storage. Each bar shows its stat icon in the visibility
+and order views. An inactive source mod
 leaves its choices visible but dimmed and disabled; their saved values remain
 available if the mod becomes active later. Infirmities choices are also disabled
 when its addiction system is off. Missing per-player state does not make an
