@@ -14,7 +14,7 @@ can read without initializing or mutating their state.
 | DrugTime 89 | `DrugTime89` | Stoned Intensity | `0..140` | higher is worse |
 | DrugTime 89 | `DrugTime89` | Hard Drug Intensity | `0..160` | higher is worse |
 | Infirmities | `twbInfirmities` | Alcohol, nicotine, caffeine, painkiller, sleeping-pill, and amphetamine addiction | `0..100` each | higher is worse |
-| Caffeine Makes Sense | `CaffeineMakesSense` | Caffeine Load | `0..MaxCaffeineLevel` | higher is worse |
+| Caffeine Makes Sense | `CaffeineMakesSense` | Caffeine Level | `0..MaxCaffeineLevel` | higher is worse |
 
 The panel also reads vanilla Nicotine Withdrawal (`0..1`), Idleness (`0..1`),
 and Poison (`0..100`). These have active gameplay writers or consumers in the

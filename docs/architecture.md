@@ -141,7 +141,8 @@ The current panel composes normalized rows from independent inputs:
    state without initializing it. See
    [`integrations/natures-call.md`](integrations/natures-call.md).
 4. The optional-mod stat adapter reads continuous values already owned by
-   Lifestyle: Hobbies, Take A Bath And Shower, and Brush Your Damn Teeth.
+   Lifestyle: Hobbies, Take A Bath And Shower, Brush Your Damn Teeth,
+   DrugTime 89, Infirmities, and Caffeine Makes Sense.
 5. The custom-moodle adapter reads active Lifestyle moodles, Moodle Framework
    registrations (including Medicine Moodles' existing per-player objects),
    DrugTime 89 stages, and Nature's Call moodle state. It never creates moodles

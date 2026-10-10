@@ -96,15 +96,20 @@ test("auto-hide waits after a bar returns to zero and flash expires on a timer",
     html = renderer.api.renderNeedsExpanded(payload);
     assert.equal(countLabel(html, "Hunger"), 1);
     assert.match(html, /needs-expanded-bar-flash/);
-    assert.equal(renderer.pending().due, 3000);
+    assert.equal(renderer.pending().due, 4200);
 
     renderer.advance(1000);
     payload.needs[0].value = 16;
     html = renderer.api.renderNeedsExpanded(payload);
     assert.match(html, /needs-expanded-bar-flash/);
-    assert.equal(renderer.pending().due, 3000, "later increases do not restart the flash");
+    assert.match(html, /--needs-expanded-flash-offset:-1000ms/,
+        "panel updates keep the current pulse phase");
+    assert.equal(renderer.pending().due, 4200, "later increases do not restart the flash");
 
     renderer.advance(1000);
+    assert.match(renderer.api.renderNeedsExpanded(payload), /needs-expanded-bar-flash/,
+        "the flash continues past its requested time to finish the current pulse");
+    renderer.advance(1200);
     assert.equal(count(lastHtml, "needs-expanded-bar-flash"), 0);
 
     payload.needs[0].value = 20;
@@ -114,7 +119,7 @@ test("auto-hide waits after a bar returns to zero and flash expires on a timer",
     payload.needs[0].value = 0;
     html = renderer.api.renderNeedsExpanded(payload);
     assert.equal(countLabel(html, "Hunger"), 1);
-    assert.equal(renderer.pending().due, 8000);
+    assert.equal(renderer.pending().due, 9200);
     renderer.advance(5000);
     assert.equal(countLabel(lastHtml, "Hunger"), 0);
 });
@@ -154,6 +159,50 @@ test("flash setting has no effect without auto-hide", () => {
     payload.needs[0].value = 10;
     const html = renderer.api.renderNeedsExpanded(payload);
     assert.equal(count(html, "needs-expanded-bar-flash"), 0);
+});
+
+test("auto-hide uses the new flash and hide defaults", () => {
+    const renderer = loadRenderer(null, { auto_hide_zero: true });
+    const payload = { needs: vanillaNeeds(), needs_expanded: {} };
+    renderer.context.window.PZ_DATA = payload;
+    renderer.context.updateContent = data => renderer.api.renderNeedsExpanded(data);
+
+    renderer.api.renderNeedsExpanded(payload);
+    payload.needs[0].value = 10;
+    let html = renderer.api.renderNeedsExpanded(payload);
+    assert.match(html, /needs-expanded-bar-flash/);
+    assert.equal(renderer.pending().due, 9000);
+
+    payload.needs[0].value = 0;
+    html = renderer.api.renderNeedsExpanded(payload);
+    assert.equal(countLabel(html, "Hunger"), 1);
+    assert.equal(renderer.pending().due, 9000);
+    renderer.advance(7000);
+    assert.equal(renderer.pending().due, 9000);
+    renderer.advance(1000);
+    assert.equal(renderer.pending().due, 11000);
+});
+
+test("icon controls size only Needs Expanded and validate saved scales", () => {
+    const payload = { needs: vanillaNeeds(), needs_expanded: {} };
+    const defaults = loadRenderer().api.renderNeedsExpanded(payload);
+    assert.match(defaults, /--needs-expanded-moodle-size:56px;--needs-expanded-bar-icon-size:24px/);
+
+    const adjusted = loadRenderer(null, {
+        moodle_icon_scale: 3.5,
+        bar_icon_scale: 2.25
+    }).api.renderNeedsExpanded(payload);
+    assert.match(adjusted, /--needs-expanded-moodle-size:49px;--needs-expanded-bar-icon-size:27px/);
+
+    const invalid = loadRenderer(null, {
+        moodle_icon_scale: 100,
+        bar_icon_scale: "bad"
+    }).api.renderNeedsExpanded(payload);
+    assert.match(invalid, /--needs-expanded-moodle-size:56px;--needs-expanded-bar-icon-size:24px/);
+
+    const css = fs.readFileSync(path.join(__dirname, "..", "42", "media", "web", "expanded-needs.css"), "utf8");
+    assert.doesNotMatch(css, /var\(--(?:moodle-size|need-icon-size)/);
+    assert.match(css, /\.needs-expanded-bar\s*\{[^}]*height:\s*calc\(var\(--needs-expanded-bar-icon-size\) \* 0\.5\)/s);
 });
 
 function vanillaNeeds() {

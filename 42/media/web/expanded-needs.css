@@ -19,7 +19,7 @@
     gap: 6px;
     margin-bottom: 10px;
     align-items: center;
-    min-height: calc(var(--moodle-size, 32px) + 4px);
+    min-height: calc(var(--needs-expanded-moodle-size) + 4px);
 }
 
 .needs-expanded-row {
@@ -27,8 +27,8 @@
 }
 
 .needs-expanded-icon {
-    width: calc(var(--need-icon-size, 20px) * 1.2);
-    height: calc(var(--need-icon-size, 20px) * 1.2);
+    width: var(--needs-expanded-bar-icon-size);
+    height: var(--needs-expanded-bar-icon-size);
     object-fit: contain;
     image-rendering: pixelated;
 }
@@ -40,16 +40,16 @@
 .needs-expanded-moodle-badge {
     position: relative;
     display: inline-block;
-    width: calc(var(--moodle-size, 32px) + 4px);
-    height: calc(var(--moodle-size, 32px) + 4px);
+    width: calc(var(--needs-expanded-moodle-size) + 4px);
+    height: calc(var(--needs-expanded-moodle-size) + 4px);
 }
 
 .needs-expanded-moodle-badge img {
     position: absolute;
     left: 50%;
     top: 50%;
-    width: calc(var(--moodle-size, 32px) * 0.875);
-    height: calc(var(--moodle-size, 32px) * 0.875);
+    width: var(--needs-expanded-moodle-size);
+    height: var(--needs-expanded-moodle-size);
     transform: translate(-50%, -50%);
     object-fit: contain;
     image-rendering: pixelated;
@@ -121,19 +121,20 @@
 
 .needs-expanded-bar {
     min-width: 40px;
-    height: 12px;
+    height: calc(var(--needs-expanded-bar-icon-size) * 0.5);
     background: #000;
     border: 1px solid var(--line);
     overflow: hidden;
 }
 
 .needs-expanded-bar-flash {
-    animation: needs-expanded-increase-flash 0.55s ease-in-out infinite alternate;
+    animation: needs-expanded-increase-flash 1.6s ease-in-out infinite;
+    animation-delay: var(--needs-expanded-flash-offset, 0ms);
 }
 
 @keyframes needs-expanded-increase-flash {
-    from { box-shadow: 0 0 0 1px #fff; filter: brightness(1); }
-    to { box-shadow: 0 0 8px 2px #fff; filter: brightness(1.65); }
+    0%, 100% { box-shadow: none; filter: brightness(1); }
+    50% { box-shadow: 0 0 8px 2px #fff; filter: brightness(1.65); }
 }
 
 @media (prefers-reduced-motion: reduce) {

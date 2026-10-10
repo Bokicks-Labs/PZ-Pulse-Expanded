@@ -20,8 +20,10 @@ The implemented panel includes PZ Pulse's active vanilla moodles plus active
 positive and negative moodles from supported source mods, including moodles
 exposed through Moodle Framework. Level zero is omitted. Each moodle is a PZ
 Pulse-style layered icon badge with the current level in its bottom-right
-corner; its tooltip includes source provenance. Moodle badges use 87.5% of
-PZ Pulse's moodle icon size, while stat icons use 120% of its need icon size.
+corner; its tooltip includes source provenance. At the default controls,
+moodle badges use 87.5% of PZ Pulse's default moodle icon size, while stat
+icons use 120% of its default need icon size. Needs Expanded has its own icon
+size controls, so changing the original Needs+ panel's sizes does not change it.
 The moodle-to-stat gap is 10px. Moodle badges have a larger hover area than
 their artwork. Stat and moodle tooltips use one persistent overlay outside the
 panel body so frequent data updates do not restart the browser's hover timer.
@@ -138,15 +140,23 @@ markup. PZ Pulse's public extension options accept only `bool`, `number`, and
 PZ Pulse Expanded restores its button if PZ Pulse rebuilds the gear contents.
 An upstream action-button option would replace this private integration.
 
-The same gear menu also offers **Auto-hide idle bars**, **Hide delay
+The same gear menu has **Moodle icon size (scale)** and **Bar icon size
+(scale)** controls. They use a 1–6 range in half steps for moodles and a 1–4
+range in quarter steps for bar icons. The bar thickness stays half the icon
+height as its scale changes. These options belong to Needs Expanded alone.
+Their default scales are 4 and 2 respectively. The gear menu also offers
+**Auto-hide idle bars**, **Hide delay
 (seconds)**, **Flash on reveal (auto-hide)**, and **Reveal flash (seconds)**.
 Auto-hide starts disabled. When enabled, bars where a low value is beneficial
 hide if they start at zero. After a visible bar returns to zero, it remains
-visible for the chosen delay (30 seconds by default), then hides. Bars such as
+visible for the chosen delay (10 seconds by default), then hides. Bars such as
 Stamina and Dental Hygiene remain visible at zero. The flash toggle starts
-disabled and only works with auto-hide. When a hidden zero bar first becomes
-positive, its white outline pulses for the selected time (2 seconds by
-default). Later changes do not restart the flash. Individual and source visibility
+enabled and only works with auto-hide. When a hidden zero bar first becomes
+positive, its white outline pulses for the selected time (7 seconds by
+default). The slower 1.6-second pulse finishes its current cycle and fades to
+no outline before stopping, so the actual flash may last up to one cycle longer
+than the selected time. Panel updates keep the pulse phase. Later stat changes
+do not restart it. Individual and source visibility
 choices still take precedence. The timing controls are PZ Pulse panel options;
 the bar and pin choices continue to use browser local storage.
 
@@ -191,9 +201,9 @@ Source: Project Zomboid
 A modded stat may show:
 
 ```text
-Urination
+Bladder
 
-Current bladder level.
+Nature's Call bladder fill, including overfill beyond the normal range.
 
 Value: 63%
 Source: Nature's Call

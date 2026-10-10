@@ -1320,7 +1320,7 @@ function refreshNeedsTooltip() {
  * @param {PlayerStat} stat
  * @returns {string|null}
  */
-function renderPlayerStatRow(stat, flash = false, moodles = []) {
+function renderPlayerStatRow(stat, flash = false, moodles = [], flashElapsed = 0) {
     if (!isValidPlayerStat(stat)) {
         return null;
     }
@@ -1365,7 +1365,7 @@ function renderPlayerStatRow(stat, flash = false, moodles = []) {
             ${esc(stat.label)}
         </span>
 
-        <span class="needs-expanded-bar${flash ? " needs-expanded-bar-flash" : ""}" ${tipAttributes}>
+        <span class="needs-expanded-bar${flash ? " needs-expanded-bar-flash" : ""}" ${tipAttributes}${flash ? ` style="--needs-expanded-flash-offset:-${flashElapsed}ms"` : ""}>
             <span
                 class="needs-expanded-fill ${barClass}"
                 style="width:${percent}%"
@@ -1519,10 +1519,14 @@ let observedGear = null;
 
 const BAR_TIMING_DEFAULTS = {
     auto_hide_zero: false,
-    zero_hide_delay: 30,
-    flash_increases: false,
-    flash_seconds: 2
+    zero_hide_delay: 10,
+    flash_increases: true,
+    flash_seconds: 7
 };
+// A complete pulse begins and ends with no outline. Extend the configured
+// duration only to the end of its current cycle so removal cannot cut a blink.
+const FLASH_CYCLE_MS = 1600;
+const ICON_SCALE_DEFAULTS = { moodle_icon_scale: 4, bar_icon_scale: 2 };
 const barTiming = new Map();
 let barTimingTimer = null;
 
@@ -1535,6 +1539,12 @@ function barOption(name) {
 function barSeconds(name) {
     const value = Number(barOption(name));
     return Number.isFinite(value) ? Math.max(0, value) * 1000 : BAR_TIMING_DEFAULTS[name] * 1000;
+}
+
+function iconScale(name, min, max, step) {
+    const value = typeof o === "function" ? Number(o(name)) : NaN;
+    if (!Number.isFinite(value) || value < min || value > max) return ICON_SCALE_DEFAULTS[name];
+    return Math.round(value / step) * step;
 }
 
 function scheduleBarTiming(deadline) {
@@ -1837,12 +1847,13 @@ function renderNeedsExpanded(d) {
         const value = normalizePercent(stat);
         if (value === null) continue;
         const previous = barTiming.get(stat.id);
-        const timing = previous || { value, zeroSince: null, flashUntil: 0, hidden: false };
+        const timing = previous || { value, zeroSince: null, flashStartedAt: 0, flashUntil: 0, hidden: false };
         const eligible = autoHide && stat.badHigh === true && !barPinned(stat.id);
-        if (!eligible) timing.flashUntil = 0;
+        if (!eligible || !flashIncreases) timing.flashUntil = 0;
         if (previous && previous.hidden && value > 0 && eligible && barVisible(stat.id)
             && flashIncreases && flashDuration > 0) {
-            timing.flashUntil = now + flashDuration;
+            timing.flashStartedAt = now;
+            timing.flashUntil = now + Math.ceil(flashDuration / FLASH_CYCLE_MS) * FLASH_CYCLE_MS;
         }
         if (value > 0) {
             timing.zeroSince = null;
@@ -1863,7 +1874,8 @@ function renderNeedsExpanded(d) {
         }
         const flashing = eligible && flashIncreases && now < timing.flashUntil;
         if (flashing) keepDeadline(timing.flashUntil);
-        const row = renderPlayerStatRow(stat, flashing, moodles);
+        const row = renderPlayerStatRow(stat, flashing, moodles,
+            flashing ? now - timing.flashStartedAt : 0);
 
         if (row !== null) {
             statRows.push(row);
@@ -1897,8 +1909,10 @@ function renderNeedsExpanded(d) {
         `
         : "";
 
+    const moodleSize = iconScale("moodle_icon_scale", 1, 6, 0.5) * 16 * 0.875;
+    const barIconSize = iconScale("bar_icon_scale", 1, 4, 0.25) * 10 * 1.2;
     return `
-        <div class="needs-expanded">
+        <div class="needs-expanded" style="--needs-expanded-moodle-size:${moodleSize}px;--needs-expanded-bar-icon-size:${barIconSize}px">
             ${moodleSection}
             ${statSection}
         </div>

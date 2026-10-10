@@ -28,6 +28,17 @@ The replacement panel includes:
 - optional continuous meters from supported mods
 - a corresponding vanilla or source-mod moodle icon beside every stat bar
 - source-aware tooltips so modded rows identify where their data came from
+- bar colors that follow matching active moodle levels where available
+
+Open the panel gear menu and select **Manage Stat Bars** to show or hide each
+bar, toggle a whole source, pin a bar, or change its order. Unavailable mod
+controls are dimmed and keep their saved choices for later. The gear menu also
+offers optional auto-hide for idle bars, a hide delay, and a brief white outline
+flash when an auto-hidden bar first appears. Stat and moodle tooltips describe
+their gameplay effects and show after a short hover delay.
+The flash completes its final blink and fades out after the chosen duration.
+Moodle and bar icon sizes have separate controls in Needs Expanded's gear menu;
+the original Needs+ panel's size settings do not change them.
 
 Inactive moodles stay hidden, matching the compact behavior of the original
 panel. Stats with no safe value are also hidden independently, so one missing
@@ -35,8 +46,8 @@ integration never empties or breaks the whole panel.
 
 The moodle area matches PZ Pulse's original design: each active state is shown
 as its original glyph on PZ Pulse's colored moodle circle, with the current
-level in the bottom-right corner. The only layout difference is a tighter gap
-between the moodle badges and the status bars.
+level in the bottom-right corner. The moodle badges are slightly smaller, the
+stat icons are slightly larger, and the two areas have a clear gap.
 
 ## Optional mod integrations
 
@@ -56,6 +67,11 @@ No mod in this section is required.
   temperature effects, feeling watched, and body grime.
 - Adds the continuous **Body Grime** meter when available.
 
+### Caffeine Makes Sense
+
+- Adds a **Caffeine Level** meter with a coffee cup icon when its state is
+  readable.
+
 ### Nature's Call
 
 - Supports its active bladder, bowel, soilage, smell, gut, and related moodle
@@ -68,11 +84,14 @@ No mod in this section is required.
 - **Moodle Framework:** displays active registered moodles from installed
   add-ons, including unrecognized registrations under a generic Moodle
   Framework source label.
-- **DrugTime 89:** supports its active Stoned and Hard states.
+- **DrugTime 89:** supports its active Stoned and Hard states and adds their
+  intensity meters when readable.
 - **Medicine Moodles:** supports its registered medicine-effect moodles.
 - **Brush Your Damn Teeth:** supports its mouth-state moodle and an optional
   **Dental Hygiene** meter.
-- **Infirmities:** supports panic attacks, tremors, addictions, and withdrawal.
+- **Infirmities:** supports panic attacks, tremors, addictions, and withdrawal,
+  plus individual addiction meters when its addiction system is enabled and the
+  values are readable.
 - **The Mutants:** supports the Puked moodle.
 
 Integrations are read-only. PZ Pulse Expanded does not create, initialize, or
@@ -105,7 +124,7 @@ artwork or integration to be removed, contact me and I will remove it promptly.
 
 ## Current scope
 
-This first release focuses on **Needs Expanded**. A broader **Skills Expanded**
+The current release focuses on **Needs Expanded**. A broader **Skills Expanded**
 panel and the public third-party provider API are planned work and are not
 advertised as complete features in this release.
 

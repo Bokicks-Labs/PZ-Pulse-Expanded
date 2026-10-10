@@ -2,11 +2,12 @@
 
 PZ Pulse Expanded extends [PZ Pulse](https://github.com/PZ-Pulse/API) with richer player-state information and replacement panels designed to support both vanilla and modded data.
 
-The project is currently in early development. **Needs Expanded** now renders
+The project is currently in early development. **Needs Expanded** renders
 PZ Pulse's vanilla Needs+ stats, active moodles from supported installed mods,
 the underlying vanilla **Discomfort** stat, and independently nullable
 continuous stats from Nature's Call, Lifestyle: Hobbies, Take A Bath And
-Shower, and Brush Your Damn Teeth.
+Shower, Brush Your Damn Teeth, DrugTime 89, Infirmities, and Caffeine Makes
+Sense. Players can choose, pin, and reorder bars in the panel gear menu.
 
 ## Goals
 
@@ -41,8 +42,7 @@ A replacement skills panel designed to support:
 
 ## Current milestone
 
-The current feature branch extends the first Discomfort vertical slice without
-changing the normalized rendering path:
+The current Needs Expanded panel uses one normalized rendering path:
 
 ```text
 PZ Pulse vanilla moodles + supported mod moodles ─────────→ icon badges
@@ -105,9 +105,8 @@ The script mirrors only the `42` and `common` payload folders into
 metadata and preview, removes retired files only inside that staging mod, and
 verifies the staged payload by SHA-256. It also rebuilds the embedded moodle
 icon map from the committed third-party PNG sources before copying. It does not
-upload to Steam. The initial
-`workshop.txt` intentionally has no `id=` line; add Steam's assigned numeric ID
-after the first successful publish. On the Workshop item page, also add
+upload to Steam. `workshop.txt` targets the existing Workshop item
+`3804774101`. On the Workshop item page, also add
 [PZ Pulse](https://steamcommunity.com/sharedfiles/filedetails/?id=3753700423)
 as a required item so subscribers receive the dependency automatically.
 

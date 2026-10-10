@@ -165,25 +165,11 @@ The current Needs Expanded implementation formats stat values as whole percentag
 
 ## Semantic bar state
 
-PZ Pulse Expanded currently mirrors the visual thresholds used by PZ Pulse Needs+.
-
-When `badHigh === true`:
-
-| Percentage | State |
-|---:|---|
-| `< 50` | `ok` |
-| `50..74.999...` | `warn` |
-| `>= 75` | `danger` |
-
-When `badHigh === false`:
-
-| Percentage | State |
-|---:|---|
-| `<= 25` | `danger` |
-| `> 25 && < 50` | `warn` |
-| `>= 50` | `ok` |
-
-These are dashboard presentation thresholds, not Project Zomboid Moodle thresholds.
+The renderer first uses a matching active moodle level, when one is present.
+Directly related bars use source-matched numeric thresholds while their moodle
+is absent. Bars without a direct moodle use a five-step severity scale based on
+`badHigh`. The exact mappings and their limits are documented in
+[`panels.md`](panels.md#bar-colors).
 
 ---
 
