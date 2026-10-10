@@ -535,8 +535,8 @@ test("mod bar levels follow their source thresholds and active moodles", () => {
     });
     assert.equal(api.statBarClass(stat("natures_call_bladder", 69.99, 120)), "ok");
     assert.equal(api.statBarClass(stat("natures_call_bladder", 70, 120)), "bad1");
-    assert.equal(api.statBarClass(stat("natures_call_bladder", 95, 120)), "bad3");
-    assert.equal(api.statBarClass(stat("natures_call_bladder", 100, 120)), "bad3");
+    assert.equal(api.statBarClass(stat("natures_call_bladder", 95, 120)), "bad2");
+    assert.equal(api.statBarClass(stat("natures_call_bladder", 100, 120)), "bad2");
     assert.equal(api.statBarClass(stat("natures_call_bladder", 100.01, 120)), "bad4");
     assert.equal(api.statBarClass(stat("lifestyle_hygiene_need", 9.99)), "good4");
     assert.equal(api.statBarClass(stat("lifestyle_hygiene_need", 30)), "good1");
@@ -556,11 +556,13 @@ test("mod bar levels follow their source thresholds and active moodles", () => {
     assert.equal(api.statBarClass(stat("bydt_dental_hygiene", 0.9, 1, false),
         [active("BrushYourDamnTeeth:BYDT_MouthState", 4)]), "bad4");
     assert.equal(api.statBarClass(stat("addiction_alcohol", 20),
-        [active("twbInfirmities:AddictedToAlcohol", 1)]), "bad4");
+        [active("twbInfirmities:AddictedToAlcohol", 1)]), "bad1");
     assert.equal(api.statBarClass(stat("addiction_alcohol", 95)), "ok");
     assert.equal(api.statBarClass(stat("stress", 95)), "ok");
     assert.equal(api.statBarClass(stat("stress", 5),
         [active("project_zomboid:mood_stressed", 3)]), "bad3");
+    assert.equal(api.statBarClass(stat("natures_call_bladder", 95, 120),
+        [active("NC_NaturesCall:NCBladder", 2, "bad", 3)]), "bad2");
     assert.equal(api.statBarClass(stat("endurance", 90, 100, false),
         [active("project_zomboid:status_difficultybreathing", 2)]), "bad2");
     assert.equal(api.statBarClass(stat("hunger", 5),
@@ -583,6 +585,30 @@ test("rendered bars use active moodle colors and every severity has a style", ()
         "bad1", "bad2", "bad3", "bad4"]) {
         assert.match(css, new RegExp(`\\.needs-expanded-fill\\.${color}\\s*\\{`), color);
     }
+    assert.match(css, /\.needs-expanded-fill\.bad2 \{ background: var\(--warn\); \}/);
+    assert.match(css, /\.needs-expanded-fill\.bad3 \{[^}]*color-mix\(in srgb, var\(--warn\) 50%, var\(--danger\) 50%\)/);
+    assert.match(css, /\.needs-expanded-fill\.bad4 \{ background: var\(--danger\); \}/);
+});
+
+test("level-one bad bars soften while moodle badges keep PZ Pulse art", () => {
+    const { api, context } = loadRenderer();
+    context.window.PZ_MOODLE_ICONS = {
+        circle_bad1: "yellow-circle", circle_good: "green-circle",
+        mood_stressed: "stress-glyph"
+    };
+    const moodle = {
+        id: "project_zomboid:mood_stressed", label: "Stressed", level: 1,
+        maxLevel: 1, valence: "bad", iconKey: "mood_stressed",
+        source: { type: "base_game", id: "project_zomboid", name: "Project Zomboid" }
+    };
+    const stat = api.buildPlayerStat("stress", 20, {
+        label: "Stress", min: 0, max: 100, badHigh: true,
+        source: moodle.source
+    });
+    assert.equal(api.statBarClass(stat, [moodle]), "bad1");
+    const badge = api.renderMoodleBadge(moodle);
+    assert.match(badge, /src="yellow-circle"/);
+    assert.doesNotMatch(badge, /src="green-circle"/);
 });
 
 test("keeps valid zeroes and skips malformed individual source values", () => {

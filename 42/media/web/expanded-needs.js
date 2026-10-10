@@ -1040,9 +1040,9 @@ const MOODLE_ONLY_COLORS = new Set([
 
 function colorForLevel(level, maxLevel, valence) {
     if (level <= 0) return "ok";
-    const normalized = maxLevel <= 1 ? 4 : maxLevel === 2
+    const normalized = maxLevel <= 1 ? (valence === "bad" ? 1 : 4) : maxLevel === 2
         ? [0, 1, 4][Math.min(2, level)]
-        : maxLevel === 3 ? [0, 1, 3, 4][Math.min(3, level)]
+        : maxLevel === 3 ? (valence === "bad" ? [0, 1, 2, 4] : [0, 1, 3, 4])[Math.min(3, level)]
         : Math.min(4, level);
     return `${valence === "good" ? "good" : "bad"}${normalized}`;
 }

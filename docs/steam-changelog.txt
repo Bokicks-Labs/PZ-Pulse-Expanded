@@ -7,6 +7,7 @@
 [*]Added Manage Stat Bars to the Needs Expanded gear menu. Show or hide bars individually or by source, pin bars, and change their display order. Choices persist in this browser; unavailable mod controls are disabled without losing saved choices.
 [*]Added optional auto-hide for idle bars, a configurable hide delay, and an optional white outline flash when a hidden bar first appears.
 [*]Colored bars to match active moodle levels where available, with source-based thresholds for directly related stats and a severity scale for bars without a matching moodle.
+[*]Set four-level negative bars to green-yellow, yellow, orange, and PZ Pulse red; three-level bars use green-yellow, yellow, and red. Positive levels progress through greens. Moodle badges are unchanged.
 [*]Expanded stat and moodle tooltips with gameplay effects, restored their hover delay, and made them stable across panel updates.
 [*]Adjusted moodle and stat icon sizes and spacing, added a Caffeine Level coffee icon, and gave Poison its own icon.
 [*]Added independent moodle and bar icon size controls to Needs Expanded; the original Needs+ size settings no longer change this panel.

@@ -55,11 +55,13 @@ The shared row grid is expected to align:
 Bar fill colors follow the active matching moodle level whenever that moodle
 is present in the payload. This takes precedence over numeric thresholds, so
 runtime threshold changes and delayed or latched mod moodles stay visually in
-step with the displayed moodle. Level 0 uses PZ Pulse's green. Four bad levels
-use PZ Pulse's yellow, an intermediate orange, PZ Pulse's red, and dark red;
-the maximum bad level is always dark red. Positive moodles use four green
-shades, ending in dark green. Three-level moodles use yellow, red, and dark
-red, or corresponding green shades.
+step with the displayed moodle. Level 0 uses PZ Pulse's green. The stat bar for
+a level-one negative moodle blends PZ Pulse's green and yellow, including when
+that moodle has only one level. Levels 2, 3, and 4 then use PZ Pulse's yellow,
+an orange blend of yellow and PZ Pulse's red, and PZ Pulse's red. Positive
+moodle levels use progressively stronger green shades, ending in dark green.
+Three-level negative moodles use green-yellow, yellow, and red. Moodle badge
+artwork and colors still come directly from PZ Pulse.
 
 When a matching moodle is absent, the following value thresholds come from
 the installed Build 42.20 `MoodleStat` class and source-mod moodle code.

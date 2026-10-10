@@ -152,10 +152,10 @@
 .needs-expanded-fill.good2 { background: var(--ok); }
 .needs-expanded-fill.good3 { background: #548c3e; }
 .needs-expanded-fill.good4 { background: #32682c; }
-.needs-expanded-fill.bad1 { background: var(--warn); }
-.needs-expanded-fill.bad2 { background: #dc7b3e; }
-.needs-expanded-fill.bad3 { background: var(--danger); }
-.needs-expanded-fill.bad4 { background: #8c2a26; }
+.needs-expanded-fill.bad1 { background: #a4a948; background: color-mix(in srgb, var(--ok) 50%, var(--warn) 50%); }
+.needs-expanded-fill.bad2 { background: var(--warn); }
+.needs-expanded-fill.bad3 { background: #d4773f; background: color-mix(in srgb, var(--warn) 50%, var(--danger) 50%); }
+.needs-expanded-fill.bad4 { background: var(--danger); }
 
 .needs-expanded-value {
     text-align: right;
