@@ -1,0 +1,37 @@
+Discussion title: Feature Requests & Suggestions
+
+[h2]Feature Requests & Suggestions[/h2]
+
+Have an idea for PZ Pulse Expanded? Post it here! I'm especially interested in useful player-state information and changes that make the dashboard easier to use.
+
+[h2]Ideas Welcome[/h2]
+
+[list]
+[*][b]New mod integrations:[/b] moodles, continuous stats, or needs from other Project Zomboid mods.
+[*][b]More vanilla information:[/b] underlying stats not currently shown by Needs Expanded.
+[*][b]UI and usability:[/b] layout, sorting, auto-hide, tooltips, colors, and customization.
+[*][b]Info Expanded:[/b] eventual support for modded traits in PZ Pulse's Info+ panel.
+[*][b]Skills Expanded:[/b] eventual support for modded skills, higher skill caps, and alternative progression.
+[/list]
+
+[h2]Feature Request Template[/h2]
+
+[b]Feature name:[/b]
+
+[b]Description:[/b]
+What should be added or changed?
+
+[b]Why would it help?[/b]
+Describe what problem it solves or how you would use it.
+
+[b]Related mod (optional):[/b]
+Include a Steam Workshop link and identify the stat, moodle, or API to integrate.
+
+[b]Example (optional):[/b]
+Share a screenshot, mockup, or explanation of the behavior you have in mind.
+
+[h2]Current Scope[/h2]
+
+Needs Expanded is implemented and remains the current focus. Info Expanded and Skills Expanded are future plans, not released panels. Compatibility additions must be practical to read safely and should not require changing another mod's state.
+
+I'll review suggestions when I can, but submitting an idea doesn't guarantee implementation. Thanks for sharing!

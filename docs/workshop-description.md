@@ -88,4 +88,4 @@ Use the dedicated [b]Bug Reports & Compatibility Issues[/b] and [b]Feature Reque
 
 Back up important saves before changing a mod list.
 
-Generative AI was used to aid in development of this mod.
+[h3]Generative AI was used to aid in development of this mod.[/h3]
