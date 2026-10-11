@@ -22,7 +22,25 @@ Use [b]Manage Stat Bars[/b] to show or hide individual bars or whole sources, pi
 
 ![Optional mod moodles and meters](workshop-images/optional-mod-data.png)
 
-Supported mods can add active moodles and optional meters such as Bladder, Bowel, Hygiene Need, Body Grime, Dental Hygiene, addictions, drug intensity, and Caffeine Level. No integration is required. Rows appear only when their source is active and its data is available.
+Supported mods can add active moodles and optional meters such as Bladder, Bowel, Hygiene, Body Grime, Dental Hygiene, addictions, drug intensity, Caffeine Level, Embarrassment, Comfort, Beauty, and Drug Euphoria. [b]All integrations are optional.[/b] A row appears only when its source is active and its player data is readable.
+
+[h2]SUPPORTED OPTIONAL MODS[/h2]
+
+[list]
+[*][b]Lifestyle: Hobbies[/b] — active moodles and Hygiene, Embarrassment, Comfort, and Beauty meters.
+[*][b]Nature's Call[/b] — Bladder and Bowel meters plus digestive, soilage, and other active moodles.
+[*][b]Take A Bath And Shower[/b] — Body Grime meter and bathing-related moodles.
+[*][b]Brush Your Damn Teeth[/b] — Dental Hygiene meter and short-term Mouth State moodle, with distinct icons.
+[*][b]DrugTime 89[/b] — Stoned and Hard moodles and their intensity meters.
+[*][b]Infirmities[/b] — six addiction meters (alcohol, nicotine, caffeine, painkillers, sleeping pills, and amphetamines) when its addiction system is enabled, plus relevant active moodles.
+[*][b]Caffeine Makes Sense[/b] — Caffeine Level meter.
+[*][b]Casualties Undead[/b] — Drug Euphoria meter, High and Miserable moodles, and the worst active clinical condition. Detailed health readings remain in its own UI.
+[*][b]Medicine Moodles[/b] — active medicine effects.
+[*][b]The Mutants[/b] — active Puked moodle.
+[*][b]Moodle Framework add-ons[/b] — active registered moodles, including unfamiliar registrations.
+[/list]
+
+Additional vanilla meters include [b]Nicotine Withdrawal, Idleness, and Poison[/b]. When CW Modpack Compatibility disables Lifestyle's hygiene need, its Hygiene meter is hidden without affecting independent Body Grime or Dental Hygiene meters.
 
 [h2]KNOW WHAT A STAT MEANS[/h2]
 
@@ -46,12 +64,12 @@ Set separate moodle and bar icon sizes, hide idle bars after a delay, and flash 
 [*]Made for Project Zomboid Build [b]42.20+[/b].
 [*][b]PZ Pulse is the only required mod.[/b]
 [*]In multiplayer, only state available locally or synchronized by the source mod can be shown. Match client and server mod lists and versions when a server-side source mod is involved.
-[*]If an optional mod stat isn't available. It just doesn't show.
+[*]If a supported optional source is inactive or its value cannot be read, only the affected row is hidden.
 [/list]
 
 [h2]THIRD-PARTY ARTWORK[/h2]
 
-This add-on includes moodle glyphs from supported mods so their states can appear with familiar in-game artwork. PZ Pulse's vanilla glyphs and colored moodle circles are reused at runtime. Artwork remains the property of its creators; no ownership is claimed. Copied glyphs come from Lifestyle: Hobbies (3403870858), Take A Bath And Shower (3592172476), Infirmities (3579088411), Medicine Moodles (3778856579), Brush Your Damn Teeth (3794105078), The Mutants (3796669056), DrugTime 89 (3632964785), and Nature's Call (3709126801). Mod authors or rights holders can contact me to request removal.
+This add-on includes moodle glyphs from supported mods so their states can appear with familiar in-game artwork. PZ Pulse's vanilla glyphs and colored moodle circles are reused at runtime. Artwork remains the property of its creators; no ownership is claimed. Copied glyphs come from Lifestyle: Hobbies (3403870858), Take A Bath And Shower (3592172476), Infirmities (3579088411), Medicine Moodles (3778856579), Brush Your Damn Teeth (3794105078), The Mutants (3796669056), DrugTime 89 (3632964785), Nature's Call (3709126801), and Casualties Undead (3805748433). Mod authors or rights holders can contact me to request removal.
 
 [h2]CURRENT FEATURES[/h2]
 
@@ -66,7 +84,7 @@ This release focuses on [b]Needs Expanded[/b]. The plans below are future work a
 
 [h2]FEATURE REQUESTS AND BUG REPORTS[/h2]
 
-I’ll set up separate pinned Workshop discussion threads for feature requests and bug reports. Please use the matching thread to keep feedback organized. For a bug report, include your Project Zomboid build, mod versions, steps to reproduce, and relevant logs or screenshots. For a feature request, describe the problem and the outcome you’d like.
+Use the dedicated [b]Bug Reports & Compatibility Issues[/b] and [b]Feature Requests & Suggestions[/b] topics in this item's [b]Discussions[/b] tab. Report bugs with your game build, PZ Pulse and Expanded versions, installed mods, reproduction steps, and relevant logs or screenshots. For feature requests, explain the idea, why it helps, and link any mod you would like supported.
 
 Back up important saves before changing a mod list.
 
