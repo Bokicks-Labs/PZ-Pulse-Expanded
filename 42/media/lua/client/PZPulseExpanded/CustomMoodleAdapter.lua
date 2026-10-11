@@ -7,58 +7,19 @@ PZPulseExpanded_CustomMoodleAdapter =
     PZPulseExpanded_CustomMoodleAdapter or {}
 
 local Adapter = PZPulseExpanded_CustomMoodleAdapter
+local ModSources = require("PZPulseExpanded/ModSources")
 
 local SOURCES = {
-    lifestyle = {
-        type = "mod",
-        id = "LifestyleHobbies",
-        name = "Lifestyle: Hobbies",
-    },
-    tasab = {
-        type = "mod",
-        id = "TakeABathAndShowerNew",
-        name = "Take A Bath And Shower",
-    },
-    infirmities = {
-        type = "mod",
-        id = "twbInfirmities",
-        name = "Infirmities",
-    },
-    medicine = {
-        type = "mod",
-        id = "MedicineMoodlesB42",
-        name = "Medicine Moodles",
-    },
-    teeth = {
-        type = "mod",
-        id = "BrushYourDamnTeeth",
-        name = "Brush Your Damn Teeth",
-    },
-    mutants = {
-        type = "mod",
-        id = "PZTheMutants",
-        name = "The Mutants",
-    },
-    drugtime = {
-        type = "mod",
-        id = "DrugTime89",
-        name = "DrugTime 89",
-    },
-    casualties = {
-        type = "mod",
-        id = "CasualtiesUndead",
-        name = "Casualties Undead",
-    },
-    natures_call = {
-        type = "mod",
-        id = "NC_NaturesCall",
-        name = "Nature's Call",
-    },
-    moodle_framework = {
-        type = "mod",
-        id = "MoodleFramework",
-        name = "Moodle Framework add-on",
-    },
+    lifestyle = ModSources.lifestyle,
+    tasab = ModSources.tasab,
+    infirmities = ModSources.infirmities,
+    medicine = ModSources.medicine,
+    teeth = ModSources.teeth,
+    mutants = ModSources.mutants,
+    drugtime = ModSources.drugtime,
+    casualties = ModSources.casualties,
+    natures_call = ModSources.naturesCall,
+    moodle_framework = ModSources.moodleFramework,
 }
 
 local MOODLE_FRAMEWORK_SOURCES = {
@@ -101,12 +62,7 @@ local NATURES_CALL_MOODLES = {
 }
 
 local function isActive(modId)
-    if getActivatedMods == nil then return false end
-
-    local mods = getActivatedMods()
-    if mods == nil or mods.contains == nil then return false end
-
-    return mods:contains(modId)
+    return ModSources.isActive(modId)
 end
 
 local function normalizeLevel(value, maxLevel)

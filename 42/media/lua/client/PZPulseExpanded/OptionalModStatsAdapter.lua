@@ -8,6 +8,7 @@ PZPulseExpanded_OptionalModStatsAdapter =
 
 local Adapter = PZPulseExpanded_OptionalModStatsAdapter
 local StatUtils = require("PZPulseExpanded/StatUtils")
+local Sources = require("PZPulseExpanded/ModSources")
 local caffeineMaximums = setmetatable({}, { __mode = "k" })
 
 local function finite(value, minimum, maximum)
@@ -16,23 +17,14 @@ local function finite(value, minimum, maximum)
     return number
 end
 
-local function isActive(modId)
-    if getActivatedMods == nil then return false end
-
-    local mods = getActivatedMods()
-    if mods == nil or mods.contains == nil then return false end
-
-    return mods:contains(modId)
-end
-
 local function add(values, player, key, raw, active)
     local value = StatUtils.sample(player, key, raw, active, false)
     if value ~= nil then values[key] = value end
 end
 
 local function lifestyleHygieneHidden()
-    if not (isActive("CWModpackCompatibility")
-        or isActive("CWModpackCompatibility_dev")) then
+    if not (Sources.isActive("CWModpackCompatibility")
+        or Sources.isActive("CWModpackCompatibility_dev")) then
         return false
     end
     local ownership = CWModpackCompatibility and CWModpackCompatibility.LifestyleOwnership
@@ -49,8 +41,8 @@ local function collectValues(player, modData, missing)
         and modData.BrushYourDamnTeeth or {}
     add(values, player, "lifestyle_hygiene_need",
         not missing and modData.hygieneNeed or nil,
-        isActive("LifestyleHobbies") and not lifestyleHygieneHidden())
-    local lifestyle = isActive("LifestyleHobbies")
+        Sources.isActive(Sources.lifestyle) and not lifestyleHygieneHidden())
+    local lifestyle = Sources.isActive(Sources.lifestyle)
     local moodles = type(modData.LSMoodles) == "table" and modData.LSMoodles or {}
     local embarrassed = type(moodles.Embarrassed) == "table"
         and moodles.Embarrassed or {}
@@ -61,16 +53,16 @@ local function collectValues(player, modData, missing)
     add(values, player, "lifestyle_beauty_need",
         not missing and finite(modData.BeautyNeed, 0, 100) or nil, lifestyle)
     add(values, player, "tasab_body_grime",
-        not missing and modData.tabas_BodyGrime or nil, isActive("TakeABathAndShowerNew"))
+        not missing and modData.tabas_BodyGrime or nil, Sources.isActive(Sources.tasab))
     add(values, player, "bydt_dental_hygiene",
-        not missing and teeth.dentalHygiene or nil, isActive("BrushYourDamnTeeth"))
-    local drugTime = isActive("DrugTime89")
+        not missing and teeth.dentalHygiene or nil, Sources.isActive(Sources.teeth))
+    local drugTime = Sources.isActive(Sources.drugtime)
     add(values, player, "drugtime_stoned",
         not missing and finite(modData.DT_Stoned, 0, 140) or nil, drugTime)
     add(values, player, "drugtime_hard",
         not missing and finite(modData.DT_HardDrug, 0, 160) or nil, drugTime)
 
-    local infirmities = isActive("twbInfirmities")
+    local infirmities = Sources.isActive(Sources.infirmities)
         and SandboxVars ~= nil and SandboxVars.Infirmities ~= nil
         and SandboxVars.Infirmities.StartAddictiveSystem == true
     local addictions = type(modData.addictions) == "table" and modData.addictions or {}
@@ -87,7 +79,7 @@ local function collectValues(player, modData, missing)
             infirmities)
     end
 
-    local caffeineActive = isActive("CaffeineMakesSense")
+    local caffeineActive = Sources.isActive(Sources.caffeine)
     local caffeineState = type(modData.CaffeineMakesSenseState) == "table"
         and modData.CaffeineMakesSenseState or nil
     local runtime = CaffeineMakesSense and CaffeineMakesSense.Runtime
@@ -131,7 +123,7 @@ local function collectValues(player, modData, missing)
     elseif not caffeineActive then
         caffeineMaximums[player] = nil
     end
-    local casualties = isActive("CasualtiesUndead")
+    local casualties = Sources.isActive(Sources.casualties)
     local drugs = CasualtiesUndead and CasualtiesUndead.Drugs
     if not missing and casualties and drugs
         and type(drugs.euphoria) == "function" then

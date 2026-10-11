@@ -3,6 +3,7 @@
 -- create the table first.
 PZ_Pulse_EXT = PZ_Pulse_EXT or {}
 
+require("PZPulseExpanded/ModSources")
 require("PZPulseExpanded/NaturesCallAdapter")
 require("PZPulseExpanded/OptionalModStatsAdapter")
 require("PZPulseExpanded/CustomMoodleAdapter")
@@ -12,6 +13,7 @@ local NaturesCallAdapter = PZPulseExpanded_NaturesCallAdapter
 local OptionalModStatsAdapter = PZPulseExpanded_OptionalModStatsAdapter
 local CustomMoodleAdapter = PZPulseExpanded_CustomMoodleAdapter
 local StatUtils = PZPulseExpanded_StatUtils
+local ModSources = PZPulseExpanded_ModSources
 
 -- Keep catches narrow. Kahlua may still print caught errors to console.txt, so
 -- callers should test for missing enums/getters before relying on pcall.
@@ -172,22 +174,7 @@ local function needsExpandedCollector(player)
 
     -- Availability is independent of a first valid stat reading. The browser
     -- uses it to disable choices for mods absent from this game's mod list.
-    local active = {}
-    local mods = getActivatedMods and getActivatedMods() or nil
-    for _, modId in ipairs({
-        "NC_NaturesCall", "LifestyleHobbies", "TakeABathAndShowerNew",
-        "BrushYourDamnTeeth", "DrugTime89", "twbInfirmities",
-        "CaffeineMakesSense",
-    }) do
-        active[modId] = mods ~= nil and mods.contains ~= nil
-            and mods:contains(modId) or false
-    end
-    if active.twbInfirmities and (SandboxVars == nil
-        or SandboxVars.Infirmities == nil
-        or SandboxVars.Infirmities.StartAddictiveSystem ~= true) then
-        active.twbInfirmities = false
-    end
-    values.active_mods = active
+    values.active_mods = ModSources.barAvailability()
 
     local naturesCall = collectNaturesCall(player)
     if naturesCall ~= nil then

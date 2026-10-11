@@ -8,20 +8,16 @@ PZPulseExpanded_NaturesCallAdapter = PZPulseExpanded_NaturesCallAdapter or {}
 
 local Adapter = PZPulseExpanded_NaturesCallAdapter
 local StatUtils = require("PZPulseExpanded/StatUtils")
+local Sources = require("PZPulseExpanded/ModSources")
 
-Adapter.MOD_ID = "NC_NaturesCall"
-Adapter.SOURCE_NAME = "Nature's Call"
+Adapter.MOD_ID = Sources.naturesCall.id
+Adapter.SOURCE_NAME = Sources.naturesCall.name
 Adapter.MIN_FILL = 0
 Adapter.MAX_FILL = 120
 local syncedPlayers = setmetatable({}, { __mode = "k" })
 
 local function isActive()
-    if getActivatedMods == nil then return false end
-
-    local activeMods = getActivatedMods()
-    if activeMods == nil or activeMods.contains == nil then return false end
-
-    return activeMods:contains(Adapter.MOD_ID)
+    return Sources.isActive(Sources.naturesCall)
 end
 
 local function isPureMultiplayerClient()
