@@ -1,0 +1,46 @@
+Discussion title: Bug Reports & Compatibility Issues
+
+[h2]Bug Reports & Compatibility Issues[/h2]
+
+Found an issue with PZ Pulse Expanded? Please report it in this discussion so I can investigate and keep reports organized.
+
+[b]Before posting[/b]
+[list]
+[*]Check that PZ Pulse and PZ Pulse Expanded are enabled and up to date, and restart after changing the mod list.
+[*]Look through existing reports for the same problem.
+[*]If possible, note whether it occurs with only PZ Pulse, PZ Pulse Expanded, and the affected optional mod enabled.
+[/list]
+
+[h2]Bug Report Template[/h2]
+
+[b]Project Zomboid build:[/b]
+[b]PZ Pulse version:[/b]
+[b]PZ Pulse Expanded version:[/b]
+[b]Single-player / multiplayer (host, client, dedicated server):[/b]
+[b]Affected optional mod and version, if applicable:[/b]
+
+[b]What went wrong?[/b]
+Describe the issue.
+
+[b]Steps to reproduce:[/b]
+1.
+2.
+3.
+
+[b]Expected result:[/b]
+What should happen?
+
+[b]Actual result:[/b]
+What happens instead?
+
+[b]Logs / screenshots:[/b]
+Include relevant console errors, screenshots, and a mod list or collection link where possible. Avoid sharing private server credentials or personal information.
+
+[b]Additional context:[/b]
+Does this occur on a new save? Did it start after an update? If multiplayer, does the source mod synchronize the relevant stat?
+
+[h2]Optional Mod Integrations[/h2]
+
+Needs Expanded observes already-existing source-mod values. If the source mod is disabled, its feature is turned off, or its data is not initialized or synchronized, the corresponding row may correctly remain hidden. Please mention which mod and stat you expected to see.
+
+Thank you for helping improve PZ Pulse Expanded!
