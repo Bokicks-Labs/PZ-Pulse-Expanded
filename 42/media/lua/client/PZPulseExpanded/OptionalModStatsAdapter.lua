@@ -50,6 +50,16 @@ local function collectValues(player, modData, missing)
     add(values, player, "lifestyle_hygiene_need",
         not missing and modData.hygieneNeed or nil,
         isActive("LifestyleHobbies") and not lifestyleHygieneHidden())
+    local lifestyle = isActive("LifestyleHobbies")
+    local moodles = type(modData.LSMoodles) == "table" and modData.LSMoodles or {}
+    local embarrassed = type(moodles.Embarrassed) == "table"
+        and moodles.Embarrassed or {}
+    add(values, player, "lifestyle_embarrassment",
+        not missing and finite(embarrassed.Value, 0, 1) or nil, lifestyle)
+    add(values, player, "lifestyle_comfort_need",
+        not missing and finite(modData.ComfortNeed, 0, 1) or nil, lifestyle)
+    add(values, player, "lifestyle_beauty_need",
+        not missing and finite(modData.BeautyNeed, 0, 100) or nil, lifestyle)
     add(values, player, "tasab_body_grime",
         not missing and modData.tabas_BodyGrime or nil, isActive("TakeABathAndShowerNew"))
     add(values, player, "bydt_dental_hygiene",
@@ -121,7 +131,21 @@ local function collectValues(player, modData, missing)
     elseif not caffeineActive then
         caffeineMaximums[player] = nil
     end
+    local casualties = isActive("CasualtiesUndead")
+    local drugs = CasualtiesUndead and CasualtiesUndead.Drugs
+    if not missing and casualties and drugs
+        and type(drugs.euphoria) == "function" then
+        local ok, euphoria = pcall(drugs.euphoria, player)
+        if ok and (type(modData.CU_Drug) == "table"
+            or (type(euphoria) == "number" and euphoria > 0)) then
+            add(values, player, "casualties_euphoria",
+                finite(euphoria, 0, 1), true)
+        end
+    end
     if values.lifestyle_hygiene_need == nil
+        and values.lifestyle_embarrassment == nil
+        and values.lifestyle_comfort_need == nil
+        and values.lifestyle_beauty_need == nil
         and values.tasab_body_grime == nil
         and values.bydt_dental_hygiene == nil
         and values.drugtime_stoned == nil
@@ -132,7 +156,8 @@ local function collectValues(player, modData, missing)
         and values.addiction_painkillers == nil
         and values.addiction_sleeping_pills == nil
         and values.addiction_amphetamines == nil
-        and values.caffeine_load == nil then
+        and values.caffeine_load == nil
+        and values.casualties_euphoria == nil then
         return nil
     end
     return values

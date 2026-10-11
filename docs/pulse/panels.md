@@ -42,6 +42,8 @@ existing moodle glyph map; optional mod bars reuse the matching embedded
 source-mod moodle glyph. Caffeine Level uses an original steaming coffee cup
 icon stored in `assets/moodle-icons/pz-pulse-expanded/CaffeineLevel.png` and
 embedded by the icon-map build script.
+Brush Your Damn Teeth uses separate glyphs for its long-term Dental Hygiene
+bar and its short-term Mouth State moodle.
 
 The shared row grid is expected to align:
 
@@ -62,6 +64,9 @@ an orange blend of yellow and PZ Pulse's red, and PZ Pulse's red. Positive
 moodle levels use progressively stronger green shades, ending in dark green.
 Three-level negative moodles use green-yellow, yellow, and red. Moodle badge
 artwork and colors still come directly from PZ Pulse.
+Dental Hygiene is deliberately not paired with the Mouth State moodle: the
+former changes with long-term hygiene, while the latter tracks time since
+brushing. Its bar follows the source mod's hygiene-effect bands instead.
 
 When a matching moodle is absent, the following value thresholds come from
 the installed Build 42.20 `MoodleStat` class and source-mod moodle code.

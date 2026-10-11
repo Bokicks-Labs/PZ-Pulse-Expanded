@@ -4,17 +4,28 @@ This inventory was built from the locally installed Project Zomboid Workshop
 sources for Build 42.20. It records moodle-producing mods that Needs Expanded
 can read without initializing or mutating their state.
 
+The 2026-10-11 follow-up checked the 342 IDs in the newest save's `mods.txt`
+(`Saves/Sandbox/2026-10-11_04-08-30`). Workshop source was mapped for 338 IDs;
+the remaining four are vehicle/viewpoint IDs whose Workshop `mod.info` did not
+match the preset literally. The source sweep checked
+character-stat references and custom moodle registrations, then traced likely
+player-owned continuous values to their writers and consumers.
+
 ## Continuous stat bars
 
 | Source mod | Mod ID | Stat | Source range | Direction |
 |---|---|---|---:|---|
 | Lifestyle: Hobbies | `LifestyleHobbies` | Hygiene Need | `0..100` | higher is worse |
+| Lifestyle: Hobbies | `LifestyleHobbies` | Embarrassment | `0..1` | higher is worse |
+| Lifestyle: Hobbies | `LifestyleHobbies` | Comfort Need | `0..1` | higher is better |
+| Lifestyle: Hobbies | `LifestyleHobbies` | Beauty Need | `0..100` | higher is better |
 | Take A Bath And Shower | `TakeABathAndShowerNew` | Body Grime | `0..100` | higher is worse |
 | Brush Your Damn Teeth | `BrushYourDamnTeeth` | Dental Hygiene | `0..1` | higher is better |
 | DrugTime 89 | `DrugTime89` | Stoned Intensity | `0..140` | higher is worse |
 | DrugTime 89 | `DrugTime89` | Hard Drug Intensity | `0..160` | higher is worse |
 | Infirmities | `twbInfirmities` | Alcohol, nicotine, caffeine, painkiller, sleeping-pill, and amphetamine addiction | `0..100` each | higher is worse |
 | Caffeine Makes Sense | `CaffeineMakesSense` | Caffeine Level | `0..MaxCaffeineLevel` | higher is worse |
+| Casualties Undead | `CasualtiesUndead` | Drug Euphoria | `0..1` | higher is a stronger high |
 
 The panel also reads vanilla Nicotine Withdrawal (`0..1`), Idleness (`0..1`),
 and Poison (`0..100`). These have active gameplay writers or consumers in the
@@ -23,6 +34,10 @@ panels. Infirmities bars require its addiction sandbox system to be enabled.
 Caffeine Makes Sense uses an existing server snapshot on a multiplayer client;
 other contexts calculate the load from its existing dose state without
 initializing it.
+Brush Your Damn Teeth's mouth-state moodle has four bad levels driven by days
+since brushing (sandbox configurable), independent of its long-term Dental
+Hygiene value. The Dental Hygiene bar instead changes severity at the mod's
+actual hygiene-effect bands: below `0.50`, `0.30`, and `0.10`.
 
 Each field is nullable. The collector preserves numeric zero but omits the row
 when the mod is inactive, its state table has not initialized, or the individual
@@ -78,6 +93,21 @@ matching bundled glyph is available; it never falls back to a stat bar.
 - DrugTime 89: `Stoned` and `Hard`
 - Nature's Call: unknown soilage, bladder, bowel, soilage, nearby smell, gut
   health, cramps, and heartburn
+- Casualties Undead: High, Miserable, and the worst active clinical condition
+
+Casualties Undead uses its own moodle UI. Its public drug high and condition
+readers are observed without creating state. Its blood pressure, oxygen,
+bleeding, organs, and condition details belong to the health panel rather than
+Needs Expanded; only its continuous drug euphoria becomes a bar here.
+
+Other reviewed active systems stayed out of Needs Expanded: Companion Dogs'
+animal needs belong to its companion panel, and its dog-specific moodles have
+no exposed read-only active registry; HydeCo Bees'
+swelling belongs to body-part health while its poison already feeds the Poison
+bar; Fitness Workout Overhaul changes existing vanilla bars; Immersive
+Blackouts tracks world utilities; and Scar System records individual injury
+scars. `ANGER` and `SANITY` appeared only as reductions or a bath benefit in
+the reviewed mod code, without evidence of an active accumulating need.
 
 Nature's Call bladder and bowel remain available as continuous bars as well as
 their active threshold moodles. Trait-hidden and unsynchronized values remain

@@ -39,9 +39,12 @@ function isServer() return false end
 
 local modData = {
     hygieneNeed = 67,
+    ComfortNeed = 0.72,
+    BeautyNeed = 74,
     tabas_BodyGrime = 38,
     BrushYourDamnTeeth = { dentalHygiene = 0.82 },
     LSMoodles = {
+        Embarrassed = { Level = 2, Alignment = "Bad", Value = 0.38, Tiers = 0, Icon = 1 },
         MindfulState = { Level = 2, Alignment = "Good", Value = 0.4, Tiers = 2, Icon = 0 },
         Hidden = { Level = 0, Alignment = "Bad", Value = 0 },
         Malformed = { Level = 3, Value = 0.6 },
@@ -107,6 +110,9 @@ local moodleAdapter = require("PZPulseExpanded/CustomMoodleAdapter")
 next = nil
 local stats = statsAdapter.collect(player)
 assert(stats.lifestyle_hygiene_need == 67)
+assert(stats.lifestyle_embarrassment == 0.38)
+assert(stats.lifestyle_comfort_need == 0.72)
+assert(stats.lifestyle_beauty_need == 74)
 assert(stats.tasab_body_grime == 38)
 assert(stats.bydt_dental_hygiene == 0.82)
 
@@ -125,6 +131,9 @@ active.CWModpackCompatibility = false
 assert(statsAdapter.collect(player).lifestyle_hygiene_need == 67)
 
 modData.hygieneNeed = nil
+modData.ComfortNeed = nil
+modData.BeautyNeed = nil
+modData.LSMoodles.Embarrassed = nil
 modData.tabas_BodyGrime = "bad"
 modData.BrushYourDamnTeeth.dentalHygiene = nil
 local retained = statsAdapter.collect(player)
@@ -141,6 +150,31 @@ assert(statsAdapter.collect(player) == nil, "disabled source must clear history"
 active.LifestyleHobbies = true
 assert(statsAdapter.collect(player).lifestyle_hygiene_need == 68)
 
+active.CasualtiesUndead = true
+modData.CU_Drug = { id = "morphine" }
+modData.CU_Terms = { concussion = true }
+CasualtiesUndead = {
+    Drugs = {
+        euphoria = function() return modData.CU_Drug and 0.64 or 0 end,
+        highLevel = function() return 3, 0.64 end,
+    },
+    Mind = { isMiserable = function() return true end },
+    Options = { showMoodles = function() return true end },
+    Conditions = {
+        enabled = function() return true end,
+        worst = function() return { id = "concussion", grade = 2 } end,
+        organOf = function() return "Brain" end,
+    },
+    Terms = { enabled = function() return true end },
+}
+assert(statsAdapter.collect(player).casualties_euphoria == 0.64)
+modData.CU_Drug = nil
+assert(statsAdapter.collect(player).casualties_euphoria == nil,
+    "absent drug data must not create a euphoria bar")
+CasualtiesUndead.Drugs.euphoria = function() return 0.5 end
+assert(statsAdapter.collect(player).casualties_euphoria == 0.5,
+    "an active overdose can produce euphoria without stored drug data")
+
 local moodles = moodleAdapter.collect(player)
 assert(type(moodles) == "table")
 
@@ -150,6 +184,9 @@ for _, moodle in ipairs(moodles) do
 end
 
 assert(byId["LifestyleHobbies:MindfulState"].label == "Mindful")
+assert(byId["CasualtiesUndead:High"].level == 3)
+assert(byId["CasualtiesUndead:Miserable"].iconKey == "casualties-undead/Miserable")
+assert(byId["CasualtiesUndead:Condition"].iconKey == "casualties-undead/Organ_Brain")
 assert(byId["LifestyleHobbies:MindfulState"].iconKey == "lifestyle/MindfulState1")
 assert(byId["LifestyleHobbies:Hidden"] == nil)
 assert(byId["LifestyleHobbies:Malformed"] == nil)
@@ -169,6 +206,7 @@ assert(byId["NC_NaturesCall:NCGut"].iconKey == "natures-call/NCGutBad")
 active.LifestyleHobbies = false
 active.TakeABathAndShowerNew = false
 active.BrushYourDamnTeeth = false
+active.CasualtiesUndead = false
 active.MedicineMoodlesB42 = false
 
 assert(statsAdapter.collect(player) == nil,

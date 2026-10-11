@@ -52,12 +52,19 @@ Copied from `common/media/ui/`: `Antibiotics.png`, `Antidepressants.png`,
 
 ### Brush Your Damn Teeth — Workshop 3794105078, author Cam3
 
-Copied `42/media/ui/BYDT_mouth_state.png` and stored it as
-`teeth/BYDT_MouthState.png` so its filename matches the runtime moodle name.
+Copied `42/media/ui/BYDT_mouth_state.png` as `teeth/BYDT_MouthState.png`
+for the active mouth-state moodle. The earlier mouth glyph is retained as
+`teeth/BYDT_DentalHygiene.png` for the separate long-term hygiene bar.
 
 ### The Mutants — Workshop 3796669056
 
 Copied `common/media/ui/PZTheMutants_Puked.png`.
+
+### Casualties Undead — Workshop 3805748433
+
+Copied `High.png`, `Miserable.png`, and the eight `Organ_*.png` glyphs from
+`common/media/textures/CasualtiesUndead/` into `casualties-undead/` for its
+custom moodles and Drug Euphoria bar.
 
 ### DrugTime 89 — Workshop 3632964785
 

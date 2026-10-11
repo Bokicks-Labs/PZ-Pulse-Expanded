@@ -340,7 +340,7 @@ test("order view lists every bar and disables moves at the ends", () => {
     const html = context.__list.innerHTML;
     assert.equal(count(html, 'class="needs-expanded-order-line"'), api.BAR_CHOICES.length);
     assert.match(html, /data-bar-move="-1" data-bar-id="hunger"[^>]* disabled/);
-    assert.match(html, /data-bar-move="1" data-bar-id="caffeine_load"[^>]* disabled/);
+    assert.match(html, /data-bar-move="1" data-bar-id="casualties_euphoria"[^>]* disabled/);
     assert.match(html, /Reset order/);
     assert.match(html, /src="hunger-icon"/);
     assert.equal(count(html, 'class="needs-expanded-choice-icon"'), api.BAR_CHOICES.length);
@@ -355,14 +355,16 @@ test("renders the agreed new bars once and honors independent saved choices", ()
             addiction_alcohol: 50, addiction_nicotine: 40,
             addiction_caffeine: 30, addiction_painkillers: 20,
             addiction_sleeping_pills: 10, addiction_amphetamines: 0,
-            caffeine_load: 2, caffeine_load_max: 8
+            caffeine_load: 2, caffeine_load_max: 8,
+            casualties_euphoria: 0.64
         }
     }});
-    assert.equal(api.BAR_CHOICES.length, 30);
-    assert.equal(count(html, 'class="needs-expanded-row"'), 10);
+    assert.equal(api.BAR_CHOICES.length, 34);
+    assert.equal(count(html, 'class="needs-expanded-row"'), 11);
     assert.equal(countLabel(html, "Nicotine Withdrawal"), 1);
     assert.equal(countLabel(html, "Poison"), 1);
     assert.equal(countLabel(html, "Caffeine Level"), 1);
+    assert.equal(countLabel(html, "Drug Euphoria"), 1);
     assert.equal(countLabel(html, "Alcohol Addiction"), 0);
     assert.equal(countLabel(html, "Idleness"), 0);
 });
@@ -543,18 +545,28 @@ test("mod bar levels follow their source thresholds and active moodles", () => {
     assert.equal(api.statBarClass(stat("lifestyle_hygiene_need", 40)), "ok");
     assert.equal(api.statBarClass(stat("lifestyle_hygiene_need", 60)), "ok");
     assert.equal(api.statBarClass(stat("lifestyle_hygiene_need", 90.01)), "bad4");
+    assert.equal(api.statBarClass(stat("lifestyle_embarrassment", 0.14, 1)), "ok");
+    assert.equal(api.statBarClass(stat("lifestyle_embarrassment", 0.15, 1)), "bad1");
+    assert.equal(api.statBarClass(stat("lifestyle_embarrassment", 0.7, 1)), "bad4");
+    assert.equal(api.statBarClass(stat("lifestyle_beauty_need", 9.99)), "bad4");
+    assert.equal(api.statBarClass(stat("lifestyle_beauty_need", 90.01)), "good4");
     assert.equal(api.statBarClass(stat("tasab_body_grime", 45)), "bad2");
     assert.equal(api.statBarClass(stat("tasab_body_grime", 75)), "bad3");
     assert.equal(api.statBarClass(stat("tasab_body_grime", 90)), "bad4");
     assert.equal(api.statBarClass(stat("drugtime_stoned", 105, 140)), "good4");
     assert.equal(api.statBarClass(stat("drugtime_hard", 120, 160)), "bad4");
+    assert.equal(api.statBarClass(stat("casualties_euphoria", 0.02, 1, false)), "ok");
+    assert.equal(api.statBarClass(stat("casualties_euphoria", 0.75, 1, false)), "good4");
 
     const active = (id, level, valence = "bad", maxLevel = 4) => ({
         id, label: id, level, maxLevel, valence,
         source: { type: "mod", id: "test", name: "Test" }
     });
-    assert.equal(api.statBarClass(stat("bydt_dental_hygiene", 0.9, 1, false),
-        [active("BrushYourDamnTeeth:BYDT_MouthState", 4)]), "bad4");
+    const mouth = [active("BrushYourDamnTeeth:BYDT_MouthState", 4)];
+    assert.equal(api.statBarClass(stat("bydt_dental_hygiene", 0.9, 1, false), mouth), "ok");
+    assert.equal(api.statBarClass(stat("bydt_dental_hygiene", 0.49, 1, false), mouth), "bad1");
+    assert.equal(api.statBarClass(stat("bydt_dental_hygiene", 0.29, 1, false), mouth), "bad2");
+    assert.equal(api.statBarClass(stat("bydt_dental_hygiene", 0.09, 1, false), mouth), "bad4");
     assert.equal(api.statBarClass(stat("addiction_alcohol", 20),
         [active("twbInfirmities:AddictedToAlcohol", 1)]), "bad1");
     assert.equal(api.statBarClass(stat("addiction_alcohol", 95)), "ok");
@@ -663,6 +675,9 @@ test("renders optional mod stats independently and omits missing or malformed va
         needs_expanded: {
             optional_mod_stats: {
                 lifestyle_hygiene_need: 67,
+                lifestyle_embarrassment: 0.38,
+                lifestyle_comfort_need: 0.72,
+                lifestyle_beauty_need: 74,
                 tasab_body_grime: "bad",
                 bydt_dental_hygiene: 0.82
             }
@@ -670,6 +685,9 @@ test("renders optional mod stats independently and omits missing or malformed va
     });
 
     assert.equal(countLabel(html, "Hygiene Need"), 1);
+    assert.equal(countLabel(html, "Embarrassment"), 1);
+    assert.equal(countLabel(html, "Comfort Need"), 1);
+    assert.equal(countLabel(html, "Beauty Need"), 1);
     assert.equal(countLabel(html, "Body Grime"), 0);
     assert.equal(countLabel(html, "Dental Hygiene"), 1);
     assert.match(api.tooltipText("stat:lifestyle_hygiene_need"), /Source: Lifestyle: Hobbies/);
