@@ -686,8 +686,8 @@ test("renders optional mod stats independently and omits missing or malformed va
 
     assert.equal(countLabel(html, "Hygiene Need"), 1);
     assert.equal(countLabel(html, "Embarrassment"), 1);
-    assert.equal(countLabel(html, "Comfort Need"), 1);
-    assert.equal(countLabel(html, "Beauty Need"), 1);
+    assert.equal(countLabel(html, "Comfort"), 1);
+    assert.equal(countLabel(html, "Beauty"), 1);
     assert.equal(countLabel(html, "Body Grime"), 0);
     assert.equal(countLabel(html, "Dental Hygiene"), 1);
     assert.match(api.tooltipText("stat:lifestyle_hygiene_need"), /Source: Lifestyle: Hobbies/);

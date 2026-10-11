@@ -296,7 +296,7 @@ const NATURES_CALL_STAT_DEFINITIONS = {
 
 const OPTIONAL_MOD_STAT_DEFINITIONS = {
     lifestyle_hygiene_need: {
-        label: "Hygiene Need",
+        label: "Hygiene",
         description: "Lifestyle's current need to wash. Higher values mean dirtier.",
         min: 0,
         max: 100,
@@ -310,11 +310,11 @@ const OPTIONAL_MOD_STAT_DEFINITIONS = {
         iconKey: "lifestyle/Embarrassed", source: LIFESTYLE_SOURCE
     },
     lifestyle_comfort_need: {
-        label: "Comfort Need", min: 0, max: 1, badHigh: false,
+        label: "Comfort", min: 0, max: 1, badHigh: false,
         iconKey: "lifestyle/Comfort", source: LIFESTYLE_SOURCE
     },
     lifestyle_beauty_need: {
-        label: "Beauty Need", min: 0, max: 100, badHigh: false,
+        label: "Beauty", min: 0, max: 100, badHigh: false,
         iconKey: "lifestyle/BeautyGood", source: LIFESTYLE_SOURCE
     },
     tasab_body_grime: {

@@ -89,7 +89,7 @@ the listed value.
 | Drunkenness | >10, >30, >50, >70 |
 | Discomfort | ≥20, ≥40, ≥60, ≥80 |
 | Nature's Call bladder and bowel | ≥70, ≥95, >100 of 120 fill |
-| Lifestyle Hygiene Need | good: <40, <30, <20, <10; bad: >60, >70, >80, >90 |
+| Lifestyle Hygiene | good: <40, <30, <20, <10; bad: >60, >70, >80, >90 |
 | TASAB Body Grime | ≥45 (level 2), ≥75 (level 3), ≥90 (level 4) |
 | DrugTime 89 Stoned / Hard | >0, ≥70 / ≥80, ≥105 / ≥120 |
 
