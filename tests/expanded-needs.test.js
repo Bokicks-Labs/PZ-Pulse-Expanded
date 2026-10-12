@@ -153,6 +153,25 @@ test("pins keep zero bars visible and suppress reveal flashes", () => {
     assert.equal(count(html, "needs-expanded-bar-flash"), 0);
 });
 
+test("Drug Euphoria auto-hides at zero while retaining its beneficial colors", () => {
+    const payload = { needs_expanded: {
+        optional_mod_stats: { casualties_euphoria: 0 }
+    } };
+    const hidden = loadRenderer(null, { auto_hide_zero: true, flash_increases: false });
+    assert.equal(countLabel(hidden.api.renderNeedsExpanded(payload), "Drug Euphoria"), 0);
+
+    payload.needs_expanded.optional_mod_stats.casualties_euphoria = 0.5;
+    assert.equal(countLabel(hidden.api.renderNeedsExpanded(payload), "Drug Euphoria"), 1);
+    assert.equal(hidden.api.statBarClass(hidden.api.adaptOptionalModStats(
+        payload.needs_expanded.optional_mod_stats)[0]), "good3");
+
+    payload.needs_expanded.optional_mod_stats.casualties_euphoria = 0;
+    const pinned = loadRenderer(null, { auto_hide_zero: true }, { casualties_euphoria: true });
+    assert.equal(countLabel(pinned.api.renderNeedsExpanded(payload), "Drug Euphoria"), 1);
+    const autoHideOff = loadRenderer(null, { auto_hide_zero: false });
+    assert.equal(countLabel(autoHideOff.api.renderNeedsExpanded(payload), "Drug Euphoria"), 1);
+});
+
 test("flash setting has no effect without auto-hide", () => {
     const renderer = loadRenderer(null, { auto_hide_zero: false, flash_increases: true });
     const payload = { needs: vanillaNeeds(), needs_expanded: {} };

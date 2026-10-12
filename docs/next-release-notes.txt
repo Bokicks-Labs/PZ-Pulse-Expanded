@@ -1,14 +1,13 @@
 PZ Pulse Expanded - Workshop Release Notes
-Prepared version: 1.4.0 (not yet published)
-Published Steam baseline: 1.3.0 (October 10, 2026)
+Prepared version: 1.4.1 (not yet published)
+Published Steam baseline: 1.4.0 (confirmed by the author)
 
-The complete Steam-formatted 1.4.0 entry is maintained at
-docs/steam-changelog.txt. It includes all changes since the 1.3.0 Workshop
-push, including the optional-mod meters and the new stat bar health reporting.
+The complete Steam-formatted 1.4.1 entry is maintained at
+docs/steam-changelog.txt. This patch fixes Drug Euphoria remaining visible
+at zero when auto-hide is enabled and the bar is not pinned.
 
 Release status:
-- Source version and PZ Pulse extension version are set to 1.4.0.
-- Browser and Lua automated tests pass; manual in-game testing was completed by the author.
-- Workshop staging is synchronized by Scripts/publish-to-pz-workshop.ps1 after the release commit.
-- Before publishing, replace the SCREENSHOT_* placeholders in workshop.txt with real Steam image URLs.
+- Source version and PZ Pulse extension version are set to 1.4.1.
+- Browser renderer tests pass (34/34); manual in-game testing of the auto-hide fix was confirmed by the author. Lua tests were not rerun for this browser-only change.
+- Workshop staging is synchronized with the current source and metadata by Scripts/publish-to-pz-workshop.ps1 (12 payload files verified).
 - Staging does not upload or publish the item; publish through Steam after reviewing the staged files and metadata.

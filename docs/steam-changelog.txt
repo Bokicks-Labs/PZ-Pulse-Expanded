@@ -1,5 +1,13 @@
 [h1]PZ Pulse Expanded - Changelog[/h1]
 
+[h2]Version 1.4.1 - Drug Euphoria Auto-Hide Fix[/h2]
+
+[list]
+[*]Fixed Drug Euphoria remaining visible at zero when auto-hide is enabled and the bar is not pinned.
+[/list]
+
+[hr][/hr]
+
 [h2]Version 1.4.0 - More Optional Mod Support and Stat Health[/h2]
 
 [list]

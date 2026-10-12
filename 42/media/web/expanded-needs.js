@@ -356,7 +356,7 @@ const OPTIONAL_MOD_STAT_DEFINITIONS = {
     caffeine_load: { label: "Caffeine Level", min: 0, max: 4, badHigh: true,
         iconKey: "pz-pulse-expanded/CaffeineLevel",
         source: { type: "mod", id: "CaffeineMakesSense", name: "Caffeine Makes Sense" } },
-    casualties_euphoria: { label: "Drug Euphoria", min: 0, max: 1, badHigh: false,
+    casualties_euphoria: { label: "Drug Euphoria", min: 0, max: 1, badHigh: false, idleAtZero: true,
         iconKey: "casualties-undead/High",
         source: { type: "mod", id: "CasualtiesUndead", name: "Casualties Undead" } }
 };
@@ -1950,7 +1950,8 @@ function renderNeedsExpanded(d) {
         if (value === null) continue;
         const previous = barTiming.get(stat.id);
         const timing = previous || { value, zeroSince: null, flashStartedAt: 0, flashUntil: 0, hidden: false };
-        const eligible = autoHide && stat.badHigh === true && !barPinned(stat.id);
+        const eligible = autoHide && (stat.badHigh === true || stat.idleAtZero === true)
+            && !barPinned(stat.id);
         if (!eligible || !flashIncreases) timing.flashUntil = 0;
         if (previous && previous.hidden && value > 0 && eligible && barVisible(stat.id)
             && flashIncreases && flashDuration > 0) {
@@ -1968,8 +1969,8 @@ function renderNeedsExpanded(d) {
         barTiming.set(stat.id, timing);
 
         if (!barVisible(stat.id)) continue;
-        // A low value is beneficial only for badHigh stats. Zero stamina and
-        // zero dental hygiene remain visible because they require attention.
+        // Most idle bars are badHigh; an explicitly idle-at-zero beneficial
+        // effect such as Drug Euphoria can hide without changing its colors.
         if (eligible && value === 0) {
             if (timing.hidden) continue;
             keepDeadline(timing.zeroSince + hideDelay);
