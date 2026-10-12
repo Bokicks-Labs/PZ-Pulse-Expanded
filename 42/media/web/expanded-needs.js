@@ -739,8 +739,30 @@ function buildPlayerStats(values, definitions) {
  * @param {*} needs
  * @returns {PlayerStat[]}
  */
-function adaptPzPulseNeeds(needs) {
+const barHealthProblemLogs = new Set();
+let missingNeedsPayloadLogged = false;
+
+function markBarProblem(health, id, detail) {
+    health[id] = "problem";
+    if (!barHealthProblemLogs.has(id)) {
+        barHealthProblemLogs.add(id);
+        if (typeof console !== "undefined" && typeof console.warn === "function") {
+            console.warn(`[PZ Pulse Expanded] Stat bar ${id} could not read PZ Pulse Needs+ data: ${detail}`);
+        }
+    }
+}
+
+function adaptPzPulseNeeds(needs, health = {}) {
     if (!Array.isArray(needs)) {
+        if (!missingNeedsPayloadLogged) {
+            missingNeedsPayloadLogged = true;
+            if (typeof console !== "undefined" && typeof console.warn === "function") {
+                console.warn("[PZ Pulse Expanded] PZ Pulse Needs+ payload is missing; all mapped bars have a collection problem.");
+            }
+        }
+        for (const definition of PZ_PULSE_NEED_DEFINITIONS) {
+            health[definition.id] = "problem";
+        }
         return [];
     }
 
@@ -751,6 +773,7 @@ function adaptPzPulseNeeds(needs) {
         const upstream = needs[index];
 
         if (!isValidObject(upstream)) {
+            markBarProblem(health, definition.id, "row is missing or malformed");
             continue;
         }
 
@@ -759,6 +782,7 @@ function adaptPzPulseNeeds(needs) {
             typeof upstream.badHigh !== "boolean" ||
             upstream.badHigh !== definition.badHigh
         ) {
+            markBarProblem(health, definition.id, "row identity did not match the expected Needs+ order");
             continue;
         }
 
@@ -766,6 +790,13 @@ function adaptPzPulseNeeds(needs) {
             isNonEmptyString(upstream.icon) &&
             upstream.icon !== definition.iconKey
         ) {
+            markBarProblem(health, definition.id, "row icon did not match the expected Needs+ order");
+            continue;
+        }
+
+        const rawValue = Number(upstream.value);
+        if (!isFiniteNumber(upstream.value) || rawValue < 0 || rawValue > 100) {
+            markBarProblem(health, definition.id, "value is outside the expected 0–100 range");
             continue;
         }
 
@@ -786,6 +817,9 @@ function adaptPzPulseNeeds(needs) {
 
         if (stat !== null) {
             stats.push(stat);
+            health[definition.id] = "reporting";
+        } else {
+            markBarProblem(health, definition.id, "value failed validation");
         }
     }
 
@@ -1552,6 +1586,7 @@ try {
     }
 } catch (_) { /* Browser storage can be unavailable; defaults still work. */ }
 let barAvailability = {};
+let barHealth = {};
 let barModal = null;
 let barChooserMode = "visibility";
 let observedGear = null;
@@ -1604,6 +1639,21 @@ function barVisible(id) {
 
 function barPinned(id) {
     return barPins[id] === true;
+}
+
+const BAR_HEALTH_LABELS = {
+    available: "Available",
+    waiting: "Waiting for Data",
+    reporting: "Reporting",
+    recent: "Using Recent Value",
+    problem: "Problem",
+    unavailable: "Unavailable"
+};
+
+function barHealthMarkup(id) {
+    const status = BAR_HEALTH_LABELS[barHealth[id]] ? barHealth[id] : "available";
+    return `<span class="needs-expanded-choice-status needs-expanded-choice-status-${status}">` +
+        `${esc(BAR_HEALTH_LABELS[status])}</span>`;
 }
 
 function saveBarPins() {
@@ -1664,7 +1714,8 @@ function renderBarChoices() {
             const source = choice.source || "Project Zomboid";
             return `<div class="needs-expanded-order-line">` +
                 `<span class="needs-expanded-order-name"><span class="needs-expanded-order-number">${index + 1}.</span>` +
-                `${barChoiceIcon(choice)}<span>${esc(choice.label)} <small>${esc(source)}</small></span></span>` +
+                `${barChoiceIcon(choice)}<span>${esc(choice.label)} <small>${esc(source)}</small></span>` +
+                `${barHealthMarkup(id)}</span>` +
                 `<button type="button" data-bar-move="-1" data-bar-id="${esc(id)}" aria-label="Move ${esc(choice.label)} up"${index === 0 ? " disabled" : ""}>↑</button>` +
                 `<button type="button" data-bar-move="1" data-bar-id="${esc(id)}" aria-label="Move ${esc(choice.label)} down"${index === barOrder.length - 1 ? " disabled" : ""}>↓</button></div>`;
         }).join("");
@@ -1682,7 +1733,7 @@ function renderBarChoices() {
             `<div class="needs-expanded-choice-line"><label class="needs-expanded-choice${available ? "" : " needs-expanded-choice-unavailable"}">` +
             `<input type="checkbox" data-bar-id="${esc(choice.id)}"` +
             `${barVisible(choice.id) ? " checked" : ""}${available ? "" : " disabled"}>` +
-            `${barChoiceIcon(choice)}<span>${esc(choice.label)}</span></label>` +
+            `${barChoiceIcon(choice)}<span>${esc(choice.label)}</span>${barHealthMarkup(choice.id)}</label>` +
             `<label class="needs-expanded-choice-pin${available ? "" : " needs-expanded-choice-unavailable"}" ` +
             `title="Keep this bar visible at zero when auto-hide is enabled">` +
             `<input type="checkbox" data-bar-pin="${esc(choice.id)}"` +
@@ -1833,7 +1884,6 @@ function renderNeedsExpanded(d) {
     const availabilityChanged = JSON.stringify(nextAvailability) !== JSON.stringify(barAvailability);
     barAvailability = nextAvailability;
     ensureBarChooserButton();
-    if (barModal && availabilityChanged) renderBarChoices();
 
     // Source adapters supply values; saved bar IDs determine row order.
     const moodles = [
@@ -1841,13 +1891,26 @@ function renderNeedsExpanded(d) {
         ...adaptCustomMoodles(values.custom_moodles)
     ];
 
+    const nextHealth = isValidObject(values.bar_health) ? { ...values.bar_health } : {};
     const stats = [
-        ...adaptPzPulseNeeds(d.needs),
+        ...adaptPzPulseNeeds(d.needs, nextHealth),
         ...buildPlayerStats(values, PLAYER_STAT_DEFINITIONS),
         ...buildPlayerStats(values.vanilla_stats, PLAYER_STAT_DEFINITIONS),
         ...adaptNaturesCallStats(values.natures_call),
         ...adaptOptionalModStats(values.optional_mod_stats)
     ];
+    for (const stat of stats) {
+        if (!BAR_HEALTH_LABELS[nextHealth[stat.id]]) nextHealth[stat.id] = "reporting";
+    }
+    for (const choice of BAR_CHOICES) {
+        if (BAR_HEALTH_LABELS[nextHealth[choice.id]]) continue;
+        nextHealth[choice.id] = choice.mod
+            ? (nextAvailability[choice.mod] === true ? "available" : "unavailable")
+            : "available";
+    }
+    const healthChanged = JSON.stringify(nextHealth) !== JSON.stringify(barHealth);
+    barHealth = nextHealth;
+    if (barModal && (availabilityChanged || healthChanged)) renderBarChoices();
     const orderIndex = new Map(barOrder.map((id, index) => [id, index]));
     stats.sort((a, b) => (orderIndex.get(a.id) ?? barOrder.length)
         - (orderIndex.get(b.id) ?? barOrder.length));

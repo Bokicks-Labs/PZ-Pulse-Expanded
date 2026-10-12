@@ -47,13 +47,20 @@ local function assertEqual(actual, expected, message)
 end
 
 active = false
-assertNil(Adapter.collect(playerWith({
+local inactiveValues, inactiveHealth = Adapter.collect(playerWith({
     NaturesCall = { bladderFill = 10, bowelFill = 20 },
-})), "inactive mod must not expose stale state")
+}))
+assertNil(inactiveValues, "inactive mod must not expose stale state")
+assertEqual(inactiveHealth.natures_call_bladder, "unavailable")
 
 active = true
-assertNil(Adapter.collect(playerWith({})), "absent source state")
-assertNil(Adapter.collect(playerWith({ NaturesCall = {} })), "uninitialized source state")
+local absentValues, absentHealth = Adapter.collect(playerWith({}))
+assertEqual(absentValues.bladder, 0, "missing source state gets a visible placeholder")
+assertEqual(absentValues.bowel, 0, "missing source state gets a visible placeholder")
+assertEqual(absentHealth.natures_call_bladder, "waiting")
+local uninitializedValues, uninitializedHealth = Adapter.collect(playerWith({ NaturesCall = {} }))
+assertEqual(uninitializedValues.bladder, 0)
+assertEqual(uninitializedHealth.natures_call_bladder, "waiting")
 
 local localState = {
     bladderFill = 0,
@@ -91,9 +98,12 @@ assertEqual(hiddenLocal.bowel, 60, "unrelated local meter must survive")
 
 client = true
 server = false
-assertNil(Adapter.collect(playerWith({
+local unsyncedValues, unsyncedHealth = Adapter.collect(playerWith({
     NaturesCall = { bladderFill = 0, bowelFill = 0 },
-})), "pure client defaults are not authoritative before owner sync")
+}))
+assertEqual(unsyncedValues.bladder, 0,
+    "unsynchronized state gets a zero placeholder")
+assertEqual(unsyncedHealth.natures_call_bladder, "waiting")
 
 local syncedState = {
     bladderFill = 0,
@@ -123,13 +133,17 @@ local intermittentPlayer = playerWith({ NaturesCall = intermittentState })
 assertEqual(Adapter.collect(intermittentPlayer).bladder, 45)
 intermittentState.ownerSnapshot = { bladderFill = "bad", bowelFill = 71 }
 for _ = 1, 10 do
-    local values = Adapter.collect(intermittentPlayer)
+    local values, health = Adapter.collect(intermittentPlayer)
     assertEqual(values.bladder, 45, "many brief invalid reads retain last valid fill")
     assertEqual(values.bowel, 71, "good fills continue to update")
+    assertEqual(health.natures_call_bladder,
+        "recent", "retained readings have an explicit health state")
 end
 now = now + 90001
-assertNil(Adapter.collect(intermittentPlayer).bladder,
+local expiredValues, expiredHealth = Adapter.collect(intermittentPlayer)
+assertNil(expiredValues.bladder,
     "invalid reads past the grace period hide the broken meter")
+assertEqual(expiredHealth.natures_call_bladder, "problem")
 intermittentState.ownerSnapshot = { bladderFill = 46, bowelFill = 72 }
 assertEqual(Adapter.collect(intermittentPlayer).bladder, 46,
     "recovered fill becomes visible again")
@@ -143,6 +157,9 @@ assertEqual(Adapter.collect(intermittentPlayer).bowel, 73,
 active = false
 assertNil(Adapter.collect(intermittentPlayer), "inactive mod clears retained values")
 active = true
-assertNil(Adapter.collect(intermittentPlayer), "reactivation needs a fresh snapshot")
+local reactivatedValues, reactivatedHealth = Adapter.collect(intermittentPlayer)
+assertEqual(reactivatedValues.bladder, 0,
+    "reactivation shows zero until a fresh snapshot arrives")
+assertEqual(reactivatedHealth.natures_call_bladder, "waiting")
 
 print("Nature's Call adapter fixtures passed")

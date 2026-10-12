@@ -123,8 +123,9 @@ of order.
 PZ Pulse's `d.needs` shape is a private dependency. The current adapter targets
 the exact ordered collector contract verified in PZ Pulse 1.1.3 and validates
 individual rows before normalization. Missing or invalid rows are skipped
-without affecting the other sources. This applies per stat: an installed but
-uninitialized mod does not create a zero bar.
+without affecting the other sources and are marked as problems in Manage Stat
+Bars. An active mod with no initial value creates a zero placeholder marked
+**Waiting for Data**; a valid source zero is marked **Reporting**.
 
 ## Stat visibility
 
@@ -133,7 +134,8 @@ a source-organized list with one checkbox for each source and one for every
 continuous bar. A source checkbox switches all of that source's bars together;
 individual checkboxes remain independent. Choices apply immediately and persist
 in this browser's local storage. Each bar shows its stat icon in the visibility
-and order views. An inactive source mod
+and order views, alongside its health: **Available**, **Waiting for Data**,
+**Reporting**, **Using Recent Value**, **Problem**, or **Unavailable**. An inactive source mod
 leaves its choices visible but dimmed and disabled; their saved values remain
 available if the mod becomes active later. Infirmities choices are also disabled
 when its addiction system is off. Missing per-player state does not make an

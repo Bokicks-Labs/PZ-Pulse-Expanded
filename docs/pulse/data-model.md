@@ -37,6 +37,14 @@ Panel renderers decide whether that means:
 
 Unexpected programming errors should not be broadly swallowed. PZ Pulse already isolates renderer exceptions and reports them through its own diagnostics.
 
+Needs Expanded also carries an internal `bar_health` map keyed by stable stat
+ID. Its values are `available`, `waiting`, `reporting`, `recent`, `problem`,
+or `unavailable`. The Manage Stat Bars dialog displays these as **Available**,
+**Waiting for Data**, **Reporting**, **Using Recent Value**, **Problem**, and
+**Unavailable**. PZ Pulse's private `d.needs` rows are validated in the browser
+and contribute their own health states. This metadata is internal to the panel;
+it is not part of the draft third-party provider API.
+
 ---
 
 # Stat

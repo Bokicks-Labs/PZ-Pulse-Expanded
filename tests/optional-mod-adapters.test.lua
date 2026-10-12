@@ -108,8 +108,9 @@ local moodleAdapter = require("PZPulseExpanded/CustomMoodleAdapter")
 
 -- The reported multiplayer runtime had no callable next() global.
 next = nil
-local stats = statsAdapter.collect(player)
+local stats, statsHealth = statsAdapter.collect(player)
 assert(stats.lifestyle_hygiene_need == 67)
+assert(statsHealth.lifestyle_hygiene_need == "reporting")
 assert(stats.lifestyle_embarrassment == 0.38)
 assert(stats.lifestyle_comfort_need == 0.72)
 assert(stats.lifestyle_beauty_need == 74)
@@ -136,17 +137,25 @@ modData.BeautyNeed = nil
 modData.LSMoodles.Embarrassed = nil
 modData.tabas_BodyGrime = "bad"
 modData.BrushYourDamnTeeth.dentalHygiene = nil
-local retained = statsAdapter.collect(player)
+local retained, retainedHealth = statsAdapter.collect(player)
 assert(retained.lifestyle_hygiene_need == 67)
+assert(retainedHealth.lifestyle_hygiene_need == "recent")
 assert(retained.tasab_body_grime == 38)
 assert(retained.bydt_dental_hygiene == 0.82)
 now = now + 90001
-assert(statsAdapter.collect(player) == nil,
-    "persistently missing optional stats should expire")
+local expired, expiredHealth = statsAdapter.collect(player)
+assert(expired.lifestyle_hygiene_need == 0,
+    "an active bar displays zero while waiting for its first new reading")
+assert(expiredHealth.lifestyle_hygiene_need == "waiting")
+assert(expired.tasab_body_grime == nil and expiredHealth.tasab_body_grime == "problem",
+    "malformed source data is identified as a problem")
 modData.hygieneNeed = 68
 assert(statsAdapter.collect(player).lifestyle_hygiene_need == 68)
 active.LifestyleHobbies = false
-assert(statsAdapter.collect(player) == nil, "disabled source must clear history")
+local disabledStats, disabledHealth = statsAdapter.collect(player)
+assert(disabledStats.lifestyle_hygiene_need == nil
+    and disabledHealth.lifestyle_hygiene_need == "unavailable",
+    "disabled source must clear that bar's value and retained history")
 active.LifestyleHobbies = true
 assert(statsAdapter.collect(player).lifestyle_hygiene_need == 68)
 
@@ -169,11 +178,28 @@ CasualtiesUndead = {
 }
 assert(statsAdapter.collect(player).casualties_euphoria == 0.64)
 modData.CU_Drug = nil
-assert(statsAdapter.collect(player).casualties_euphoria == nil,
-    "absent drug data must not create a euphoria bar")
+local sober, soberHealth = statsAdapter.collect(player)
+assert(sober.casualties_euphoria == 0,
+    "the source API's valid zero euphoria remains a visible bar")
+assert(soberHealth.casualties_euphoria == "reporting")
+local noDosePlayer = { getModData = function() return {} end }
+local firstSober, firstSoberHealth = statsAdapter.collect(noDosePlayer)
+assert(firstSober.casualties_euphoria == 0
+    and firstSoberHealth.casualties_euphoria == "reporting",
+    "a first valid zero appears even before Casualties Undead creates drug state")
 CasualtiesUndead.Drugs.euphoria = function() return 0.5 end
 assert(statsAdapter.collect(player).casualties_euphoria == 0.5,
     "an active overdose can produce euphoria without stored drug data")
+local isolatedPlayer = { getModData = function() return {} end }
+CasualtiesUndead.Drugs.euphoria = function() error("fixture euphoria failure") end
+local _, failedHealth = statsAdapter.collect(isolatedPlayer)
+assert(failedHealth.casualties_euphoria == "problem",
+    "an API exception before the first reading is reported as a problem")
+CasualtiesUndead.Drugs.euphoria = function() return 0 end
+local recovered, recoveredHealth = statsAdapter.collect(isolatedPlayer)
+assert(recovered.casualties_euphoria == 0
+    and recoveredHealth.casualties_euphoria == "reporting",
+    "the adapter recovers and reports a genuine zero after an exception")
 
 local moodles = moodleAdapter.collect(player)
 assert(type(moodles) == "table")
@@ -206,6 +232,7 @@ assert(byId["NC_NaturesCall:NCGut"].iconKey == "natures-call/NCGutBad")
 active.LifestyleHobbies = false
 active.TakeABathAndShowerNew = false
 active.BrushYourDamnTeeth = false
+active.DrugTime89 = false
 active.CasualtiesUndead = false
 active.MedicineMoodlesB42 = false
 

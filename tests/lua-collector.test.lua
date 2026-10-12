@@ -66,8 +66,13 @@ assert(collected.discomfort == 12.35, "Discomfort should be rounded, not rescale
 assert(collected.vanilla_stats.nicotine_withdrawal == 0.25)
 assert(collected.vanilla_stats.idleness == 0)
 assert(collected.vanilla_stats.poison == 5)
+assert(collected.bar_health.nicotine_withdrawal == "reporting")
+assert(collected.bar_health.idleness == "reporting",
+    "a real zero from a vanilla stat is reported, not treated as missing")
 assert(collected.active_mods.NC_NaturesCall == true)
 assert(collected.active_mods.DrugTime89 == false)
+assert(collected.bar_health.discomfort == "reporting")
+assert(collected.bar_health.natures_call_bladder == "reporting")
 assert(collected.natures_call.bladder == 60)
 assert(collected.natures_call.bowel == 0, "valid Nature's Call zero should survive")
 assert(sourceState.bladderFill == 60 and sourceState.bowelFill == 0,
@@ -99,14 +104,18 @@ assert(withoutNature.natures_call == nil, "inactive optional mod must not erase 
 -- Exceptions retain a recent result briefly and collection retries.
 local calls = 0
 local originalCollect = PZPulseExpanded_NaturesCallAdapter.collect
+active = true
+assert(spec.collect(player).natures_call.bladder == 60,
+    "valid source data is restored before the simulated failure")
 PZPulseExpanded_NaturesCallAdapter.collect = function()
     calls = calls + 1
     error("fixture adapter failure")
 end
-active = true
 
 local firstFailure = spec.collect(player)
-assert(firstFailure.discomfort == 12.35 and firstFailure.natures_call == nil)
+assert(firstFailure.discomfort == 12.35
+    and firstFailure.natures_call.bladder == 60)
+assert(firstFailure.bar_health.natures_call_bladder == "recent")
 for _ = 2, 10 do
     spec.collect(player)
 end
@@ -123,7 +132,9 @@ end
 assert(spec.collect(player).natures_call.bladder == 61,
     "one exception retains a recently valid reading")
 now = now + 90001
-assert(spec.collect(player).natures_call == nil,
+local expiredNature = spec.collect(player)
+assert(expiredNature.natures_call.bladder == nil
+    and expiredNature.bar_health.natures_call_bladder == "problem",
     "repeated exceptions beyond grace period hide stale Nature's Call values")
 
 PZPulseExpanded_NaturesCallAdapter.collect = originalCollect

@@ -54,9 +54,10 @@ Optional compatible mod stats (when readable) ─┘
               Needs Expanded renderer
 ```
 
-Every optional item fails closed by itself: when its source mod is inactive or
-its state cannot be read, that row is omitted without affecting the rest of
-the panel. See the installed-mod inventory in
+Every stat reports collection health in **Manage Stat Bars**. Disabled sources
+remain unavailable; an active source with no first reading shows a zero
+placeholder marked **Waiting for Data**; invalid reads and adapter failures are
+identified without affecting other bars. See the installed-mod inventory in
 [`docs/integrations/installed-mod-moodles.md`](docs/integrations/installed-mod-moodles.md).
 
 ## Documentation

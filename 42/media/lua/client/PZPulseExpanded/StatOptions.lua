@@ -11,7 +11,7 @@ if PZAPI and PZAPI.ModOptions then
     local options = PZAPI.ModOptions:getOptions(Options.ID)
     if options == nil then
         options = PZAPI.ModOptions:create(Options.ID, "PZ Pulse Expanded")
-        options:addDescription("Keep continuous stat bars visible during brief missing or invalid readings. Bars with no valid reading yet stay hidden; disabled mods and intentionally hidden stats disappear immediately.")
+        options:addDescription("Keep continuous stat bars visible during brief missing or invalid readings. Active bars with no first reading show zero and are marked Waiting for Data; disabled mods and intentionally hidden stats remain unavailable.")
         options:addSlider(Options.KEY, "Missing stat grace period (seconds)",
             0, Options.MAX_SECONDS, 5, Options.DEFAULT_SECONDS,
             "How long to retain the last valid bar value after a failed read. Set to 0 to hide it immediately.")

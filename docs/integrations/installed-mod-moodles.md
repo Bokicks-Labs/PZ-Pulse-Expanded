@@ -39,9 +39,11 @@ since brushing (sandbox configurable), independent of its long-term Dental
 Hygiene value. The Dental Hygiene bar instead changes severity at the mod's
 actual hygiene-effect bands: below `0.50`, `0.30`, and `0.10`.
 
-Each field is nullable. The collector preserves numeric zero but omits the row
-when the mod is inactive, its state table has not initialized, or the individual
-value is not finite.
+The collector preserves numeric zero. Inactive or disabled sources remain
+unavailable; an active source with no initial value supplies a zero placeholder
+marked **Waiting for Data** in Manage Stat Bars. Invalid values and adapter
+failures are marked as problems, while a prior valid value can remain visible
+during the configured grace period.
 The Lifestyle Hygiene Need row is also omitted when CW Modpack Compatibility's
 **Disable Lifestyle personal hygiene need** sandbox option is enabled. TASAB
 Body Grime and BYDT Dental Hygiene remain independent.

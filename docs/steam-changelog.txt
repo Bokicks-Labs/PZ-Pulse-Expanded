@@ -1,5 +1,19 @@
 [h1]PZ Pulse Expanded - Changelog[/h1]
 
+[h2]Version 1.4.0 - More Optional Mod Support and Stat Health[/h2]
+
+[list]
+[*]Added three Lifestyle: Hobbies continuous meters: Embarrassment, Comfort, and Beauty.
+[*]Added Casualties Undead support for its Drug Euphoria meter, High and Miserable moodles, and the worst active clinical condition when player state is available.
+[*]Added familiar Casualties Undead glyphs and distinct Brush Your Damn Teeth icons for Dental Hygiene and the short-term Mouth State moodle. Dental Hygiene follows the mod's hygiene-effect thresholds.
+[*]Simplified Lifestyle: Hobbies meter labels to Hygiene, Comfort, and Beauty, and refreshed the Workshop description and screenshot guidance for optional-mod support and community feedback.
+[*]Added per-bar collection health to Manage Stat Bars, including waiting placeholders, current or recently retained readings, and clear unavailable or problem states.
+[*]Added validation for PZ Pulse Needs+ rows and recovery from adapter read failures, with bounded diagnostics.
+[*]Improved stat bar source-state reporting and fixed valid zero values for Casualties Undead euphoria.
+[/list]
+
+[hr][/hr]
+
 [h2]Version 1.3.0 - More Stat Bars and Panel Controls[/h2]
 
 [list]

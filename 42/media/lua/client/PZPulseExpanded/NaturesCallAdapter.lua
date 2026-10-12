@@ -25,11 +25,12 @@ local function isPureMultiplayerClient()
     return isClient() and not isServer()
 end
 
-local function collectValues(player, state, snapshot, active)
+local function collectValues(player, state, snapshot, active, problem)
     local source = snapshot or state or {}
     local traits = source.traitModifiers or (state and state.traitModifiers) or {}
     if type(traits) ~= "table" then traits = {} end
     local values = {}
+    local health = {}
     for _, definition in ipairs({
         { output = "bladder", field = "bladderFill", trait = "majorBladderIncontinence" },
         { output = "bowel", field = "bowelFill", trait = "majorBowelIncontinence" },
@@ -38,31 +39,42 @@ local function collectValues(player, state, snapshot, active)
         local number = StatUtils.finiteNumber(raw)
         local hidden = traits[definition.trait] == true
             or (number ~= nil and number < Adapter.MIN_FILL)
-        local value = StatUtils.sample(
+        local invalid = raw ~= nil and (number == nil or number > Adapter.MAX_FILL)
+        if invalid then number = nil end
+        local value, status = StatUtils.sample(
             player, "natures_call:" .. definition.output,
-            not hidden and number or nil, active, hidden
+            not hidden and number or nil, active, hidden,
+            problem == true or invalid
         )
-        if value ~= nil then values[definition.output] = value end
+        health[definition.output == "bladder" and "natures_call_bladder"
+            or "natures_call_bowel"] = status
+        if value ~= nil then
+            values[definition.output] = value
+        elseif status == "waiting" then
+            values[definition.output] = 0
+        end
     end
-    if values.bladder == nil and values.bowel == nil then return nil end
-    return values
+    return values, health
 end
 
--- Return raw source values, or nil when the mod/state is absent or has not
--- initialized yet. A numeric zero is valid and must remain distinguishable
--- from a missing field.
+-- Return source values plus per-bar health. Missing initial state is a
+-- zero placeholder; a numeric zero from the source is reported as real data.
 function Adapter.collect(player)
     if not isActive() then
         if player ~= nil then
             syncedPlayers[player] = nil
             collectValues(player, nil, nil, false)
         end
-        return nil
+        return nil, { natures_call_bladder = "unavailable",
+            natures_call_bowel = "unavailable" }
     end
-    if player == nil then return nil end
-    if player.getModData == nil then return Adapter.missing(player) end
+    if player == nil then return nil, {
+        natures_call_bladder = "problem", natures_call_bowel = "problem" }
+    end
+    if player.getModData == nil then return Adapter.missing(player, true) end
 
     local ok, playerModData = pcall(player.getModData, player)
+    local dataProblem = not ok or type(playerModData) ~= "table"
     if not ok then playerModData = nil end
     if type(playerModData) ~= "table" then playerModData = {} end
 
@@ -78,16 +90,16 @@ function Adapter.collect(player)
             and state.ownerSnapshot or nil
         if snapshot ~= nil then syncedPlayers[player] = true end
         if not syncedPlayers[player] then
-            return collectValues(player, nil, nil, false)
+            return collectValues(player, nil, nil, true, dataProblem)
         end
     end
-    return collectValues(player, state, snapshot, true)
+    return collectValues(player, state, snapshot, true, dataProblem)
 end
 
-function Adapter.missing(player)
+function Adapter.missing(player, problem)
     local active = isActive()
     if not active and player ~= nil then syncedPlayers[player] = nil end
-    return collectValues(player, nil, nil, active)
+    return collectValues(player, nil, nil, active, problem)
 end
 
 return Adapter

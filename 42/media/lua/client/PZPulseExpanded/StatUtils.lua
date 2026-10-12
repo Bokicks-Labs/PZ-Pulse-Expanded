@@ -33,15 +33,16 @@ end
 -- A first reading must be real. Missing reads retain only a previously valid
 -- value, and only for a bounded elapsed time. Explicit source absence/hidden
 -- state invalidates immediately rather than consuming the grace period.
-function Utils.sample(player, key, rawValue, active, hidden)
-    if player == nil then return nil end
+function Utils.sample(player, key, rawValue, active, hidden, problem)
+    if player == nil then return nil, "problem" end
     local entries = recent[player]
     if active ~= true or hidden == true then
         if entries ~= nil then entries[key] = nil end
-        return nil
+        return nil, "unavailable"
     end
 
     local value = Utils.round2(rawValue)
+    if rawValue ~= nil and value == nil then problem = true end
     local now = Utils.nowMs()
     if value ~= nil then
         if now ~= nil then
@@ -51,17 +52,17 @@ function Utils.sample(player, key, rawValue, active, hidden)
             end
             entries[key] = { value = value, at = now }
         end
-        return value
+        return value, "reporting"
     end
 
     local previous = entries and entries[key] or nil
     if previous ~= nil and now ~= nil and now >= previous.at
         and StatOptions.graceMs() > 0
         and now - previous.at <= StatOptions.graceMs() then
-        return previous.value
+        return previous.value, "recent"
     end
     if entries ~= nil then entries[key] = nil end
-    return nil
+    return nil, problem == true and "problem" or "waiting"
 end
 
 return Utils

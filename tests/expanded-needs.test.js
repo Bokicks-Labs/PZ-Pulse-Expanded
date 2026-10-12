@@ -19,7 +19,7 @@ function loadRenderer(savedBars = null, options = null, savedPins = null, savedO
     let now = 1000;
     let pending = null;
     const context = vm.createContext({
-        console,
+        console: { warn() {} },
         esc: escapeHtml,
         window: {},
         Date: { now: () => now },
@@ -58,6 +58,7 @@ function loadRenderer(savedBars = null, options = null, savedPins = null, savedO
         resetBarOrder,
         normalizeBarOrder,
         getBarOrder: () => barOrder.slice(),
+        getBarHealth: () => ({ ...barHealth }),
         tooltipText: id => tooltipTexts.get(id)
     };`, context, { filename: scriptPath });
 
@@ -422,6 +423,43 @@ test("unavailable mod bars have disabled checkboxes without losing their choice"
     assert.equal(count(html, 'class="needs-expanded-choice-icon"'), api.BAR_CHOICES.length);
 });
 
+test("stat manager reports live bar health and updates it as readings arrive", () => {
+    const { api, context } = loadRenderer();
+    const needs = vanillaNeeds();
+    context.__list = { innerHTML: "" };
+    vm.runInContext(`barModal = { querySelector: () => __list };`, context);
+
+    api.renderNeedsExpanded({ needs, needs_expanded: {
+        active_mods: { LifestyleHobbies: true },
+        bar_health: { lifestyle_embarrassment: "waiting" },
+        optional_mod_stats: { lifestyle_embarrassment: 0 }
+    } });
+    api.renderBarChoices();
+    assert.match(context.__list.innerHTML, /Waiting for Data/);
+    assert.equal(api.getBarHealth().lifestyle_embarrassment, "waiting");
+
+    api.renderNeedsExpanded({ needs, needs_expanded: {
+        active_mods: { LifestyleHobbies: true },
+        bar_health: { lifestyle_embarrassment: "reporting" },
+        optional_mod_stats: { lifestyle_embarrassment: 0 }
+    } });
+    assert.match(context.__list.innerHTML, /Reporting/);
+    assert.equal(api.getBarHealth().lifestyle_embarrassment, "reporting");
+});
+
+test("malformed PZ Pulse Needs+ rows are flagged independently", () => {
+    const { api } = loadRenderer();
+    const health = {};
+    const needs = vanillaNeeds();
+    needs[2] = { label: "Fatigue", value: "bad", badHigh: true,
+        icon: "mood_sleepy" };
+    const stats = api.adaptPzPulseNeeds(needs, health);
+    assert.equal(health.hunger, "reporting");
+    assert.equal(health.fatigue, "problem");
+    assert.ok(stats.some(stat => stat.id === "hunger"));
+    assert.ok(!stats.some(stat => stat.id === "fatigue"));
+});
+
 test("Caffeine Level has a bundled coffee icon and effect tooltip", () => {
     const { api } = loadRenderer();
     const html = api.renderNeedsExpanded({ needs_expanded: {
@@ -684,7 +722,7 @@ test("renders optional mod stats independently and omits missing or malformed va
         }
     });
 
-    assert.equal(countLabel(html, "Hygiene Need"), 1);
+    assert.equal(countLabel(html, "Hygiene"), 1);
     assert.equal(countLabel(html, "Embarrassment"), 1);
     assert.equal(countLabel(html, "Comfort"), 1);
     assert.equal(countLabel(html, "Beauty"), 1);

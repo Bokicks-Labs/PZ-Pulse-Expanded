@@ -60,8 +60,10 @@ major-trait flags in local/server-authoritative state.
 ## Failure behavior and icons
 
 Before the first valid reading, missing mod state or an unsynchronized owner
-snapshot omits the unavailable row. After a valid reading, each meter retains
-its last value during brief missing or invalid reads. The duration is set by
+snapshot supplies a zero placeholder marked **Waiting for Data**. After a
+valid reading, each meter retains
+its last value during brief missing or invalid reads and is marked **Using
+Recent Value**. The duration is set by
 **Missing stat grace period (seconds)** in Options → Mods → PZ Pulse Expanded
 (90 seconds by default, 0 to disable retention). A fresh valid reading resets
 the timer. Negative fills and major

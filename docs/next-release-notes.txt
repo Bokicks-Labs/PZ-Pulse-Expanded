@@ -1,24 +1,14 @@
-PZ Pulse Expanded - Draft Next Release Notes
-Proposed version: 1.4.0 (UNRELEASED)
+PZ Pulse Expanded - Workshop Release Notes
+Prepared version: 1.4.0 (not yet published)
 Published Steam baseline: 1.3.0 (October 10, 2026)
 
-Plain-text Steam Change Notes draft (do not add BBCode to the title/notes fields):
+The complete Steam-formatted 1.4.0 entry is maintained at
+docs/steam-changelog.txt. It includes all changes since the 1.3.0 Workshop
+push, including the optional-mod meters and the new stat bar health reporting.
 
-Version 1.4.0 - More Optional Mod Support
-
-* Added three Lifestyle: Hobbies continuous meters: Embarrassment, Comfort, and Beauty.
-* Added Casualties Undead compatibility: a Drug Euphoria meter plus High, Miserable, and the worst active clinical condition as moodles when supported state is available.
-* Added familiar Casualties Undead glyphs for its supported moodles and euphoria meter.
-* Improved Brush Your Damn Teeth display with distinct icons for its long-term Dental Hygiene meter and short-term Mouth State moodle. Dental Hygiene uses its own effect thresholds rather than the Mouth State moodle level.
-* Simplified Lifestyle: Hobbies meter labels to Hygiene, Comfort, and Beauty.
-* Refreshed the Workshop description and screenshot guidance to document optional mod support and dedicated community feedback topics.
-
-Release checklist:
-- Keep the existing 1.3.0 Steam change note unchanged. Do not republish 1.3.0 features in this entry.
-- Test Lifestyle meters and Casualties Undead with each source mod enabled, and verify graceful omission when absent.
-- Check the Needs Expanded bar chooser for Casualties Undead availability.
-- Fix or verify the browser test that still expects "Hygiene Need" after the label changed to "Hygiene".
-- When ready, use Scripts/bump-version.ps1 -Bump minor with plain-text title and notes. Verify 42/mod.info, the extension version, and generated changelog agree.
-- Capture updated screenshots, replace placeholder [img] URLs in workshop.txt with actual Steam-hosted URLs, stage and verify the upload, then publish via the Steam client.
-
-Nothing in this draft means version 1.4.0 has been released.
+Release status:
+- Source version and PZ Pulse extension version are set to 1.4.0.
+- Browser and Lua automated tests pass; manual in-game testing was completed by the author.
+- Workshop staging is synchronized by Scripts/publish-to-pz-workshop.ps1 after the release commit.
+- Before publishing, replace the SCREENSHOT_* placeholders in workshop.txt with real Steam image URLs.
+- Staging does not upload or publish the item; publish through Steam after reviewing the staged files and metadata.

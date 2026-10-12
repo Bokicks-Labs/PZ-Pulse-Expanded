@@ -148,9 +148,11 @@ The current panel composes normalized rows from independent inputs:
    DrugTime 89 stages, and Nature's Call moodle state. It never creates moodles
    or initializes another mod's state.
 
-Each input, stat, and moodle degrades independently. A missing mod or malformed
-optional value omits only that item; it does not erase valid rows from any
-other source. The shared payload is never mutated.
+Each stat reports its collection health independently. Inactive mods and
+disabled source settings remain unavailable. An active source with no initial
+reading supplies a zero placeholder marked **Waiting for Data**; invalid reads
+and adapter failures are identified without erasing valid rows from other
+sources. The shared payload is never mutated.
 
 Continuous Lua stat bars retain each player's last valid value through a
 configurable real-time grace period when a read fails. The setting is in
@@ -170,7 +172,7 @@ missing extension payload
     → panel renderer returns ""
 
 invalid optional stat
-    → skip/reject that stat as appropriate
+    → mark that bar as a problem while isolating other stats
 
 known unstable upstream read fails
     → log useful context

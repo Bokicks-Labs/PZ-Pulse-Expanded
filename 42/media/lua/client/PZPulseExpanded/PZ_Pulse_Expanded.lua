@@ -25,10 +25,16 @@ end
 
 -- Read a CharacterStat by enum name without assuming that every game version
 -- or modded environment exposes the same enum set.
-local function stat(stats, name, default)
-    local e = CharacterStat[name]
-    if e == nil or stats == nil then return default end
-    return safe(function() return stats:get(e) end, default)
+local function stat(stats, name, minimum, maximum)
+    if CharacterStat == nil or CharacterStat[name] == nil or stats == nil then
+        return nil, true
+    end
+    local ok, value = pcall(function() return stats:get(CharacterStat[name]) end)
+    local number = StatUtils.finiteNumber(value)
+    if not ok or number == nil or number < minimum or number > maximum then
+        return nil, true
+    end
+    return number, false
 end
 
 -- PZ Pulse exports the active vanilla moodles without their localized
@@ -88,12 +94,26 @@ end
 
 -- Retry unexpected adapter errors; the stat-specific history owns brief gaps.
 local natureCallErrorLogged = false
+local barHealthProblemsLogged = {}
+
+local function recordBarHealthProblems(health)
+    if type(health) ~= "table" then return end
+    for id, status in pairs(health) do
+        if status == "problem" and not barHealthProblemsLogged[id] then
+            barHealthProblemsLogged[id] = true
+            print("[PZ_Pulse_Expanded] Stat bar " .. tostring(id)
+                .. " has no valid reading; check source compatibility and console errors.")
+        end
+    end
+end
 
 local function collectNaturesCall(player)
-    if NaturesCallAdapter == nil then return nil end
+    if NaturesCallAdapter == nil then return nil, {
+        natures_call_bladder = "problem", natures_call_bowel = "problem" }
+    end
 
-    local ok, values = pcall(NaturesCallAdapter.collect, player)
-    if ok then return values end
+    local ok, values, health = pcall(NaturesCallAdapter.collect, player)
+    if ok then return values, health end
 
     if not natureCallErrorLogged then
         local reason = tostring(values or "unknown error")
@@ -101,16 +121,18 @@ local function collectNaturesCall(player)
         print("[PZ_Pulse_Expanded] Nature's Call collection failed: " .. reason)
         natureCallErrorLogged = true
     end
-    local fallbackOk, fallback = pcall(NaturesCallAdapter.missing, player)
-    return fallbackOk and fallback or nil
+    local fallbackOk, fallback, fallbackHealth = pcall(NaturesCallAdapter.missing, player, true)
+    return fallbackOk and fallback or nil,
+        fallbackOk and fallbackHealth or {
+            natures_call_bladder = "problem", natures_call_bowel = "problem" }
 end
 
 local optionalAdapterFailures = {}
 
 local function collectContinuousOptional(player)
     local label = "optional mod stats"
-    local ok, values = pcall(OptionalModStatsAdapter.collect, player)
-    if ok then return values end
+    local ok, values, health = pcall(OptionalModStatsAdapter.collect, player)
+    if ok then return values, health end
 
     if not optionalAdapterFailures[label] then
         optionalAdapterFailures[label] = true
@@ -118,8 +140,9 @@ local function collectContinuousOptional(player)
         if #reason > 240 then reason = reason:sub(1, 240) .. "..." end
         print("[PZ_Pulse_Expanded] " .. label .. " collection skipped: " .. reason)
     end
-    local fallbackOk, fallback = pcall(OptionalModStatsAdapter.missing, player)
-    return fallbackOk and fallback or nil
+    local fallbackOk, fallback, fallbackHealth = pcall(OptionalModStatsAdapter.missing, player, true)
+    return fallbackOk and fallback or nil,
+        fallbackOk and fallbackHealth or nil
 end
 
 local function collectOptional(adapter, player, label)
@@ -147,25 +170,34 @@ local function needsExpandedCollector(player)
 
     local stats = safe(function() return player:getStats() end)
     local values = {}
+    local barHealth = {}
     values.vanilla_moodle_descriptions = collectVanillaMoodleDescriptions(player)
 
-    local discomfort = StatUtils.sample(
-        player, "discomfort", stat(stats, "DISCOMFORT"), true, false
-    )
+    local discomfortRaw, discomfortProblem = stat(stats, "DISCOMFORT", 0, 100)
+    local discomfort, discomfortStatus = StatUtils.sample(player, "discomfort",
+        discomfortRaw, true, false, discomfortProblem)
+    barHealth.discomfort = discomfortStatus
     if discomfort ~= nil then
         values.discomfort = discomfort
+    elseif discomfortStatus == "waiting" then
+        values.discomfort = 0
     end
 
     local vanilla = {}
     for _, definition in ipairs({
-        { "NICOTINE_WITHDRAWAL", "nicotine_withdrawal" },
-        { "IDLENESS", "idleness" },
-        { "POISON", "poison" },
+        { "NICOTINE_WITHDRAWAL", "nicotine_withdrawal", 0, 1 },
+        { "IDLENESS", "idleness", 0, 1 },
+        { "POISON", "poison", 0, 100 },
     }) do
         local key = definition[2]
-        local value = StatUtils.sample(player, key,
-            stat(stats, definition[1]), true, false)
-        if value ~= nil then vanilla[key] = value end
+        local raw, problem = stat(stats, definition[1], definition[3], definition[4])
+        local value, status = StatUtils.sample(player, key, raw, true, false, problem)
+        barHealth[key] = status
+        if value ~= nil then
+            vanilla[key] = value
+        elseif status == "waiting" then
+            vanilla[key] = 0
+        end
     end
     if vanilla.nicotine_withdrawal ~= nil
         or vanilla.idleness ~= nil or vanilla.poison ~= nil then
@@ -176,15 +208,24 @@ local function needsExpandedCollector(player)
     -- uses it to disable choices for mods absent from this game's mod list.
     values.active_mods = ModSources.barAvailability()
 
-    local naturesCall = collectNaturesCall(player)
+    local naturesCall, naturesHealth = collectNaturesCall(player)
+    if type(naturesHealth) == "table" then
+        for id, status in pairs(naturesHealth) do barHealth[id] = status end
+    end
     if naturesCall ~= nil then
         values.natures_call = naturesCall
     end
 
-    local optionalModStats = collectContinuousOptional(player)
+    local optionalModStats, optionalHealth = collectContinuousOptional(player)
+    if type(optionalHealth) == "table" then
+        for id, status in pairs(optionalHealth) do barHealth[id] = status end
+    end
     if optionalModStats ~= nil then
         values.optional_mod_stats = optionalModStats
     end
+
+    recordBarHealthProblems(barHealth)
+    values.bar_health = barHealth
 
     local customMoodles = collectOptional(
         CustomMoodleAdapter,
@@ -195,13 +236,6 @@ local function needsExpandedCollector(player)
         values.custom_moodles = customMoodles
     end
 
-    if values.discomfort == nil
-        and values.vanilla_moodle_descriptions == nil
-        and values.natures_call == nil
-        and values.optional_mod_stats == nil
-        and values.custom_moodles == nil then
-        return nil
-    end
     return values
 end
 
@@ -209,7 +243,7 @@ end
 table.insert(PZ_Pulse_EXT, {
     api = 1,
     mod = "PZ_Pulse_Expanded",
-    version = "1.3.0",
+    version = "1.4.0",
     id = "needs_expanded",
     title = "Needs Expanded",
     cls = "info",

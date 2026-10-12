@@ -10,19 +10,19 @@ description=[b]Requires [url=https://steamcommunity.com/sharedfiles/filedetails/
 description=
 description=[h2]NEEDS EXPANDED: YOUR SURVIVOR AT A GLANCE[/h2]
 description=
-description=[img]SCREENSHOT_MAIN_DASHBOARD_URL[/img]
+description=[img]https://images.steamusercontent.com/ugc/18252256171611884341/424251B2EFCB017395169531FE1A4D1155140407/?imw=5000&imh=5000&ima=fit&impolicy=Letterbox&imcolor=%23000000&letterbox=false[/img]
 description=
 description=See familiar Needs+ bars alongside active moodles and extra player-state meters. Needs Expanded also surfaces vanilla [b]Discomfort[/b] and stats that the original panel doesn't show.
 description=
 description=[h2]CHOOSE WHAT YOU SEE[/h2]
 description=
-description=[img]SCREENSHOT_MANAGE_STAT_BARS_URL[/img]
+description=[img]https://images.steamusercontent.com/ugc/15157326476510374846/C84CFF05E025894696A01B27044DF3849830E2ED/?imw=5000&imh=5000&ima=fit&impolicy=Letterbox&imcolor=%23000000&letterbox=false[/img]
 description=
 description=Use [b]Manage Stat Bars[/b] to show or hide individual bars or whole sources, pin bars, and change their order. Choices for unavailable sources stay saved for when you enable those mods later.
 description=
 description=[h2]OPTIONAL MOD MOODLES AND METERS[/h2]
 description=
-description=[img]SCREENSHOT_OPTIONAL_MOD_DATA_URL[/img]
+description=[img]https://images.steamusercontent.com/ugc/9871558384637689037/CE12CBC3CE933E2C9356B08EDD31296354C5D35A/?imw=5000&imh=5000&ima=fit&impolicy=Letterbox&imcolor=%23000000&letterbox=false[/img]
 description=
 description=Supported mods can add active moodles and optional meters such as Bladder, Bowel, Hygiene, Body Grime, Dental Hygiene, addictions, drug intensity, Caffeine Level, Embarrassment, Comfort, Beauty, and Drug Euphoria. [b]All integrations are optional.[/b] A row appears only when its source is active and its player data is readable.
 description=
@@ -46,19 +46,19 @@ description=Additional vanilla meters include [b]Nicotine Withdrawal, Idleness, 
 description=
 description=[h2]KNOW WHAT A STAT MEANS[/h2]
 description=
-description=[img]SCREENSHOT_TOOLTIP_DETAIL_URL[/img]
+description=[img]https://images.steamusercontent.com/ugc/16704681346002472159/F9BBCF282CD65C4237E4DB9DAB43CC4386A9A304/?imw=5000&imh=5000&ima=fit&impolicy=Letterbox&imcolor=%23000000&letterbox=false[/img]
 description=
 description=Hover for a short description, current value, and source. Modded stats identify the mod their data comes from.
 description=
 description=[h2]Adjust Things As You See Fit![/h2]
 description=
-description=[img]SCREENSHOT_DISPLAY_CONTROLS_URL[/img]
+description=[img]https://images.steamusercontent.com/ugc/12562380915217810764/272A4FDA1814B7122D7AF1E14FAE0A2455B44972/?imw=5000&imh=5000&ima=fit&impolicy=Letterbox&imcolor=%23000000&letterbox=false[/img]
 description=
 description=Set separate moodle and bar icon sizes, hide idle bars after a delay, and flash a bar when it reappears. Bars where low values are beneficial can auto-hide; pinned bars stay visible. Stamina and Dental Hygiene remain visible at zero.
 description=
 description=[h2]Too Many Stats Cluttering Your Screen? Auto Hide Has You Covered![/h2]
 description=
-description=[img]GIF_AUTO_HIDE_FLASH_URL[/img]
+description=[img]https://images.steamusercontent.com/ugc/12194298614119510980/D743B1A84A62FF732BC13396C136ABC28030FC01/?imw=5000&imh=5000&ima=fit&impolicy=Letterbox&imcolor=%23000000&letterbox=false[/img]
 description=
 description=[h2]COMPATIBILITY[/h2]
 description=
