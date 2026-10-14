@@ -51,15 +51,15 @@ $collectorPath = '42/media/lua/client/PZPulseExpanded/PZ_Pulse_Expanded.lua'
 $changelogPath = 'docs/steam-changelog.txt'
 $collector = Read-Source $collectorPath
 $changelog = Read-Source $changelogPath
-if ($changelog -notmatch '^\[h1\]PZ Pulse Expanded - Changelog\[/h1\]\r?\n') {
+if ($changelog -notmatch '^PZ Pulse Expanded - Changelog\r?\n') {
     throw 'Unexpected Steam changelog heading.'
 }
 
 $updates = [ordered]@{}
 $updates['42/mod.info'] = Replace-Once $info "^modversion=$([regex]::Escape($current))$" "modversion=$next" 'mod.info version'
 $updates[$collectorPath] = Replace-Once $collector "^    version = `"$([regex]::Escape($current))`",$" "    version = `"$next`"," 'PZ Pulse registration version'
-$newEntry = "[h2]Version $next - $titleLine[/h2]`n`n[list]`n" + (($noteLines | ForEach-Object { "[*]$_" }) -join "`n") + "`n[/list]`n`n[hr][/hr]`n`n"
-$headingMatch = [regex]::Match($changelog, '^\[h1\]PZ Pulse Expanded - Changelog\[/h1\]\r?\n\r?\n')
+$newEntry = "Version $next - $titleLine`n`n" + (($noteLines | ForEach-Object { "- $_" }) -join "`n") + "`n`n"
+$headingMatch = [regex]::Match($changelog, '^PZ Pulse Expanded - Changelog\r?\n\r?\n')
 if (-not $headingMatch.Success) { throw 'Missing Steam changelog insertion point.' }
 $updates[$changelogPath] = $changelog.Insert($headingMatch.Length, $newEntry)
 

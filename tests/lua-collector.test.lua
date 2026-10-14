@@ -118,11 +118,12 @@ assert(withoutNature.natures_call == nil, "inactive optional mod must not erase 
 
 -- Exceptions retain a recent result briefly and collection retries.
 local calls = 0
-local originalCollect = PZPulseExpanded_NaturesCallAdapter.collect
+local naturesCallAdapter = require("PZPulseExpanded/Integrations/NaturesCall")
+local originalCollect = naturesCallAdapter.collect
 active = true
 assert(spec.collect(player).natures_call.bladder == 60,
     "valid source data is restored before the simulated failure")
-PZPulseExpanded_NaturesCallAdapter.collect = function()
+naturesCallAdapter.collect = function()
     calls = calls + 1
     error("fixture adapter failure")
 end
@@ -136,12 +137,12 @@ for _ = 2, 10 do
 end
 assert(calls == 10,
     "failed adapter must remain retryable")
-PZPulseExpanded_NaturesCallAdapter.collect = originalCollect
+naturesCallAdapter.collect = originalCollect
 sourceState.bladderFill = 61
 sourceState.bowelFill = 2
 assert(spec.collect(player).natures_call.bladder == 61,
     "adapter recovers after exceptions")
-PZPulseExpanded_NaturesCallAdapter.collect = function()
+naturesCallAdapter.collect = function()
     error("fixture intermittent failure")
 end
 assert(spec.collect(player).natures_call.bladder == 61,
@@ -152,7 +153,7 @@ assert(expiredNature.natures_call.bladder == nil
     and expiredNature.bar_health.natures_call_bladder == "problem",
     "repeated exceptions beyond grace period hide stale Nature's Call values")
 
-PZPulseExpanded_NaturesCallAdapter.collect = originalCollect
+naturesCallAdapter.collect = originalCollect
 assert(spec.collect(player).discomfort == 12.35)
 local originalStats = player.getStats
 player.getStats = function() error("temporary stat failure") end

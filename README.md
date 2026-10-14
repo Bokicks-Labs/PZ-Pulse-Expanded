@@ -70,10 +70,10 @@ identified without affecting other bars. See the installed-mod inventory in
 
 - The current Steam Workshop release is **1.5.0**, adding Bodily Functions support; see [`docs/steam-changelog.txt`](docs/steam-changelog.txt) for the full changelog. The author is completing the Steam upload.
 - [`docs/architecture.md`](docs/architecture.md) — project architecture, scope, and stability boundaries.
+- [`docs/development.md`](docs/development.md) — current source layout, integration changes, data flow, tests, and local validation.
 - [`docs/workshop-description.md`](docs/workshop-description.md) — player-facing Steam Workshop description.
-- [`docs/steam-changelog.txt`](docs/steam-changelog.txt) — Steam-formatted changelog template. The version title and notes supplied to the version bump script must be plain text; the script adds the Steam BBCode structure.
-- Steam Workshop descriptions may use Steam BBCode such as `[b]`, `[h2]`, `[list]`, and `[url]`. Keep version titles and notes plain text; the changelog generator applies Steam formatting.
-- Steam Workshop descriptions may use Steam BBCode such as `[b]`, `[h2]`, `[list]`, and `[url]`. Steam changelog fields expect plain text; avoid Markdown and BBCode in changelog entries.
+- [`docs/steam-changelog.txt`](docs/steam-changelog.txt) — plain-text Steam Workshop changelog. Version titles and notes passed to the bump script must also be plain text; the script preserves that format.
+- Steam Workshop descriptions may use BBCode such as `[b]`, `[h2]`, `[list]`, and `[url]`. Keep changelog entries free of BBCode and Markdown formatting.
 - [`docs/pulse/data-model.md`](docs/pulse/data-model.md) — normalized browser-side data models.
 - [`docs/pulse/provider-api.md`](docs/pulse/provider-api.md) — draft third-party provider API.
 - [`docs/pulse/panels.md`](docs/pulse/panels.md) — panel responsibilities and rendering behavior.
@@ -82,7 +82,7 @@ identified without affecting other bars. See the installed-mod inventory in
 - [`docs/integrations/installed-mod-moodles.md`](docs/integrations/installed-mod-moodles.md) — local installed-mod moodle/stat inventory and supported sources.
 - [`docs/third-party-art.md`](docs/third-party-art.md) — exact copied moodle-art inventory, attribution, and removal policy.
 - [`docs/decisions/0001-normalized-provider-model.md`](docs/decisions/0001-normalized-provider-model.md) — rationale for normalizing provider data before rendering.
-- [`docs/decisions/0002-source-owned-integrations.md`](docs/decisions/0002-source-owned-integrations.md) — planned source-owned integration layout for the update after Bodily Functions.
+- [`docs/decisions/0002-source-owned-integrations.md`](docs/decisions/0002-source-owned-integrations.md) — source-owned integration layout and remaining runtime validation.
 
 ## Scope note: PZ Map
 
@@ -103,6 +103,12 @@ Remove `-WhatIf` to write the next version. The script updates `42/mod.info`,
 the PZ Pulse registration version, and the Steam changelog. It refuses to
 bump when those version fields disagree. Review and edit the generated
 changelog before publishing.
+
+During every release polish pass, compare the changes since the last Workshop
+upload with the top entry in `docs/steam-changelog.txt`. Update that entry to
+cover every player-facing change in the release, keep it plain text, and check
+it again before staging or committing. The changelog records the release delta
+from the last Workshop upload, not merely the last Git commit.
 
 ## Workshop staging
 

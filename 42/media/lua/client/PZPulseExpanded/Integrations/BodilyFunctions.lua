@@ -1,11 +1,16 @@
 -- Read existing Bodily Functions 1.3.2 state from the supplied player.
 -- Its own getters use getPlayer(), which may select a different local player.
-PZPulseExpanded_BodilyFunctionsAdapter = PZPulseExpanded_BodilyFunctionsAdapter or {}
-
-local Adapter = PZPulseExpanded_BodilyFunctionsAdapter
-local StatUtils = require("PZPulseExpanded/StatUtils")
-local Sources = require("PZPulseExpanded/ModSources")
+local Adapter = {}
+local StatUtils = require("PZPulseExpanded/Core/StatUtils")
+local Sources = require("PZPulseExpanded/Core/Sources")
 local recentLevels = setmetatable({}, { __mode = "k" })
+
+function Adapter.isAvailable()
+    return Sources.isActive(Sources.bodilyFunctions)
+        and (SandboxVars == nil or SandboxVars.BF == nil
+            or SandboxVars.BF.EnableUrination ~= false
+            or SandboxVars.BF.EnableDefecation ~= false)
+end
 
 local function enabled(setting)
     return Sources.isActive(Sources.bodilyFunctions)
@@ -85,5 +90,9 @@ function Adapter.missing(player, problem)
     if player == nil then return nil end
     return read(player, {}, true, problem)
 end
+
+Adapter.source = Sources.bodilyFunctions
+Adapter.iconFolder = "bodily-functions"
+Adapter.frameworkMoodles = { "Defecation", "Urination", "PoopedSelf", "PeedSelf", "BodilyFumes" }
 
 return Adapter

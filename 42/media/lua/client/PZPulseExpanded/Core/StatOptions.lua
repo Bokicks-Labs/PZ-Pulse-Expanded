@@ -1,6 +1,5 @@
 -- One setting shared by every continuous stat bar collected by this mod.
-PZPulseExpanded_StatOptions = PZPulseExpanded_StatOptions or {}
-local Options = PZPulseExpanded_StatOptions
+local Options = {}
 
 Options.ID = "PZ_Pulse_Expanded"
 Options.KEY = "missingStatGraceSeconds"

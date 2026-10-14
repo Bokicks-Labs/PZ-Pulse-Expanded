@@ -12,7 +12,7 @@ SandboxVars = {
     BathroomFunctions = { BladderMaxValue = 800, BowelsMaxValue = 500 },
 }
 
-local Adapter = require("PZPulseExpanded/BodilyFunctionsAdapter")
+local Adapter = require("PZPulseExpanded/Integrations/BodilyFunctions")
 local data = { urinateValue = 320, defecateValue = 0 }
 local player = { getModData = function() return data end }
 

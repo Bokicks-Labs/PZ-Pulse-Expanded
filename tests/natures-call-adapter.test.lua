@@ -1,5 +1,5 @@
 package.path = "42/media/lua/client/?.lua;" .. package.path
-local adapterPath = "42/media/lua/client/PZPulseExpanded/NaturesCallAdapter.lua"
+local adapterPath = "42/media/lua/client/PZPulseExpanded/Integrations/NaturesCall.lua"
 local now = 100000
 function getTimestampMs() return now end
 

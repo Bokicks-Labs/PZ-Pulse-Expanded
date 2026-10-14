@@ -2,35 +2,33 @@
 
 ## Status
 
-Planned for the update after the Bodily Functions integration is tested and
-published. This records the intended refactor; it does not describe the current
-file layout.
+Implemented in the source-owned Lua layout. Fixture validation is complete;
+disposable-save runtime validation remains pending.
 
 ## Context
 
-`OptionalModStatsAdapter.lua` currently collects values from several unrelated
-mods, while Nature's Call and Bodily Functions have dedicated adapters.
-`CustomMoodleAdapter.lua` also combines source-specific moodles with a shared
-Moodle Framework reader. Adding more mods and panels would make ownership and
-failure isolation harder to see.
+Previously, `OptionalModStatsAdapter.lua` collected values from several
+unrelated mods, while Nature's Call and Bodily Functions had dedicated
+adapters. `CustomMoodleAdapter.lua` also combined source-specific moodles with
+a shared Moodle Framework reader.
 
-## Proposed organization
+## Organization
 
 Give each built-in source mod one integration module, even if it initially
 exports only one value. Keep shared collection mechanics and panel composition
-separate. A target layout is:
+separate. The implemented layout is:
 
 ```text
 PZPulseExpanded/
   Core/                 source registry, validation, stat history, options
-  Integrations/         one module per supported source mod
-  Moodles/              shared Moodle Framework reader
-  Panels/               Needs, Health, and future panel collectors
+  Integrations/         source-owned stat and moodle readers
+  Moodles/              shared Moodle Framework traversal and composition
+  Panels/               Needs collector and optional stat composition
 ```
 
-The exact filenames and Lua return shape can be settled during the refactor.
-The public provider API remains a draft; this internal move must not silently
-publish or freeze it.
+Old adapter paths were removed after their in-repo references were updated.
+The public provider API remains a draft; this internal move does not publish
+or freeze it.
 
 ## Ownership rules
 
@@ -52,14 +50,13 @@ publish or freeze it.
 
 ## Migration and acceptance
 
-1. Characterize the current collector payload, bar IDs, moodle IDs, source
-   labels, saved bar choices and ordering, colors, and failure states in tests.
-2. Move one source at a time out of `OptionalModStatsAdapter.lua` and move
-   source-specific moodle logic out of `CustomMoodleAdapter.lua` where useful.
-3. Keep PZ Pulse extension registration and browser payload compatibility while
-   changing internal ownership. Do not reset existing players' panel settings.
-4. Run Lua and browser fixtures after each move, including absent, disabled,
-   malformed, and multiplayer snapshot cases. Validate the resulting Dev bundle
-   in a disposable save before describing the refactor as runtime verified.
+The payload, stable IDs, saved choices and order, colors, and failure states
+are covered by Lua and browser fixtures. Source logic moved out of the former
+combined stat and moodle adapters. The registration and browser payload were
+kept compatible; internal callers now use the new paths directly.
+
+Disposable-save validation of the resulting Dev bundle is still required
+before describing the refactor as runtime verified. The current edit and
+validation workflow is in [`../development.md`](../development.md).
 
 This refactor should be a separate update from the Bodily Functions release.

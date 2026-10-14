@@ -1,7 +1,7 @@
 PZ Pulse Expanded - Workshop Release Notes
 Published release version: 1.5.0 (designated by the author; Steam upload in progress)
 
-The complete Steam-formatted 1.5.0 entry is at the top of
+The complete plain-text 1.5.0 entry is at the top of
 docs/steam-changelog.txt. This minor release adds Bodily Functions support.
 
 Version 1.5.0 release record:
@@ -13,4 +13,4 @@ Version 1.5.0 release record:
 - Workshop staging is synchronized with the current source and metadata by Scripts/publish-to-pz-workshop.ps1 (13 payload files verified).
 - Steam Workshop item 3804774101 will be uploaded by the author. This staging script does not upload to Steam; live Workshop publication has not yet been verified here.
 
-Previous release: 1.4.1 was confirmed published by the author. Its Steam-formatted entry remains in docs/steam-changelog.txt.
+Previous release: 1.4.1 was confirmed published by the author. Its plain-text entry remains in docs/steam-changelog.txt.

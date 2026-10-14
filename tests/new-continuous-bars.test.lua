@@ -26,7 +26,7 @@ local modData = {
     CaffeineMakesSenseState = { load = 2 },
 }
 local player = { getModData = function() return modData end }
-local adapter = require("PZPulseExpanded/OptionalModStatsAdapter")
+local adapter = require("PZPulseExpanded/Panels/OptionalStats")
 local values = adapter.collect(player)
 assert(values.drugtime_stoned == 70 and values.drugtime_hard == 0)
 assert(values.addiction_alcohol == 1 and values.addiction_nicotine == 2)

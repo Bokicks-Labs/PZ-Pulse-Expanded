@@ -1,119 +1,87 @@
-[h1]PZ Pulse Expanded - Changelog[/h1]
+PZ Pulse Expanded - Changelog
 
-[h2]Version 1.5.0 - Bodily Functions Support[/h2]
+Version 1.5.0 - Bodily Functions Support
 
-[list]
-[*]Added optional Bodily Functions Bladder and Bowel bars, using configured capacities and the source mod moodle levels for bar colors.
-[*]Added the five active Bodily Functions moodles with their original glyphs and source attribution.
-[*]Kept Nature's Call and Bodily Functions readings separate; PZ Pulse Expanded does not resolve conflicts between their gameplay systems.
-[*]Updated the Workshop description with Bodily Functions artwork credit and a warning that supported mods may conflict with one another.
-[/list]
+- Added optional Bodily Functions Bladder and Bowel bars, using configured capacities and the source mod moodle levels for bar colors.
+- Added the five active Bodily Functions moodles with their original glyphs and source attribution.
+- Kept Nature's Call and Bodily Functions readings separate; PZ Pulse Expanded does not resolve conflicts between their gameplay systems.
+- Updated the Workshop description with Bodily Functions artwork credit and a warning that supported mods may conflict with one another.
 
-[hr][/hr]
+Version 1.4.1 - Drug Euphoria Auto-Hide Fix
 
-[h2]Version 1.4.1 - Drug Euphoria Auto-Hide Fix[/h2]
+- Fixed Drug Euphoria remaining visible at zero when auto-hide is enabled and the bar is not pinned.
 
-[list]
-[*]Fixed Drug Euphoria remaining visible at zero when auto-hide is enabled and the bar is not pinned.
-[/list]
+Version 1.4.0 - More Optional Mod Support and Stat Health
 
-[hr][/hr]
+- Added three Lifestyle: Hobbies continuous meters: Embarrassment, Comfort, and Beauty.
+- Added Casualties Undead support for its Drug Euphoria meter, High and Miserable moodles, and the worst active clinical condition when player state is available.
+- Added familiar Casualties Undead glyphs and distinct Brush Your Damn Teeth icons for Dental Hygiene and the short-term Mouth State moodle. Dental Hygiene follows the mod's hygiene-effect thresholds.
+- Simplified Lifestyle: Hobbies meter labels to Hygiene, Comfort, and Beauty, and refreshed the Workshop description and screenshot guidance for optional-mod support and community feedback.
+- Added per-bar collection health to Manage Stat Bars, including waiting placeholders, current or recently retained readings, and clear unavailable or problem states.
+- Added validation for PZ Pulse Needs+ rows and recovery from adapter read failures, with bounded diagnostics.
+- Improved stat bar source-state reporting and fixed valid zero values for Casualties Undead euphoria.
 
-[h2]Version 1.4.0 - More Optional Mod Support and Stat Health[/h2]
+Version 1.3.0 - More Stat Bars and Panel Controls
 
-[list]
-[*]Added three Lifestyle: Hobbies continuous meters: Embarrassment, Comfort, and Beauty.
-[*]Added Casualties Undead support for its Drug Euphoria meter, High and Miserable moodles, and the worst active clinical condition when player state is available.
-[*]Added familiar Casualties Undead glyphs and distinct Brush Your Damn Teeth icons for Dental Hygiene and the short-term Mouth State moodle. Dental Hygiene follows the mod's hygiene-effect thresholds.
-[*]Simplified Lifestyle: Hobbies meter labels to Hygiene, Comfort, and Beauty, and refreshed the Workshop description and screenshot guidance for optional-mod support and community feedback.
-[*]Added per-bar collection health to Manage Stat Bars, including waiting placeholders, current or recently retained readings, and clear unavailable or problem states.
-[*]Added validation for PZ Pulse Needs+ rows and recovery from adapter read failures, with bounded diagnostics.
-[*]Improved stat bar source-state reporting and fixed valid zero values for Casualties Undead euphoria.
-[/list]
+- Added 12 continuous bars from DrugTime 89, Infirmities, Caffeine Makes Sense, and supported vanilla stats, including Nicotine Withdrawal and Poison.
+- Added Manage Stat Bars to the Needs Expanded gear menu. Show or hide bars individually or by source, pin bars, and change their display order. Choices persist in this browser; unavailable mod controls are disabled without losing saved choices.
+- Added optional auto-hide for idle bars, a configurable hide delay, and an optional white outline flash when a hidden bar first appears.
+- Colored bars to match active moodle levels where available, with source-based thresholds for directly related stats and a severity scale for bars without a matching moodle.
+- Set four-level negative bars to green-yellow, yellow, orange, and PZ Pulse red; three-level bars use green-yellow, yellow, and red. Positive levels progress through greens. Moodle badges are unchanged.
+- Expanded stat and moodle tooltips with gameplay effects, restored their hover delay, and made them stable across panel updates.
+- Adjusted moodle and stat icon sizes and spacing, added a Caffeine Level coffee icon, and gave Poison its own icon.
+- Added independent moodle and bar icon size controls to Needs Expanded; the original Needs+ size settings no longer change this panel.
+- Bar icon size changes in quarter steps and bar thickness grows with the icons. Auto-hide now defaults to a 10-second delay; reveal flash is enabled by default for 7 seconds when auto-hide is on.
+- Slowed the reveal flash and let its final blink fade out fully instead of stopping mid-pulse.
+- Rounded Lua-collected stat values to two decimal places.
 
-[hr][/hr]
+Version 1.2.2 - Lifestyle Hygiene Ownership
 
-[h2]Version 1.3.0 - More Stat Bars and Panel Controls[/h2]
+- Hide the Lifestyle hygiene stat bar when an active CW Modpack Compatibility mod disables Lifestyle's hygiene need.
+- Keep Take A Bath And Shower body grime and Brush Your Damn Teeth dental hygiene bars independent of that setting.
+- Fix optional stat collection in the Project Zomboid Lua runtime so supported mod bars no longer disappear with a repeated console error.
 
-[list]
-[*][b]Added 12 continuous bars[/b] from DrugTime 89, Infirmities, Caffeine Makes Sense, and supported vanilla stats, including Nicotine Withdrawal and Poison.
-[*]Added Manage Stat Bars to the Needs Expanded gear menu. Show or hide bars individually or by source, pin bars, and change their display order. Choices persist in this browser; unavailable mod controls are disabled without losing saved choices.
-[*]Added optional auto-hide for idle bars, a configurable hide delay, and an optional white outline flash when a hidden bar first appears.
-[*]Colored bars to match active moodle levels where available, with source-based thresholds for directly related stats and a severity scale for bars without a matching moodle.
-[*]Set four-level negative bars to green-yellow, yellow, orange, and PZ Pulse red; three-level bars use green-yellow, yellow, and red. Positive levels progress through greens. Moodle badges are unchanged.
-[*]Expanded stat and moodle tooltips with gameplay effects, restored their hover delay, and made them stable across panel updates.
-[*]Adjusted moodle and stat icon sizes and spacing, added a Caffeine Level coffee icon, and gave Poison its own icon.
-[*]Added independent moodle and bar icon size controls to Needs Expanded; the original Needs+ size settings no longer change this panel.
-[*]Bar icon size changes in quarter steps and bar thickness grows with the icons. Auto-hide now defaults to a 10-second delay; reveal flash is enabled by default for 7 seconds when auto-hide is on.
-[*]Slowed the reveal flash and let its final blink fade out fully instead of stopping mid-pulse.
-[*]Rounded Lua-collected stat values to two decimal places.
-[/list]
+Version 1.2.1 - Stable Continuous Stat Bars
 
-[hr][/hr]
+- Fixed Nature's Call Bladder and Bowel bars disappearing during multiplayer snapshot gaps.
+- After the first server snapshot, valid local Nature's Call values keep the bars updated while the owner snapshot is temporarily absent.
+- Discomfort and supported optional mod stat bars now retain their last valid values through brief failed reads. Persistently missing values still disappear.
+- Added a Missing stat grace period setting under Options > Mods > PZ Pulse Expanded. Default: 90 seconds; set it to 0 to disable retention.
+- Disabled mods and intentionally hidden stats still disappear immediately. Moodle behavior is unchanged.
 
-[h2]Version 1.2.2 - Lifestyle Hygiene Ownership[/h2]
+Version 1.2.0 - Stat Bar Icons
 
-[list]
-[*]Hide the Lifestyle hygiene stat bar when an active CW Modpack Compatibility mod disables Lifestyle's hygiene need.
-[*]Keep Take A Bath And Shower body grime and Brush Your Damn Teeth dental hygiene bars independent of that setting.
-[*]Fix optional stat collection in the Project Zomboid Lua runtime so supported mod bars no longer disappear with a repeated console error.
-[/list]
+- Added a corresponding moodle icon to every built-in stat bar.
+- Vanilla Needs+ stats and Discomfort now use their matching PZ Pulse moodle icons.
+- Nature's Call Bladder and Bowel use their original source-mod icons.
+- Lifestyle: Hobbies Hygiene Need, Take A Bath And Shower Body Grime, and Brush Your Damn Teeth Dental Hygiene use their corresponding source-mod icons.
+- Preserved nullable behavior: if a source mod is inactive or a value or icon cannot be read safely, that individual item is omitted or degrades safely without breaking the panel.
+- Added automated coverage for all 18 currently supported built-in stat rows.
 
-[hr][/hr]
+Version 1.1.0 - PZ Pulse-Style Moodles and Expanded Mod Support
 
-[h2]Version 1.2.1 - Stable Continuous Stat Bars[/h2]
+- Redesigned the Needs Expanded moodle area to match the original PZ Pulse panel.
+- Active moodles now appear as their original glyph on PZ Pulse's colored moodle circle, with the current level shown in the bottom-right corner.
+- Reduced the padding between the moodle area and the status bars for a more compact layout.
+- Added or expanded active-moodle support for Lifestyle: Hobbies, Take A Bath And Shower, Moodle Framework, Nature's Call, DrugTime 89, Medicine Moodles, Brush Your Damn Teeth, Infirmities, and The Mutants.
+- Added source-aware handling for recognized mod moodles while retaining generic Moodle Framework support for unknown registrations.
+- Kept every optional moodle and stat independently nullable. Missing mods, unsynchronized data, or unreadable values no longer prevent the rest of the panel from rendering.
+- Kept all integrations read-only: PZ Pulse Expanded does not create, initialize, or mutate another mod's player data to display it.
+- Added an automated artwork build step so the Workshop package embeds the committed source-mod moodle glyphs consistently.
 
-[list]
-[*][b]Fixed Nature's Call Bladder and Bowel bars disappearing during multiplayer snapshot gaps.[/b]
-[*]After the first server snapshot, valid local Nature's Call values keep the bars updated while the owner snapshot is temporarily absent.
-[*]Discomfort and supported optional mod stat bars now retain their last valid values through brief failed reads. Persistently missing values still disappear.
-[*]Added a Missing stat grace period setting under Options > Mods > PZ Pulse Expanded. Default: 90 seconds; set it to 0 to disable retention.
-[*]Disabled mods and intentionally hidden stats still disappear immediately. Moodle behavior is unchanged.
-[/list]
-
-[hr][/hr]
-
-[h2]Version 1.2.0 - Stat Bar Icons[/h2]
-
-[list]
-[*][b]Added a corresponding moodle icon to every built-in stat bar.[/b]
-[*]Vanilla Needs+ stats and Discomfort now use their matching PZ Pulse moodle icons.
-[*]Nature's Call Bladder and Bowel use their original source-mod icons.
-[*]Lifestyle: Hobbies Hygiene Need, Take A Bath And Shower Body Grime, and Brush Your Damn Teeth Dental Hygiene use their corresponding source-mod icons.
-[*]Preserved nullable behavior: if a source mod is inactive or a value or icon cannot be read safely, that individual item is omitted or degrades safely without breaking the panel.
-[*]Added automated coverage for all 18 currently supported built-in stat rows.
-[/list]
-
-[hr][/hr]
-
-[h2]Version 1.1.0 - PZ Pulse-Style Moodles and Expanded Mod Support[/h2]
-
-[list]
-[*][b]Redesigned the Needs Expanded moodle area to match the original PZ Pulse panel.[/b]
-[*]Active moodles now appear as their original glyph on PZ Pulse's colored moodle circle, with the current level shown in the bottom-right corner.
-[*]Reduced the padding between the moodle area and the status bars for a more compact layout.
-[*]Added or expanded active-moodle support for Lifestyle: Hobbies, Take A Bath And Shower, Moodle Framework, Nature's Call, DrugTime 89, Medicine Moodles, Brush Your Damn Teeth, Infirmities, and The Mutants.
-[*]Added source-aware handling for recognized mod moodles while retaining generic Moodle Framework support for unknown registrations.
-[*]Kept every optional moodle and stat independently nullable. Missing mods, unsynchronized data, or unreadable values no longer prevent the rest of the panel from rendering.
-[*]Kept all integrations read-only: PZ Pulse Expanded does not create, initialize, or mutate another mod's player data to display it.
-[*]Added an automated artwork build step so the Workshop package embeds the committed source-mod moodle glyphs consistently.
-[/list]
-
-[h2]Third-Party Moodle Artwork Added in 1.1.0[/h2]
+Third-Party Moodle Artwork Added in 1.1.0
 
 To reproduce supported moodles faithfully, version 1.1.0 added only the moodle glyph artwork required by these integrations:
 
-[list]
-[*][b]Lifestyle: Hobbies[/b] - all 63 PNG moodle glyphs from its common/media/ui/moodles folder.
-[*][b]Take A Bath And Shower[/b] - BodyGrime, CoolingBody, FeelingGaze, WarmingBody, and Wet_Bathing.
-[*][b]Infirmities[/b] - its nine Panic, Tremors, Addiction, and Withdrawal moodle glyphs.
-[*][b]Medicine Moodles[/b] - Antibiotics, Antidepressants, BetaBlockers, LemonGrass, Painkillers, and SleepingTablets.
-[*][b]Brush Your Damn Teeth[/b] - BYDT_mouth_state.
-[*][b]The Mutants[/b] - PZTheMutants_Puked.
-[*][b]DrugTime 89[/b] - all six DT_Hard and DT_Stoned level glyphs.
-[*][b]Nature's Call[/b] - CheckPants, PissBladder, StoolIcon, SoiledClothing, both Gut Health states, Stomach Cramp, and Acid Reflux.
-[/list]
+- Lifestyle: Hobbies - all 63 PNG moodle glyphs from its common/media/ui/moodles folder.
+- Take A Bath And Shower - BodyGrime, CoolingBody, FeelingGaze, WarmingBody, and Wet_Bathing.
+- Infirmities - its nine Panic, Tremors, Addiction, and Withdrawal moodle glyphs.
+- Medicine Moodles - Antibiotics, Antidepressants, BetaBlockers, LemonGrass, Painkillers, and SleepingTablets.
+- Brush Your Damn Teeth - BYDT_mouth_state.
+- The Mutants - PZTheMutants_Puked.
+- DrugTime 89 - all six DT_Hard and DT_Stoned level glyphs.
+- Nature's Call - CheckPants, PissBladder, StoolIcon, SoiledClothing, both Gut Health states, Stomach Cramp, and Acid Reflux.
 
-PZ Pulse's vanilla glyphs and colored moodle circles are reused from the required [url=https://steamcommunity.com/sharedfiles/filedetails/?id=3753700423]PZ Pulse[/url] mod at runtime and are not copied into PZ Pulse Expanded.
+PZ Pulse's vanilla glyphs and colored moodle circles are reused from the required PZ Pulse (https://steamcommunity.com/sharedfiles/filedetails/?id=3753700423) mod at runtime and are not copied into PZ Pulse Expanded.
 
-[b]All third-party artwork remains the property of its respective creator. No ownership is claimed. If a mod author or rights holder asks for their artwork or integration to be removed, contact me and I will remove it promptly.[/b]
+All third-party artwork remains the property of its respective creator. No ownership is claimed. If a mod author or rights holder asks for their artwork or integration to be removed, contact me and I will remove it promptly.

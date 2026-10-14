@@ -191,10 +191,11 @@ All authored stat tooltip text is in `STAT_EFFECTS` in
 `MOODLE_EFFECTS` in the same file. `formatStatTooltip` and
 `formatMoodleTooltip` compose those descriptions with value, level, and
 source. Vanilla level-specific text is read by `collectVanillaMoodleDescriptions`
-in `42/media/lua/client/PZPulseExpanded/PZ_Pulse_Expanded.lua` from the game's
+in `42/media/lua/client/PZPulseExpanded/Panels/NeedsExpanded.lua` from the game's
 `Moodles_*_desc_lvl*` translation keys. Modded source descriptions are collected
-in `42/media/lua/client/PZPulseExpanded/CustomMoodleAdapter.lua`; edit a source
-mod's translation or the authored effect summary for those.
+by source readers under `42/media/lua/client/PZPulseExpanded/Integrations/`
+and composed by `Moodles/Collector.lua`; edit a source mod's translation or the
+authored effect summary for those.
 
 For example:
 

@@ -110,12 +110,18 @@ Casualties Undead as a priority integration. Its exact data set and UI remain
 to be designed against the source mod's current APIs and multiplayer behavior.
 See [`pulse/panels.md`](pulse/panels.md) for the initial scope.
 
-## Planned integration refactor
+## Source-owned integration layout
 
-After the Bodily Functions integration is tested and published, organize
-built-in adapters by source mod and compose their normalized results per panel.
-The proposed ownership rules, migration steps, and compatibility requirements
-are recorded in
+The Lua collector now keeps source metadata, validation, stat history, and
+options in `Core/`. Each supported optional source has a reader in
+`Integrations/`; source-specific sandbox checks and moodles live with that
+source. `Moodles/Framework.lua` traverses Moodle Framework registrations once,
+and `Moodles/Collector.lua` composes source moodles. `Panels/OptionalStats.lua`
+combines independent stat readers, while `Panels/NeedsExpanded.lua` builds the
+Needs payload. The root `PZ_Pulse_Expanded.lua` registers the panel with PZ
+Pulse. In-repo callers import these modules directly.
+
+The ownership rules and remaining runtime validation are recorded in
 [`decisions/0002-source-owned-integrations.md`](decisions/0002-source-owned-integrations.md).
 
 ## Stability boundaries
@@ -158,19 +164,20 @@ The current panel composes normalized rows from independent inputs:
    The Bodily Functions adapter separately reads its own existing per-player
    fill values and configured capacities. See
    [`integrations/bodily-functions.md`](integrations/bodily-functions.md).
-4. The optional-mod stat adapter reads continuous values already owned by
-   Lifestyle: Hobbies, Take A Bath And Shower, Brush Your Damn Teeth,
-   DrugTime 89, Infirmities, and Caffeine Makes Sense.
-5. The custom-moodle adapter reads active Lifestyle moodles, Moodle Framework
-   registrations (including Medicine Moodles' existing per-player objects),
-   DrugTime 89 stages, and Nature's Call moodle state. It never creates moodles
-   or initializes another mod's state.
+4. `Panels/OptionalStats.lua` composes continuous values from source modules
+   for Lifestyle: Hobbies, Take A Bath And Shower, Brush Your Damn Teeth,
+   DrugTime 89, Infirmities, Caffeine Makes Sense, and Casualties Undead.
+5. `Moodles/Collector.lua` composes source-owned active moodles and the shared
+   Moodle Framework traversal. Medicine Moodles' existing per-player objects
+   are read by its own integration. The collectors never create moodles or
+   initialize another mod's state.
 
 Each stat reports its collection health independently. Inactive mods and
 disabled source settings remain unavailable. An active source with no initial
 reading supplies a zero placeholder marked **Waiting for Data**; invalid reads
 and adapter failures are identified without erasing valid rows from other
-sources. The shared payload is never mutated.
+sources. The shared payload is never mutated. For edit locations, module
+contracts, and testing steps, see the [`developer guide`](development.md).
 
 Continuous Lua stat bars retain each player's last valid value through a
 configurable real-time grace period when a read fails. The setting is in

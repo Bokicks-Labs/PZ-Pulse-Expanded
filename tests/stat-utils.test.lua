@@ -13,7 +13,7 @@ PZAPI = { ModOptions = {
     getOptions = function() return options end,
 } }
 
-local Utils = require("PZPulseExpanded/StatUtils")
+local Utils = require("PZPulseExpanded/Core/StatUtils")
 local player = {}
 assert(Utils.sample(player, "a", nil, true, false) == nil)
 assert(Utils.sample(player, "a", 42, true, false) == 42)

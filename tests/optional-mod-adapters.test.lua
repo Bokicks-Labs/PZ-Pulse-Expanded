@@ -114,8 +114,8 @@ ModMedicineMoodles = {
     },
 }
 
-local statsAdapter = require("PZPulseExpanded/OptionalModStatsAdapter")
-local moodleAdapter = require("PZPulseExpanded/CustomMoodleAdapter")
+local statsAdapter = require("PZPulseExpanded/Panels/OptionalStats")
+local moodleAdapter = require("PZPulseExpanded/Moodles/Collector")
 
 -- The reported multiplayer runtime had no callable next() global.
 next = nil
@@ -245,6 +245,24 @@ assert(byId["DrugTime89:Hard"] == nil)
 assert(byId["NC_NaturesCall:NCGut"].level == 2)
 assert(byId["NC_NaturesCall:NCGut"].valence == "bad")
 assert(byId["NC_NaturesCall:NCGut"].iconKey == "natures-call/NCGutBad")
+
+local lifestyleReader = require("PZPulseExpanded/Integrations/Lifestyle")
+local originalCollectStats = lifestyleReader.collectStats
+modData.tabas_BodyGrime = 38
+lifestyleReader.collectStats = function(_, _, _, _, values)
+    values.lifestyle_hygiene_need = 99
+    error("fixture source failure")
+end
+local isolatedValues, isolatedHealth = statsAdapter.collect({
+    getModData = function() return modData end,
+})
+assert(isolatedValues.lifestyle_hygiene_need == nil,
+    "a failed source cannot leak a partial reading")
+assert(isolatedHealth.lifestyle_hygiene_need == "problem",
+    "a failed source reports its own health")
+assert(isolatedValues.tasab_body_grime == 38,
+    "a failed source does not suppress another source")
+lifestyleReader.collectStats = originalCollectStats
 
 active.LifestyleHobbies = false
 active.TakeABathAndShowerNew = false

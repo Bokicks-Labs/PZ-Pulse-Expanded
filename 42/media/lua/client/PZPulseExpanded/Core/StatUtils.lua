@@ -1,9 +1,7 @@
 -- Shared read-only history for continuous stat bars. Source adapters decide
 -- whether a mod is active and whether a value is intentionally hidden.
-PZPulseExpanded_StatUtils = PZPulseExpanded_StatUtils or {}
-
-local Utils = PZPulseExpanded_StatUtils
-local StatOptions = require("PZPulseExpanded/StatOptions")
+local Utils = {}
+local StatOptions = require("PZPulseExpanded/Core/StatOptions")
 
 local recent = setmetatable({}, { __mode = "k" })
 

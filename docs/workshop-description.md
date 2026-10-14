@@ -71,7 +71,22 @@ Set separate moodle and bar icon sizes, hide idle bars after a delay, and flash 
 
 [h2]THIRD-PARTY ARTWORK[/h2]
 
-This add-on includes moodle glyphs from supported mods so their states can appear with familiar in-game artwork. PZ Pulse's vanilla glyphs and colored moodle circles are reused at runtime. Artwork remains the property of its creators; no ownership is claimed. Copied glyphs come from Lifestyle: Hobbies (3403870858), Take A Bath And Shower (3592172476), Infirmities (3579088411), Medicine Moodles (3778856579), Brush Your Damn Teeth (3794105078), The Mutants (3796669056), DrugTime 89 (3632964785), Nature's Call (3709126801), [url=https://steamcommunity.com/sharedfiles/filedetails/?id=3396456841]Bodily Functions[/url] (3396456841; Workshop creators MonkeyShark and RSilience), and Casualties Undead (3805748433). Mod authors or rights holders can contact me to request removal.
+This add-on includes moodle glyphs from supported mods so their states can appear with familiar in-game artwork. PZ Pulse's vanilla glyphs and colored moodle circles are reused at runtime. Artwork remains the property of its creators; no ownership is claimed. Copied glyphs come from these mods:
+
+[list]
+[*][url=https://steamcommunity.com/sharedfiles/filedetails/?id=3403870858]Lifestyle: Hobbies[/url]
+[*][url=https://steamcommunity.com/sharedfiles/filedetails/?id=3592172476]Take A Bath And Shower[/url]
+[*][url=https://steamcommunity.com/sharedfiles/filedetails/?id=3579088411]Infirmities[/url]
+[*][url=https://steamcommunity.com/sharedfiles/filedetails/?id=3778856579]Medicine Moodles[/url]
+[*][url=https://steamcommunity.com/sharedfiles/filedetails/?id=3794105078]Brush Your Damn Teeth[/url]
+[*][url=https://steamcommunity.com/sharedfiles/filedetails/?id=3796669056]The Mutants[/url]
+[*][url=https://steamcommunity.com/sharedfiles/filedetails/?id=3632964785]DrugTime 89[/url]
+[*][url=https://steamcommunity.com/sharedfiles/filedetails/?id=3709126801]Nature's Call[/url]
+[*][url=https://steamcommunity.com/sharedfiles/filedetails/?id=3396456841]Bodily Functions[/url]
+[*][url=https://steamcommunity.com/sharedfiles/filedetails/?id=3805748433]Casualties Undead[/url]
+[/list]
+
+Mod authors or rights holders can contact me to request removal.
 
 [h2]CURRENT FEATURES[/h2]
 
@@ -82,6 +97,8 @@ This release focuses on [b]Needs Expanded[/b]. The plans below are future work a
 [list]
 [*][b]Info Expanded:[/b] Add support for modded traits in PZ Pulse's Info+ panel.
 [*][b]Skills Expanded:[/b] Add support for traits as skills and skill levels beyond 10 in PZ Pulse's Skills+ panel.
+[*][b]Health Expanded:[/b] Add support for Undead Casualties.
+
 [/list]
 
 [h2]FEATURE REQUESTS AND BUG REPORTS[/h2]
