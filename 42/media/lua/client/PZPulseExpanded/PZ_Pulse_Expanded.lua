@@ -5,11 +5,13 @@ PZ_Pulse_EXT = PZ_Pulse_EXT or {}
 
 require("PZPulseExpanded/ModSources")
 require("PZPulseExpanded/NaturesCallAdapter")
+require("PZPulseExpanded/BodilyFunctionsAdapter")
 require("PZPulseExpanded/OptionalModStatsAdapter")
 require("PZPulseExpanded/CustomMoodleAdapter")
 require("PZPulseExpanded/StatUtils")
 
 local NaturesCallAdapter = PZPulseExpanded_NaturesCallAdapter
+local BodilyFunctionsAdapter = PZPulseExpanded_BodilyFunctionsAdapter
 local OptionalModStatsAdapter = PZPulseExpanded_OptionalModStatsAdapter
 local CustomMoodleAdapter = PZPulseExpanded_CustomMoodleAdapter
 local StatUtils = PZPulseExpanded_StatUtils
@@ -127,6 +129,22 @@ local function collectNaturesCall(player)
             natures_call_bladder = "problem", natures_call_bowel = "problem" }
 end
 
+local bodilyFunctionsErrorLogged = false
+local function collectOptionalStatAdapter(adapter, player, label)
+    local ok, values, health = pcall(adapter.collect, player)
+    if ok then return values, health end
+    if not bodilyFunctionsErrorLogged then
+        local reason = tostring(values or "unknown error")
+        if #reason > 240 then reason = reason:sub(1, 240) .. "..." end
+        print("[PZ_Pulse_Expanded] " .. label .. " collection failed: " .. reason)
+        bodilyFunctionsErrorLogged = true
+    end
+    local fallbackOk, fallback, fallbackHealth = pcall(adapter.missing, player, true)
+    return fallbackOk and fallback or nil,
+        fallbackOk and fallbackHealth or {
+            bodily_functions_bladder = "problem", bodily_functions_bowel = "problem" }
+end
+
 local optionalAdapterFailures = {}
 
 local function collectContinuousOptional(player)
@@ -216,6 +234,13 @@ local function needsExpandedCollector(player)
         values.natures_call = naturesCall
     end
 
+    local bodilyFunctions, bodilyHealth = collectOptionalStatAdapter(
+        BodilyFunctionsAdapter, player, "Bodily Functions")
+    if type(bodilyHealth) == "table" then
+        for id, status in pairs(bodilyHealth) do barHealth[id] = status end
+    end
+    if bodilyFunctions ~= nil then values.bodily_functions = bodilyFunctions end
+
     local optionalModStats, optionalHealth = collectContinuousOptional(player)
     if type(optionalHealth) == "table" then
         for id, status in pairs(optionalHealth) do barHealth[id] = status end
@@ -243,7 +268,7 @@ end
 table.insert(PZ_Pulse_EXT, {
     api = 1,
     mod = "PZ_Pulse_Expanded",
-    version = "1.4.1",
+    version = "1.5.0",
     id = "needs_expanded",
     title = "Needs Expanded",
     cls = "info",

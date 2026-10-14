@@ -39,6 +39,7 @@ function loadRenderer(savedBars = null, options = null, savedPins = null, savedO
 
     vm.runInContext(`${source}\n;globalThis.__test = {
         adaptNaturesCallStats,
+        adaptBodilyFunctionsStats,
         adaptOptionalModStats,
         adaptCustomMoodles,
         adaptPzPulseMoodles,
@@ -49,6 +50,7 @@ function loadRenderer(savedBars = null, options = null, savedPins = null, savedO
         renderNeedsExpanded,
         renderMoodleBadge,
         renderPlayerStatRow,
+        resolveMoodleGlyph,
         statBarClass,
         BAR_CHOICES,
         BAR_GROUPS,
@@ -379,7 +381,7 @@ test("renders the agreed new bars once and honors independent saved choices", ()
             casualties_euphoria: 0.64
         }
     }});
-    assert.equal(api.BAR_CHOICES.length, 34);
+    assert.equal(api.BAR_CHOICES.length, 36);
     assert.equal(count(html, 'class="needs-expanded-row"'), 11);
     assert.equal(countLabel(html, "Nicotine Withdrawal"), 1);
     assert.equal(countLabel(html, "Poison"), 1);
@@ -597,6 +599,15 @@ test("mod bar levels follow their source thresholds and active moodles", () => {
     assert.equal(api.statBarClass(stat("natures_call_bladder", 95, 120)), "bad2");
     assert.equal(api.statBarClass(stat("natures_call_bladder", 100, 120)), "bad2");
     assert.equal(api.statBarClass(stat("natures_call_bladder", 100.01, 120)), "bad4");
+    for (const id of ["bodily_functions_bladder", "bodily_functions_bowel"]) {
+        assert.equal(api.statBarClass(stat(id, 40)), "ok");
+        assert.equal(api.statBarClass(stat(id, 40.01)), "bad1");
+        assert.equal(api.statBarClass(stat(id, 60.01)), "bad2");
+        assert.equal(api.statBarClass(stat(id, 80.01)), "bad3");
+        assert.equal(api.statBarClass(stat(id, 90.01)), "bad4");
+    }
+    const precise = api.adaptBodilyFunctionsStats({ bladder: 40, bladder_level: 1 });
+    assert.equal(api.statBarClass(precise[0]), "bad1");
     assert.equal(api.statBarClass(stat("lifestyle_hygiene_need", 9.99)), "good4");
     assert.equal(api.statBarClass(stat("lifestyle_hygiene_need", 30)), "good1");
     assert.equal(api.statBarClass(stat("lifestyle_hygiene_need", 40)), "ok");
@@ -632,6 +643,8 @@ test("mod bar levels follow their source thresholds and active moodles", () => {
         [active("project_zomboid:mood_stressed", 3)]), "bad3");
     assert.equal(api.statBarClass(stat("natures_call_bladder", 95, 120),
         [active("NC_NaturesCall:NCBladder", 2, "bad", 3)]), "bad2");
+    assert.equal(api.statBarClass(stat("bodily_functions_bladder", 50),
+        [active("bodilyfunctions:Urination", 3)]), "bad3");
     assert.equal(api.statBarClass(stat("endurance", 90, 100, false),
         [active("project_zomboid:status_difficultybreathing", 2)]), "bad2");
     assert.equal(api.statBarClass(stat("hunger", 5),
@@ -887,6 +900,25 @@ test("renders an icon for every built-in stat bar", () => {
     assert.equal(count(html, 'class="needs-expanded-icon"'), 18);
     assert.doesNotMatch(html, /needs-expanded-icon-blank/);
     assert.match(html, /data:image\/png;base64/);
+});
+
+test("Bodily Functions bars and moodles resolve copied source glyphs", () => {
+    const { api } = loadRenderer();
+    for (const name of ["Urination", "Defecation", "PeedSelf", "PoopedSelf", "BodilyFumes"]) {
+        assert.match(api.resolveMoodleGlyph(`bodily-functions/${name}`),
+            /^data:image\/png;base64,/);
+    }
+    const html = api.renderNeedsExpanded({ needs_expanded: {
+        bodily_functions: { bladder: 40, bowel: 50 },
+        custom_moodles: [{
+            id: "bodilyfunctions:Urination", label: "Urination", level: 1,
+            maxLevel: 4, valence: "bad", iconKey: "bodily-functions/Urination",
+            source: { type: "mod", id: "bodilyfunctions", name: "Bodily Functions" }
+        }]
+    } });
+    assert.equal(count(html, 'class="needs-expanded-row"'), 2);
+    assert.doesNotMatch(html, /needs-expanded-icon-blank/);
+    assert.match(html, /data:image\/png;base64,/);
 });
 
 test("returns an empty body only when no usable source rows remain", () => {

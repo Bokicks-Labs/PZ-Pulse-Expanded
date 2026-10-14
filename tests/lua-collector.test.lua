@@ -6,11 +6,15 @@ PZ_Pulse_EXT = {}
 CharacterStat = { DISCOMFORT = {}, NICOTINE_WITHDRAWAL = {}, IDLENESS = {}, POISON = {} }
 
 local active = true
+local bodilyActive = true
+SandboxVars = { BF = { EnableUrination = true, EnableDefecation = true },
+    BathroomFunctions = { BladderMaxValue = 800, BowelsMaxValue = 500 } }
 
 function getActivatedMods()
     return {
         contains = function(_, modId)
-            return active and modId == "NC_NaturesCall"
+            return (active and modId == "NC_NaturesCall")
+                or (bodilyActive and modId == "bodilyfunctions")
         end,
     }
 end
@@ -49,7 +53,8 @@ local player = {
         }
     end,
     getModData = function()
-        return { NaturesCall = sourceState }
+        return { NaturesCall = sourceState, urinateValue = 320,
+            defecateValue = 250 }
     end,
 }
 
@@ -75,6 +80,16 @@ assert(collected.bar_health.discomfort == "reporting")
 assert(collected.bar_health.natures_call_bladder == "reporting")
 assert(collected.natures_call.bladder == 60)
 assert(collected.natures_call.bowel == 0, "valid Nature's Call zero should survive")
+assert(collected.active_mods.bodilyfunctions == true)
+assert(collected.bodily_functions.bladder == 40
+    and collected.bodily_functions.bowel == 50,
+    "two excretion sources remain independent")
+assert(collected.bodily_functions.bladder_level == 0)
+bodilyActive = false
+local withoutBodily = spec.collect(player)
+assert(withoutBodily.bodily_functions == nil
+    and withoutBodily.natures_call.bladder == 60)
+bodilyActive = true
 assert(sourceState.bladderFill == 60 and sourceState.bowelFill == 0,
     "collector must not mutate source state")
 

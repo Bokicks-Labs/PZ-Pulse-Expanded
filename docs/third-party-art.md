@@ -84,6 +84,13 @@ Copied from `42.20/media/textures/moodles/`: `CheckPants.png`,
 Nature's Call's nearby-smell moodle uses PZ Pulse's existing vanilla noxious
 smell glyph, so no additional Nature's Call file is copied for that state.
 
+### Bodily Functions — Workshop 3396456841, creators MonkeyShark and RSilience
+
+Copied from `42/media/ui/`: `Urination.png`, `Defecation.png`,
+`PeedSelf.png`, `PoopedSelf.png`, and `BodilyFumes.png` into
+`bodily-functions/`. The Urination and Defecation glyphs are also used for
+their corresponding Needs Expanded stat bars.
+
 ## PZ Pulse artwork
 
 PZ Pulse Expanded does not copy PZ Pulse's vanilla glyphs or colored moodle

@@ -7,6 +7,7 @@ local active = {
     TakeABathAndShowerNew = true,
     BrushYourDamnTeeth = true,
     MoodleFramework = true,
+    bodilyfunctions = true,
     DrugTime89 = true,
     NC_NaturesCall = true,
     MedicineMoodlesB42 = true,
@@ -75,6 +76,11 @@ MF = {
     MoodlesStorage = {
         [0] = {
             BodyGrime = {},
+            Urination = {},
+            Defecation = {},
+            PeedSelf = {},
+            PoopedSelf = {},
+            BodilyFumes = {},
             UnknownAddonMoodle = {},
             Neutral = {},
         },
@@ -85,6 +91,11 @@ MF = {
 MF.MoodleData[tostring(player)] = {
     Moodles = {
         BodyGrime = { Level = 3, GoodBadNeutral = 2, Value = 0.2 },
+        Urination = { Level = 2, GoodBadNeutral = 2, Value = 0.3 },
+        Defecation = { Level = 0, GoodBadNeutral = 2, Value = 0.5 },
+        PeedSelf = { Level = 1, GoodBadNeutral = 2, Value = 0.4 },
+        PoopedSelf = { Level = 1, GoodBadNeutral = 2, Value = 0.4 },
+        BodilyFumes = { Level = 1, GoodBadNeutral = 2, Value = 0.4 },
         UnknownAddonMoodle = { Level = 1, GoodBadNeutral = 1, Value = 0.6 },
         Neutral = { Level = 0, GoodBadNeutral = 0, Value = 0.5 },
     },
@@ -219,6 +230,12 @@ assert(byId["LifestyleHobbies:Malformed"] == nil)
 assert(byId["TakeABathAndShowerNew:BodyGrime"].level == 3)
 assert(byId["TakeABathAndShowerNew:BodyGrime"].source.id == "TakeABathAndShowerNew")
 assert(byId["TakeABathAndShowerNew:BodyGrime"].iconKey == "tasab/BodyGrime")
+assert(byId["bodilyfunctions:Urination"].source.name == "Bodily Functions")
+assert(byId["bodilyfunctions:Urination"].level == 2)
+for _, name in ipairs({ "Urination", "PeedSelf", "PoopedSelf", "BodilyFumes" }) do
+    assert(byId["bodilyfunctions:" .. name].iconKey == "bodily-functions/" .. name)
+end
+assert(byId["bodilyfunctions:Defecation"] == nil)
 assert(byId["MoodleFramework:UnknownAddonMoodle"].source.name == "Moodle Framework add-on")
 assert(byId["MedicineMoodlesB42:LemonGrass"].label == "Lemongrass")
 assert(byId["MedicineMoodlesB42:LemonGrass"].iconKey == "medicine/LemonGrass")

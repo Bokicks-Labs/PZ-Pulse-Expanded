@@ -89,6 +89,7 @@ the listed value.
 | Drunkenness | >10, >30, >50, >70 |
 | Discomfort | ≥20, ≥40, ≥60, ≥80 |
 | Nature's Call bladder and bowel | ≥70, ≥95, >100 of 120 fill |
+| Bodily Functions bladder and bowel | >40%, >60%, >80%, >90% of configured capacity |
 | Lifestyle Hygiene | good: <40, <30, <20, <10; bad: >60, >70, >80, >90 |
 | TASAB Body Grime | ≥45 (level 2), ≥75 (level 3), ≥90 (level 4) |
 | DrugTime 89 Stoned / Hard | >0, ≥70 / ≥80, ≥105 / ≥120 |
@@ -231,6 +232,22 @@ Needs Expanded may use it defensively when available, but:
 - missing vanilla glyphs should degrade to compact text moodle chips
 - known supported mods use embedded copies of their source glyphs
 - missing stat-row icons still use an invisible spacer to preserve alignment
+
+## Health Expanded (planned)
+
+Health Expanded is a planned dedicated panel for detailed health information.
+Casualties Undead is the first priority for deeper support than the moodles and
+Drug Euphoria bar already shown in Needs Expanded. Candidate information
+includes active clinical conditions, affected body systems, severity, and
+progression or treatment context where the source provides safe, player-owned
+readings. The exact fields, labels, and interaction model require inspection of
+the then-current Casualties Undead source and validation in single player and
+multiplayer. The panel will read existing state without creating conditions or
+changing treatment or damage mechanics.
+
+Health Expanded will use the same normalized source and provenance rules as
+Needs Expanded. It should present detailed condition context without simply
+duplicating Needs Expanded's active moodle badges. It is planned, not released.
 
 ## Skills Expanded
 

@@ -1,13 +1,16 @@
 PZ Pulse Expanded - Workshop Release Notes
-Prepared version: 1.4.1 (not yet published)
-Published Steam baseline: 1.4.0 (confirmed by the author)
+Published release version: 1.5.0 (designated by the author; Steam upload in progress)
 
-The complete Steam-formatted 1.4.1 entry is maintained at
-docs/steam-changelog.txt. This patch fixes Drug Euphoria remaining visible
-at zero when auto-hide is enabled and the bar is not pinned.
+The complete Steam-formatted 1.5.0 entry is at the top of
+docs/steam-changelog.txt. This minor release adds Bodily Functions support.
 
-Release status:
-- Source version and PZ Pulse extension version are set to 1.4.1.
-- Browser renderer tests pass (34/34); manual in-game testing of the auto-hide fix was confirmed by the author. Lua tests were not rerun for this browser-only change.
-- Workshop staging is synchronized with the current source and metadata by Scripts/publish-to-pz-workshop.ps1 (12 payload files verified).
-- Staging does not upload or publish the item; publish through Steam after reviewing the staged files and metadata.
+Version 1.5.0 release record:
+- Source version and PZ Pulse extension version are set to 1.5.0.
+- Added optional Bodily Functions Bladder and Bowel bars, its five active moodles, and their original glyphs.
+- Bar colors follow the source mod's moodle levels and configured capacities. Missing or disabled source data remains isolated from other rows.
+- Workshop description and artwork credit now include Bodily Functions. The listing warns that supported mods may conflict, particularly Nature's Call and Bodily Functions.
+- Browser renderer tests pass (35/35); six Lua test files pass through the available Lua runtime. The author confirmed the icons and stats in game before this release pass.
+- Workshop staging is synchronized with the current source and metadata by Scripts/publish-to-pz-workshop.ps1 (13 payload files verified).
+- Steam Workshop item 3804774101 will be uploaded by the author. This staging script does not upload to Steam; live Workshop publication has not yet been verified here.
+
+Previous release: 1.4.1 was confirmed published by the author. Its Steam-formatted entry remains in docs/steam-changelog.txt.

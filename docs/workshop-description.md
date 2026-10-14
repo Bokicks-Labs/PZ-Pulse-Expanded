@@ -29,6 +29,7 @@ Supported mods can add active moodles and optional meters such as Bladder, Bowel
 [list]
 [*][b]Lifestyle: Hobbies[/b] — active moodles and Hygiene, Embarrassment, Comfort, and Beauty meters.
 [*][b]Nature's Call[/b] — Bladder and Bowel meters plus digestive, soilage, and other active moodles.
+[*][b]Bodily Functions[/b] — separate Bladder and Bowel meters plus Urination, Defecation, PeedSelf, PoopedSelf, and BodilyFumes moodles.
 [*][b]Take A Bath And Shower[/b] — Body Grime meter and bathing-related moodles.
 [*][b]Brush Your Damn Teeth[/b] — Dental Hygiene meter and short-term Mouth State moodle, with distinct icons.
 [*][b]DrugTime 89[/b] — Stoned and Hard moodles and their intensity meters.
@@ -63,13 +64,14 @@ Set separate moodle and bar icon sizes, hide idle bars after a delay, and flash 
 [list]
 [*]Made for Project Zomboid Build [b]42.20+[/b].
 [*][b]PZ Pulse is the only required mod.[/b]
+[*][b]Support does not mean the optional mods are compatible with each other.[/b] Nature's Call and Bodily Functions both add bladder and bowel gameplay systems. Choose which system to run in a save; PZ Pulse Expanded can display each mod's separate data but does not resolve conflicts between them.
 [*]In multiplayer, only state available locally or synchronized by the source mod can be shown. Match client and server mod lists and versions when a server-side source mod is involved.
 [*]If a supported optional source is inactive or its value cannot be read, only the affected row is hidden.
 [/list]
 
 [h2]THIRD-PARTY ARTWORK[/h2]
 
-This add-on includes moodle glyphs from supported mods so their states can appear with familiar in-game artwork. PZ Pulse's vanilla glyphs and colored moodle circles are reused at runtime. Artwork remains the property of its creators; no ownership is claimed. Copied glyphs come from Lifestyle: Hobbies (3403870858), Take A Bath And Shower (3592172476), Infirmities (3579088411), Medicine Moodles (3778856579), Brush Your Damn Teeth (3794105078), The Mutants (3796669056), DrugTime 89 (3632964785), Nature's Call (3709126801), and Casualties Undead (3805748433). Mod authors or rights holders can contact me to request removal.
+This add-on includes moodle glyphs from supported mods so their states can appear with familiar in-game artwork. PZ Pulse's vanilla glyphs and colored moodle circles are reused at runtime. Artwork remains the property of its creators; no ownership is claimed. Copied glyphs come from Lifestyle: Hobbies (3403870858), Take A Bath And Shower (3592172476), Infirmities (3579088411), Medicine Moodles (3778856579), Brush Your Damn Teeth (3794105078), The Mutants (3796669056), DrugTime 89 (3632964785), Nature's Call (3709126801), [url=https://steamcommunity.com/sharedfiles/filedetails/?id=3396456841]Bodily Functions[/url] (3396456841; Workshop creators MonkeyShark and RSilience), and Casualties Undead (3805748433). Mod authors or rights holders can contact me to request removal.
 
 [h2]CURRENT FEATURES[/h2]
 

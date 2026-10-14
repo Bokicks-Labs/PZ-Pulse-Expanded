@@ -8,6 +8,9 @@ local Sources = PZPulseExpanded_ModSources
 Sources.naturesCall = Sources.naturesCall or {
     type = "mod", id = "NC_NaturesCall", name = "Nature's Call",
 }
+Sources.bodilyFunctions = Sources.bodilyFunctions or {
+    type = "mod", id = "bodilyfunctions", name = "Bodily Functions",
+}
 Sources.lifestyle = Sources.lifestyle or {
     type = "mod", id = "LifestyleHobbies", name = "Lifestyle: Hobbies",
 }
@@ -40,6 +43,7 @@ Sources.moodleFramework = Sources.moodleFramework or {
 }
 Sources.barSources = Sources.barSources or {
     Sources.naturesCall,
+    Sources.bodilyFunctions,
     Sources.lifestyle,
     Sources.tasab,
     Sources.teeth,
@@ -68,6 +72,12 @@ function Sources.barAvailability()
     end
 
     local infirmities = Sources.infirmities
+    if active[Sources.bodilyFunctions.id] then
+        active[Sources.bodilyFunctions.id] = SandboxVars == nil
+            or SandboxVars.BF == nil
+            or SandboxVars.BF.EnableUrination ~= false
+            or SandboxVars.BF.EnableDefecation ~= false
+    end
     if active[infirmities.id] then
         active[infirmities.id] = SandboxVars ~= nil
             and SandboxVars.Infirmities ~= nil

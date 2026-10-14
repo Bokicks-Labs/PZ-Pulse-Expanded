@@ -22,12 +22,12 @@ collection / provider layer
         ▼
 normalized PZ Pulse Expanded models
         │
-        ├───────────────┐
-        ▼               ▼
-Needs Expanded      Skills Expanded
-        │               │
-        ▼               ▼
-PZ Pulse extension renderers
+        ├───────────────┬───────────────────┐
+        ▼               ▼                   ▼
+Needs Expanded      Health Expanded    Skills Expanded
+        │               │                   │
+        ▼               ▼                   ▼
+        PZ Pulse extension renderers
 ```
 
 ## Layer responsibilities
@@ -103,6 +103,21 @@ Skills Expanded is intended to replace the PZ Pulse skills panel where necessary
 - skill caps above vanilla limits
 - alternate XP/progression behavior
 
+### Health Expanded (planned)
+
+Health Expanded is a planned dedicated panel for detailed health state, with
+Casualties Undead as a priority integration. Its exact data set and UI remain
+to be designed against the source mod's current APIs and multiplayer behavior.
+See [`pulse/panels.md`](pulse/panels.md) for the initial scope.
+
+## Planned integration refactor
+
+After the Bodily Functions integration is tested and published, organize
+built-in adapters by source mod and compose their normalized results per panel.
+The proposed ownership rules, migration steps, and compatibility requirements
+are recorded in
+[`decisions/0002-source-owned-integrations.md`](decisions/0002-source-owned-integrations.md).
+
 ## Stability boundaries
 
 ### Public / intended stable surface
@@ -140,6 +155,9 @@ The current panel composes normalized rows from independent inputs:
 3. The optional Nature's Call adapter reads existing per-player source-mod
    state without initializing it. See
    [`integrations/natures-call.md`](integrations/natures-call.md).
+   The Bodily Functions adapter separately reads its own existing per-player
+   fill values and configured capacities. See
+   [`integrations/bodily-functions.md`](integrations/bodily-functions.md).
 4. The optional-mod stat adapter reads continuous values already owned by
    Lifestyle: Hobbies, Take A Bath And Shower, Brush Your Damn Teeth,
    DrugTime 89, Infirmities, and Caffeine Makes Sense.

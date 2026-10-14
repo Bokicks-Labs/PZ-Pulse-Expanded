@@ -1,5 +1,16 @@
 [h1]PZ Pulse Expanded - Changelog[/h1]
 
+[h2]Version 1.5.0 - Bodily Functions Support[/h2]
+
+[list]
+[*]Added optional Bodily Functions Bladder and Bowel bars, using configured capacities and the source mod moodle levels for bar colors.
+[*]Added the five active Bodily Functions moodles with their original glyphs and source attribution.
+[*]Kept Nature's Call and Bodily Functions readings separate; PZ Pulse Expanded does not resolve conflicts between their gameplay systems.
+[*]Updated the Workshop description with Bodily Functions artwork credit and a warning that supported mods may conflict with one another.
+[/list]
+
+[hr][/hr]
+
 [h2]Version 1.4.1 - Drug Euphoria Auto-Hide Fix[/h2]
 
 [list]

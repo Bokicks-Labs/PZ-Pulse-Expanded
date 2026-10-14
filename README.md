@@ -5,7 +5,7 @@ PZ Pulse Expanded extends [PZ Pulse](https://github.com/PZ-Pulse/API) with riche
 The project is currently in early development. **Needs Expanded** renders
 PZ Pulse's vanilla Needs+ stats, active moodles from supported installed mods,
 the underlying vanilla **Discomfort** stat, and independently nullable
-continuous stats from Nature's Call, Lifestyle: Hobbies, Take A Bath And
+continuous stats from Nature's Call, Bodily Functions, Lifestyle: Hobbies, Take A Bath And
 Shower, Brush Your Damn Teeth, DrugTime 89, Infirmities, and Caffeine Makes
 Sense. Players can choose, pin, and reorder bars in the panel gear menu.
 
@@ -40,6 +40,12 @@ A replacement skills panel designed to support:
 - modified skill caps
 - alternate XP/progression rules where required
 
+### Health Expanded
+
+A planned dedicated health panel, with detailed Casualties Undead support as
+an initial priority. The data contract and layout will be designed after
+inspecting the source mod's current health state and multiplayer behavior.
+
 ## Current milestone
 
 The current Needs Expanded panel uses one normalized rendering path:
@@ -62,6 +68,7 @@ identified without affecting other bars. See the installed-mod inventory in
 
 ## Documentation
 
+- The current Steam Workshop release is **1.5.0**, adding Bodily Functions support; see [`docs/steam-changelog.txt`](docs/steam-changelog.txt) for the full changelog. The author is completing the Steam upload.
 - [`docs/architecture.md`](docs/architecture.md) — project architecture, scope, and stability boundaries.
 - [`docs/workshop-description.md`](docs/workshop-description.md) — player-facing Steam Workshop description.
 - [`docs/steam-changelog.txt`](docs/steam-changelog.txt) — Steam-formatted changelog template. The version title and notes supplied to the version bump script must be plain text; the script adds the Steam BBCode structure.
@@ -71,9 +78,11 @@ identified without affecting other bars. See the installed-mod inventory in
 - [`docs/pulse/provider-api.md`](docs/pulse/provider-api.md) — draft third-party provider API.
 - [`docs/pulse/panels.md`](docs/pulse/panels.md) — panel responsibilities and rendering behavior.
 - [`docs/integrations/natures-call.md`](docs/integrations/natures-call.md) — verified compatibility-adapter contract and limits.
+- [`docs/integrations/bodily-functions.md`](docs/integrations/bodily-functions.md) — Bodily Functions adapter contract, moodles, and compatibility limits.
 - [`docs/integrations/installed-mod-moodles.md`](docs/integrations/installed-mod-moodles.md) — local installed-mod moodle/stat inventory and supported sources.
 - [`docs/third-party-art.md`](docs/third-party-art.md) — exact copied moodle-art inventory, attribution, and removal policy.
 - [`docs/decisions/0001-normalized-provider-model.md`](docs/decisions/0001-normalized-provider-model.md) — rationale for normalizing provider data before rendering.
+- [`docs/decisions/0002-source-owned-integrations.md`](docs/decisions/0002-source-owned-integrations.md) — planned source-owned integration layout for the update after Bodily Functions.
 
 ## Scope note: PZ Map
 

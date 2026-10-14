@@ -19,10 +19,16 @@ local SOURCES = {
     drugtime = ModSources.drugtime,
     casualties = ModSources.casualties,
     natures_call = ModSources.naturesCall,
+    bodily_functions = ModSources.bodilyFunctions,
     moodle_framework = ModSources.moodleFramework,
 }
 
 local MOODLE_FRAMEWORK_SOURCES = {
+    Defecation = SOURCES.bodily_functions,
+    Urination = SOURCES.bodily_functions,
+    PoopedSelf = SOURCES.bodily_functions,
+    PeedSelf = SOURCES.bodily_functions,
+    BodilyFumes = SOURCES.bodily_functions,
     Wet_Bathing = SOURCES.tasab,
     CoolingBody = SOURCES.tasab,
     WarmingBody = SOURCES.tasab,
@@ -152,6 +158,7 @@ end
 
 local function moodleFrameworkIconKey(source, name)
     local folders = {
+        [SOURCES.bodily_functions.id] = "bodily-functions",
         [SOURCES.tasab.id] = "tasab",
         [SOURCES.infirmities.id] = "infirmities",
         [SOURCES.medicine.id] = "medicine",

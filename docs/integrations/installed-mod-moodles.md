@@ -4,6 +4,9 @@ This inventory was built from the locally installed Project Zomboid Workshop
 sources for Build 42.20. It records moodle-producing mods that Needs Expanded
 can read without initializing or mutating their state.
 
+Bodily Functions was added after this inventory sweep; its separate contract is
+documented in [`bodily-functions.md`](bodily-functions.md).
+
 The 2026-10-11 follow-up checked the 342 IDs in the newest save's `mods.txt`
 (`Saves/Sandbox/2026-10-11_04-08-30`). Workshop source was mapped for 338 IDs;
 the remaining four are vehicle/viewpoint IDs whose Workshop `mod.info` did not
