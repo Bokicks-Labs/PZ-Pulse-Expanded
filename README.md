@@ -68,7 +68,7 @@ identified without affecting other bars. See the installed-mod inventory in
 
 ## Documentation
 
-- Repository version **1.5.1** is prepared for release pending in-game testing. The preceding 1.5.0 release record adds Bodily Functions support; see [`docs/steam-changelog.txt`](docs/steam-changelog.txt). Verify the live Workshop version before uploading.
+- **1.5.1** is released following the author's in-game test. It prevents duplicate moodles when a supported integration and Moodle Framework expose the same registration. See [`docs/steam-changelog.txt`](docs/steam-changelog.txt) for the plain-text changelog.
 - [`docs/architecture.md`](docs/architecture.md) — project architecture, scope, and stability boundaries.
 - [`docs/development.md`](docs/development.md) — current source layout, integration changes, data flow, tests, and local validation.
 - [`docs/workshop-description.md`](docs/workshop-description.md) — player-facing Steam Workshop description.

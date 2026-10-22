@@ -1,6 +1,6 @@
-PZ Pulse Expanded - Pending Release Notes
+PZ Pulse Expanded - Workshop Release Notes
 
-Repository version: 1.5.1 (pending in-game validation and Steam upload)
+Released version: 1.5.1 (confirmed by the author on October 22, 2026)
 
 The complete plain-text 1.5.1 entry is at the top of
 docs/steam-changelog.txt. This patch prevents a duplicate active moodle when
@@ -8,16 +8,10 @@ a supported direct integration and Moodle Framework expose the same
 registration. Catch-all Framework moodles use an available matching browser
 icon, with a text fallback when no icon is available.
 
-Release checks completed:
+Release validation:
 - Source modversion and PZ Pulse extension version are 1.5.1.
-- Browser renderer tests and Lua fixtures pass.
+- Browser renderer tests (36) and six Lua fixture files pass.
 - The local development copy is synchronized by Scripts/toggle-pz-junction.ps1.
+- The author reported that the in-game test passed and confirmed the 1.5.1 release.
 
-Release checks still needed:
-- Confirm in a disposable save that Nature's Call Foul Odor appears once and
-  Framework-only moodles remain visible.
-- Verify the currently published Workshop version and prepare the full
-  changelog delta since that upload before staging a public release.
-- Stage and upload the Workshop item only after runtime testing.
-
-The preceding repository release record is 1.5.0 (Bodily Functions support).
+Previous release: 1.5.0 (Bodily Functions support).
