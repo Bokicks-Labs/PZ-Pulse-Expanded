@@ -3,11 +3,11 @@ local Adapter = {}
 
 local COLLECTORS = {
     require("PZPulseExpanded/Integrations/Lifestyle"),
-    require("PZPulseExpanded/Moodles/Framework"),
     require("PZPulseExpanded/Integrations/MedicineMoodles"),
     require("PZPulseExpanded/Integrations/DrugTime"),
     require("PZPulseExpanded/Integrations/NaturesCall"),
     (require("PZPulseExpanded/Integrations/CasualtiesUndead")),
+    require("PZPulseExpanded/Moodles/Framework"),
 }
 
 function Adapter.collect(player)

@@ -58,7 +58,7 @@ local modData = {
             bladder = 0,
             bowel = 0,
             soilage = 0,
-            nearbySmell = 0,
+            nearbySmell = 2,
             gut = -2,
             cramps = 0,
             heartburn = 0,
@@ -81,6 +81,9 @@ MF = {
             PeedSelf = {},
             PoopedSelf = {},
             BodilyFumes = {},
+            NCSmell = {},
+            MindfulState = {},
+            LemonGrass = {},
             UnknownAddonMoodle = {},
             Neutral = {},
         },
@@ -96,6 +99,9 @@ MF.MoodleData[tostring(player)] = {
         PeedSelf = { Level = 1, GoodBadNeutral = 2, Value = 0.4 },
         PoopedSelf = { Level = 1, GoodBadNeutral = 2, Value = 0.4 },
         BodilyFumes = { Level = 1, GoodBadNeutral = 2, Value = 0.4 },
+        NCSmell = { Level = 2, GoodBadNeutral = 2, Value = 0.2 },
+        MindfulState = { Level = 2, GoodBadNeutral = 1, Value = 0.8 },
+        LemonGrass = { Level = 2, GoodBadNeutral = 2, Value = 0.2 },
         UnknownAddonMoodle = { Level = 1, GoodBadNeutral = 1, Value = 0.6 },
         Neutral = { Level = 0, GoodBadNeutral = 0, Value = 0.5 },
     },
@@ -237,6 +243,11 @@ for _, name in ipairs({ "Urination", "PeedSelf", "PoopedSelf", "BodilyFumes" }) 
 end
 assert(byId["bodilyfunctions:Defecation"] == nil)
 assert(byId["MoodleFramework:UnknownAddonMoodle"].source.name == "Moodle Framework add-on")
+assert(byId["MoodleFramework:UnknownAddonMoodle"].iconKey == "UnknownAddonMoodle")
+assert(byId["MoodleFramework:NCSmell"] == nil)
+assert(byId["MoodleFramework:MindfulState"] == nil)
+assert(byId["MoodleFramework:LemonGrass"] == nil)
+assert(byId["NC_NaturesCall:NCSmell"].iconKey == "mood_noxioussmell")
 assert(byId["MedicineMoodlesB42:LemonGrass"].label == "Lemongrass")
 assert(byId["MedicineMoodlesB42:LemonGrass"].iconKey == "medicine/LemonGrass")
 assert(byId["DrugTime89:Stoned"].valence == "good")

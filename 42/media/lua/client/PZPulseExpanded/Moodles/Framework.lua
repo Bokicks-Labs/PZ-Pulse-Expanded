@@ -29,9 +29,21 @@ function Framework.collectMoodles(player, result, seen)
     local states = type(dataRoot) == "table" and dataRoot.Moodles or nil
     if type(objects) ~= "table" or type(states) ~= "table" then return end
 
+    -- Direct readers run first. A matching registration name has already
+    -- supplied this moodle, regardless of which supported mod owns it.
+    local directlyCollected = {}
+    for _, moodle in ipairs(result) do
+        local name = type(moodle.id) == "string"
+            and moodle.id:match("^[^:]+:(.+)$") or nil
+        if name ~= nil then directlyCollected[name] = true end
+    end
+
     for name, object in pairs(objects) do
+        local owner = ownerByName[name]
         local state = states[name]
-        if type(state) == "table" and not (type(object) == "table" and object.disable) then
+        if not directlyCollected[name]
+            and type(state) == "table"
+            and not (type(object) == "table" and object.disable) then
             local level = Utils.normalizeLevel(state.Level, 4)
             local alignment = tonumber(state.GoodBadNeutral)
             local valence = alignment == 1 and "good"
@@ -39,7 +51,6 @@ function Framework.collectMoodles(player, result, seen)
                 or nil
 
             if level ~= nil and valence ~= nil then
-                local owner = ownerByName[name]
                 local source = owner and owner.source or Sources.moodleFramework
                 local alignmentText = valence == "good" and "Good" or "Bad"
                 local titleKey = "Moodles_" .. tostring(name) .. "_"
@@ -61,7 +72,8 @@ function Framework.collectMoodles(player, result, seen)
                     maxLevel = 4,
                     valence = valence,
                     iconKey = owner and owner.iconFolder
-                        and owner.iconFolder .. "/" .. tostring(name) or nil,
+                        and owner.iconFolder .. "/" .. tostring(name)
+                        or (not owner and tostring(name) or nil),
                     source = source,
                 })
             end

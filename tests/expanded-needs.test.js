@@ -693,6 +693,22 @@ test("level-one bad bars soften while moodle badges keep PZ Pulse art", () => {
     assert.doesNotMatch(badge, /src="green-circle"/);
 });
 
+test("catch-all Framework moodles use a matching available glyph and keep a text fallback", () => {
+    const { api, context } = loadRenderer();
+    const moodle = {
+        id: "MoodleFramework:UnknownAddonMoodle", label: "Unknown Addon Moodle",
+        level: 1, maxLevel: 4, valence: "bad", iconKey: "UnknownAddonMoodle",
+        source: { type: "mod", id: "MoodleFramework", name: "Moodle Framework add-on" }
+    };
+    assert.match(api.renderMoodleBadge(moodle), /needs-expanded-moodle-fallback/);
+    context.window.PZ_MOODLE_ICONS = {
+        UnknownAddonMoodle: "available-glyph", circle_bad1: "available-circle"
+    };
+    const badge = api.renderMoodleBadge(moodle);
+    assert.match(badge, /src="available-glyph"/);
+    assert.match(badge, /src="available-circle"/);
+});
+
 test("keeps valid zeroes and skips malformed individual source values", () => {
     const { api } = loadRenderer();
     const needs = vanillaNeeds();

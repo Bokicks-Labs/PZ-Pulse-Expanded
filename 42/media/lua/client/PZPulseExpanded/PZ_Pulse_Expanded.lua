@@ -9,7 +9,7 @@ local NeedsExpanded = require("PZPulseExpanded/Panels/NeedsExpanded")
 table.insert(PZ_Pulse_EXT, {
     api = 1,
     mod = "PZ_Pulse_Expanded",
-    version = "1.5.0",
+    version = "1.5.1",
     id = "needs_expanded",
     title = "Needs Expanded",
     cls = "info",

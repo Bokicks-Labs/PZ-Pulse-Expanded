@@ -1,5 +1,10 @@
 PZ Pulse Expanded - Changelog
 
+Version 1.5.1 - Framework Moodle Deduplication
+
+- Prevent duplicate moodles when a supported integration and Moodle Framework expose the same registration.
+- Use an available icon for catch-all Framework moodles, with a readable text fallback.
+
 Version 1.5.0 - Bodily Functions Support
 
 - Added optional Bodily Functions Bladder and Bowel bars, using configured capacities and the source mod moodle levels for bar colors.

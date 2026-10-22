@@ -83,6 +83,13 @@ Known installed registrations retain their actual source provenance:
 | Brush Your Damn Teeth | `BYDT_MouthState` |
 | The Mutants | `PZTheMutants_Puked` |
 
+Direct integration readers run before the Framework traversal. When a direct
+reader has emitted a moodle whose ID ends in the Framework registration name,
+the traversal skips that registration. This handles Nature's Call's `NCSmell`
+and any other direct integration with the same overlap without a source-specific
+exclusion list. Integrations whose only moodle data comes from Framework
+continue to use that traversal.
+
 An active unrecognized Moodle Framework registration is still displayed and is
 identified as a `Moodle Framework add-on` rather than being silently discarded.
 Medicine Moodles keeps its `MF.ISMoodle` objects in its own per-player table,
@@ -90,8 +97,10 @@ so the adapter also observes that already-initialized table without creating or
 updating any medicine moodles.
 
 Known installed sources use exact copied source-mod glyphs. An unknown Moodle
-Framework registration still appears as a compact text moodle chip if no
-matching bundled glyph is available; it never falls back to a stat bar.
+Framework registration uses a matching icon key from the bundled or PZ Pulse
+browser map when available. Otherwise it remains a compact text moodle chip;
+Framework texture objects cannot be passed directly into the web view. It
+never falls back to a stat bar.
 
 ### Other installed moodle systems
 

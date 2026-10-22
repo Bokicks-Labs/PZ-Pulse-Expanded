@@ -68,7 +68,7 @@ identified without affecting other bars. See the installed-mod inventory in
 
 ## Documentation
 
-- The current Steam Workshop release is **1.5.0**, adding Bodily Functions support; see [`docs/steam-changelog.txt`](docs/steam-changelog.txt) for the full changelog. The author is completing the Steam upload.
+- Repository version **1.5.1** is prepared for release pending in-game testing. The preceding 1.5.0 release record adds Bodily Functions support; see [`docs/steam-changelog.txt`](docs/steam-changelog.txt). Verify the live Workshop version before uploading.
 - [`docs/architecture.md`](docs/architecture.md) — project architecture, scope, and stability boundaries.
 - [`docs/development.md`](docs/development.md) — current source layout, integration changes, data flow, tests, and local validation.
 - [`docs/workshop-description.md`](docs/workshop-description.md) — player-facing Steam Workshop description.
@@ -131,7 +131,7 @@ as a required item so subscribers receive the dependency automatically.
 ## Multiplayer development builds
 
 For local single-player testing, run `Scripts/toggle-pz-junction.ps1`. It creates
-`%UserProfile%\Zomboid\mods\PZPulseExpandedLocalDev` pointing at a copied dev bundle
+`%UserProfile%\Zomboid\mods\PZPulseExpandedDev` pointing at a copied dev bundle
 with mod ID `PZ_Pulse_Expanded_Dev`. Run it again to remove the junction; each
 new activation creates a fresh copy under the ignored `artifacts/dev` folder.
 Enable the dev ID and disable the public ID in the test mod list.
