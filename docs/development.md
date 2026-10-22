@@ -48,6 +48,9 @@ or forwarding file for an internal caller.
 5. `expanded-needs.js` adapts these payload fields and PZ Pulse's own private
    `d.needs` and `d.moodles`, validates rows, then renders and manages choices.
    It does not read a source mod's Lua state.
+   PZ Pulse 1.3.0 supplies the chooser button through a declared `button`
+   option, the `redraw()` helper, and `pzPulseIcon('moodle', key)` for vanilla
+   glyphs and color-scheme-aware moodle circles.
 
 The Lua `require` path is relative to `42/media/lua/client` and omits `.lua`.
 Source and panel modules return tables. A `require` call caches that table.

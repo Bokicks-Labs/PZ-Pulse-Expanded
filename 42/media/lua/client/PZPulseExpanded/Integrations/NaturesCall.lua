@@ -1,4 +1,4 @@
--- Optional compatibility adapter for Nature's Call 1.0.15.
+-- Optional compatibility adapter for Nature's Call 1.0.16.
 --
 -- This module deliberately reads existing player state directly. Calling
 -- NaturesCall.State.ensurePlayerData() or getDetailedSnapshot() here would
@@ -10,8 +10,6 @@ local Sources = require("PZPulseExpanded/Core/Sources")
 
 Adapter.MOD_ID = Sources.naturesCall.id
 Adapter.SOURCE_NAME = Sources.naturesCall.name
-Adapter.MIN_FILL = 0
-Adapter.MAX_FILL = 120
 local syncedPlayers = setmetatable({}, { __mode = "k" })
 
 local function isPureMultiplayerClient()
@@ -26,33 +24,40 @@ local function collectValues(player, state, snapshot, active, problem)
     local values = {}
     local health = {}
     for _, definition in ipairs({
-        { output = "bladder", field = "bladderFill", trait = "majorBladderIncontinence" },
-        { output = "bowel", field = "bowelFill", trait = "majorBowelIncontinence" },
+        { output = "bladder", field = "bladderFill", trait = "majorBladderIncontinence", min = 0, max = 120, waiting = 0 },
+        { output = "bowel", field = "bowelFill", trait = "majorBowelIncontinence", min = 0, max = 120, waiting = 0 },
+        { output = "gut_health", field = "gutHealth", min = 1, max = 10, waiting = 5 },
+        { output = "control", field = "control", min = 0, max = 1, waiting = 0 },
     }) do
         local raw = source[definition.field]
         local number = StatUtils.finiteNumber(raw)
-        local hidden = traits[definition.trait] == true
-            or (number ~= nil and number < Adapter.MIN_FILL)
-        local invalid = raw ~= nil and (number == nil or number > Adapter.MAX_FILL)
+        local hidden = (definition.trait ~= nil
+                and traits[definition.trait] == true)
+            or (definition.output == "control" and source.reliefExempt == true)
+            or (definition.output == "gut_health" and SandboxVars ~= nil
+                and SandboxVars.NaturesCall ~= nil
+                and SandboxVars.NaturesCall.DisableGutSystem == true)
+            or (definition.trait ~= nil and number ~= nil and number < definition.min)
+        local invalid = raw ~= nil and (number == nil or number < definition.min
+            or number > definition.max)
         if invalid then number = nil end
         local value, status = StatUtils.sample(
             player, "natures_call:" .. definition.output,
             not hidden and number or nil, active, hidden,
             problem == true or invalid
         )
-        health[definition.output == "bladder" and "natures_call_bladder"
-            or "natures_call_bowel"] = status
+        health["natures_call_" .. definition.output] = status
         if value ~= nil then
             values[definition.output] = value
         elseif status == "waiting" then
-            values[definition.output] = 0
+            values[definition.output] = definition.waiting
         end
     end
     return values, health
 end
 
 -- Return source values plus per-bar health. Missing initial state is a
--- zero placeholder; a numeric zero from the source is reported as real data.
+-- source-appropriate placeholder; a numeric zero is reported as real data.
 function Adapter.collect(player)
     if not Sources.isActive(Sources.naturesCall) then
         if player ~= nil then
@@ -60,10 +65,12 @@ function Adapter.collect(player)
             collectValues(player, nil, nil, false)
         end
         return nil, { natures_call_bladder = "unavailable",
-            natures_call_bowel = "unavailable" }
+            natures_call_bowel = "unavailable", natures_call_gut_health = "unavailable",
+            natures_call_control = "unavailable" }
     end
     if player == nil then return nil, {
-        natures_call_bladder = "problem", natures_call_bowel = "problem" }
+        natures_call_bladder = "problem", natures_call_bowel = "problem",
+        natures_call_gut_health = "problem", natures_call_control = "problem" }
     end
     if player.getModData == nil then return Adapter.missing(player, true) end
 
@@ -106,7 +113,7 @@ local NATURES_CALL_MOODLES = {
     { name = "NCBowel", key = "bowel", valence = "bad", maxLevel = 3 },
     { name = "NCSoilage", key = "soilage", valence = "bad", maxLevel = 3 },
     { name = "NCSmell", key = "nearbySmell", valence = "bad", maxLevel = 3 },
-    { name = "NCGut", key = "gut", signed = true, maxLevel = 3 },
+    { name = "NCGut", key = "gut", signed = true, maxLevel = 2 },
     { name = "NCCramps", key = "cramps", valence = "bad", maxLevel = 3 },
     { name = "NCHeartburn", key = "heartburn", valence = "bad", maxLevel = 3 },
 }

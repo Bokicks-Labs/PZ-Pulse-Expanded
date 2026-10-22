@@ -190,7 +190,8 @@ function Panel.collect(player)
 
     addStatAdapter(values, barHealth, "natures_call", NaturesCallAdapter,
         player, "Nature's Call",
-        { natures_call_bladder = "problem", natures_call_bowel = "problem" })
+        { natures_call_bladder = "problem", natures_call_bowel = "problem",
+          natures_call_gut_health = "problem", natures_call_control = "problem" })
     addStatAdapter(values, barHealth, "bodily_functions",
         BodilyFunctionsAdapter, player, "Bodily Functions",
         { bodily_functions_bladder = "problem", bodily_functions_bowel = "problem" })

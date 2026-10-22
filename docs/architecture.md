@@ -154,7 +154,7 @@ PZ Pulse private surfaces may be used defensively when necessary, but PZ Pulse E
 The current panel composes normalized rows from independent inputs:
 
 1. PZ Pulse's private `d.needs` and `d.moodles` arrays are adapted in the
-   browser. PZ Pulse 1.1.3 does not provide stable need IDs, so the needs
+   browser. PZ Pulse 1.3.0 still does not provide stable need IDs, so the needs
    adapter owns an explicit mapping to its verified collector order. Both
    adapters validate individual items before use.
 2. The extension Lua collector reads vanilla `CharacterStat.DISCOMFORT`.
@@ -174,7 +174,7 @@ The current panel composes normalized rows from independent inputs:
 
 Each stat reports its collection health independently. Inactive mods and
 disabled source settings remain unavailable. An active source with no initial
-reading supplies a zero placeholder marked **Waiting for Data**; invalid reads
+reading supplies a source-appropriate placeholder marked **Waiting for Data**; invalid reads
 and adapter failures are identified without erasing valid rows from other
 sources. The shared payload is never mutated. For edit locations, module
 contracts, and testing steps, see the [`developer guide`](development.md).

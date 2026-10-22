@@ -1,5 +1,13 @@
 PZ Pulse Expanded - Changelog
 
+Version 1.6.0 - PZ Pulse 1.3 API and Nature's Call meters
+
+- Use PZ Pulse 1.3.0 extension buttons and redraw support for Manage Stat Bars.
+- Use PZ Pulse moodle levels and color-scheme-aware circle artwork for vanilla moodles.
+- Add Nature's Call Gut Health and Control bars with distinct icons and source-aware availability.
+- Align stat icons in a fixed column and correct Nature's Call Gut moodle levels.
+- Derive intermediate bar colors from PZ Pulse's active palette, including grayscale intermediate levels in Mostly Mono.
+
 Version 1.5.1 - Framework Moodle Deduplication
 
 - Prevent duplicate moodles when a supported integration and Moodle Framework expose the same registration.

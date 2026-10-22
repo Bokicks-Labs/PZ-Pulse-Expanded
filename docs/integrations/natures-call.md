@@ -7,7 +7,7 @@ The built-in adapter targets the locally verified release:
 - Workshop item: `3709126801`
 - mod name: **Nature's Call**
 - mod ID: `NC_NaturesCall`
-- mod version: `1.0.15`
+- mod version: `1.0.16`
 - Build 42 folder inspected: `mods/NaturesCall/42.20`
 
 Nature's Call remains optional. PZ Pulse Expanded does not declare it as a
@@ -21,6 +21,8 @@ Nature's Call stores existing per-player state beneath:
 player:getModData().NaturesCall
 ├── bladderFill
 ├── bowelFill
+├── gutHealth
+├── control
 └── ownerSnapshot        (authoritative synchronized view on a pure MP client)
 ```
 
@@ -35,6 +37,18 @@ The source definitions declare both fill values as `0..120`:
 Both values are high-is-bad. PZ Pulse Expanded preserves the source's complete
 `0..120` range, then uses the shared normalized-stat renderer to convert it to
 a `0..100` bar percentage.
+
+Gut Health is a continuous `1..10` condition, with neutral at `5` and higher
+values beneficial. Nature's Call's diet update changes it over time; the signed
+`NCGut` moodle reports only broad positive or negative levels. The gut subsystem's
+`DisableGutSystem` setting pins it to neutral, so Expanded marks the bar
+unavailable while that setting is enabled. Control is a separate continuous
+`0..1` value used by the accident system; higher values are beneficial. Nature's
+Call hides its own Control readout for a relief-exempt player, and Expanded does
+the same. Both values are read from the existing owner snapshot on a pure
+multiplayer client. Gut Health uses a smaller, dark-outlined rendition of Nature's
+Call's stomach sidebar icon. Control uses a separate squeezed-bladder icon; gut
+moodles retain their separate good/bad icons.
 
 The sandbox `BladderRateMult` and `BowelRateMult` settings change how quickly
 the values accumulate. They do not change the fill range or its units.
@@ -60,8 +74,9 @@ major-trait flags in local/server-authoritative state.
 ## Failure behavior and icons
 
 Before the first valid reading, missing mod state or an unsynchronized owner
-snapshot supplies a zero placeholder marked **Waiting for Data**. After a
-valid reading, each meter retains
+snapshot supplies a placeholder marked **Waiting for Data**: zero for Bladder,
+Bowel, and Control, and neutral `5` for Gut Health. After a valid reading,
+each meter retains
 its last value during brief missing or invalid reads and is marked **Using
 Recent Value**. The duration is set by
 **Missing stat grace period (seconds)** in Options → Mods → PZ Pulse Expanded
@@ -76,14 +91,15 @@ briefly retains its last successful result under the same grace period
 and emits one bounded diagnostic per session. Vanilla Needs+ rows and
 Discomfort continue rendering.
 
-PZ Pulse's browser icon map is a private, vanilla-oriented surface and no
-Nature's Call keys were verified there. These two rows therefore use the
-renderer’s existing aligned icon spacer rather than claiming an unverified
-browser icon.
+Nature's Call bladder and bowel icons are copied from the installed source.
+Gut Health uses an edited version of its sidebar stomach icon, while Control
+uses a generated squeeze variant of its bladder moodle icon. All are embedded
+in Expanded's browser asset map. PZ Pulse's `pzPulseIcon` API supplies vanilla
+moodle glyphs and color-scheme-aware circle backgrounds.
 
 ## Compatibility boundary
 
-This integration is based on Nature's Call 1.0.15 source fields and sync
+This integration is based on Nature's Call 1.0.16 source fields and sync
 behavior. Those are source-mod internals, not a public provider contract. A
 future source-mod change may require updating this adapter. The separate PZ
 Pulse Expanded provider API remains a design draft.

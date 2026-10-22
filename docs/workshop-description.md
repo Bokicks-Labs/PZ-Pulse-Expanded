@@ -4,13 +4,13 @@
 
 See your survivor's needs, hidden vanilla stats, and active modded moodles together in [b]Needs Expanded[/b] — a replacement for PZ Pulse's Moodles & Needs+ panel, built for Project Zomboid Build 42.
 
-[b]Requires [url=https://steamcommunity.com/sharedfiles/filedetails/?id=3753700423]PZ Pulse[/url].[/b] Load PZ Pulse Expanded after PZ Pulse, then restart the game after changing your mod list. Supported integrations are optional.
+[b]Requires [url=https://steamcommunity.com/sharedfiles/filedetails/?id=3753700423]PZ Pulse 1.3.0 or newer[/url].[/b] Load PZ Pulse Expanded after PZ Pulse, then restart the game after changing your mod list. Supported integrations are optional.
 
 [h2]NEEDS EXPANDED: YOUR SURVIVOR AT A GLANCE[/h2]
 
 ![Needs Expanded main dashboard](workshop-images/main-dashboard.png)
 
-See familiar Needs+ bars alongside active moodles and extra player-state meters. Needs Expanded also surfaces vanilla [b]Discomfort[/b] and stats that the original panel doesn't show.
+See familiar Needs+ bars alongside active moodles and extra player-state meters. Needs Expanded also surfaces vanilla [b]Discomfort[/b] and stats that the original panel doesn't show. Bar colors follow moodle levels and adapt to PZ Pulse's selected color scheme.
 
 [h2]CHOOSE WHAT YOU SEE[/h2]
 
@@ -22,13 +22,13 @@ Use [b]Manage Stat Bars[/b] to show or hide individual bars or whole sources, pi
 
 ![Optional mod moodles and meters](workshop-images/optional-mod-data.png)
 
-Supported mods can add active moodles and optional meters such as Bladder, Bowel, Hygiene, Body Grime, Dental Hygiene, addictions, drug intensity, Caffeine Level, Embarrassment, Comfort, Beauty, and Drug Euphoria. [b]All integrations are optional.[/b] A row appears only when its source is active and its player data is readable.
+Supported mods can add active moodles and optional meters such as Bladder, Bowel, Gut Health, Control, Hygiene, Body Grime, Dental Hygiene, addictions, drug intensity, Caffeine Level, Embarrassment, Comfort, Beauty, and Drug Euphoria. [b]All integrations are optional.[/b] A row appears only when its source is active and its player data is readable.
 
 [h2]SUPPORTED OPTIONAL MODS[/h2]
 
 [list]
 [*][b]Lifestyle: Hobbies[/b] — active moodles and Hygiene, Embarrassment, Comfort, and Beauty meters.
-[*][b]Nature's Call[/b] — Bladder and Bowel meters plus digestive, soilage, and other active moodles.
+[*][b]Nature's Call[/b] — Bladder, Bowel, Gut Health, and Control meters plus digestive, soilage, and other active moodles.
 [*][b]Bodily Functions[/b] — separate Bladder and Bowel meters plus Urination, Defecation, PeedSelf, PoopedSelf, and BodilyFumes moodles.
 [*][b]Take A Bath And Shower[/b] — Body Grime meter and bathing-related moodles.
 [*][b]Brush Your Damn Teeth[/b] — Dental Hygiene meter and short-term Mouth State moodle, with distinct icons.
@@ -63,7 +63,7 @@ Set separate moodle and bar icon sizes, hide idle bars after a delay, and flash 
 
 [list]
 [*]Made for Project Zomboid Build [b]42.20+[/b].
-[*][b]PZ Pulse is the only required mod.[/b]
+[*][b]PZ Pulse 1.3.0 or newer is the only required mod.[/b]
 [*][b]Support does not mean the optional mods are compatible with each other.[/b] Nature's Call and Bodily Functions both add bladder and bowel gameplay systems. Choose which system to run in a save; PZ Pulse Expanded can display each mod's separate data but does not resolve conflicts between them.
 [*]In multiplayer, only state available locally or synchronized by the source mod can be shown. Match client and server mod lists and versions when a server-side source mod is involved.
 [*]If a supported optional source is inactive or its value cannot be read, only the affected row is hidden.

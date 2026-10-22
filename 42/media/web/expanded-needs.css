@@ -7,7 +7,7 @@
 
 .needs-expanded-rows {
     display: grid;
-    grid-template-columns: auto minmax(0, max-content) 1fr 5ch;
+    grid-template-columns: var(--needs-expanded-bar-icon-size) minmax(0, max-content) 1fr 5ch;
     column-gap: 8px;
     row-gap: 6px;
     align-items: center;
@@ -27,8 +27,11 @@
 }
 
 .needs-expanded-icon {
+    display: block;
     width: var(--needs-expanded-bar-icon-size);
     height: var(--needs-expanded-bar-icon-size);
+    justify-self: center;
+    align-self: center;
     object-fit: contain;
     image-rendering: pixelated;
 }
@@ -148,32 +151,26 @@
 }
 
 .needs-expanded-fill.ok { background: var(--ok); }
-.needs-expanded-fill.good1 { background: #86bd63; }
+.needs-expanded-fill.good1 { background: #86bd63; background: color-mix(in srgb, var(--ok) 85%, white 15%); }
 .needs-expanded-fill.good2 { background: var(--ok); }
-.needs-expanded-fill.good3 { background: #548c3e; }
-.needs-expanded-fill.good4 { background: #32682c; }
+.needs-expanded-fill.good3 { background: #548c3e; background: color-mix(in srgb, var(--ok) 80%, black 20%); }
+.needs-expanded-fill.good4 { background: #32682c; background: color-mix(in srgb, var(--ok) 60%, black 40%); }
 .needs-expanded-fill.bad1 { background: #a4a948; background: color-mix(in srgb, var(--ok) 50%, var(--warn) 50%); }
 .needs-expanded-fill.bad2 { background: var(--warn); }
 .needs-expanded-fill.bad3 { background: #d4773f; background: color-mix(in srgb, var(--warn) 50%, var(--danger) 50%); }
 .needs-expanded-fill.bad4 { background: var(--danger); }
 
+/* PZ Pulse's Mostly Mono scheme reserves red for danger; keep interim levels gray. */
+.needs-expanded-mono .needs-expanded-fill.good1 { background: color-mix(in srgb, var(--ok) 43%, black 57%); }
+.needs-expanded-mono .needs-expanded-fill.good2 { background: color-mix(in srgb, var(--ok) 38%, black 62%); }
+.needs-expanded-mono .needs-expanded-fill.good3 { background: color-mix(in srgb, var(--ok) 33%, black 67%); }
+.needs-expanded-mono .needs-expanded-fill.good4 { background: color-mix(in srgb, var(--ok) 28%, black 72%); }
+.needs-expanded-mono .needs-expanded-fill.bad3 { background: color-mix(in srgb, var(--warn) 75%, white 25%); }
+
 .needs-expanded-value {
     text-align: right;
     font-variant-numeric: lining-nums tabular-nums;
     color: var(--muted);
-}
-
-.needs-expanded-choose-button {
-    display: block;
-    width: 100%;
-    margin: 9px 0;
-    padding: 6px 8px;
-    border: 1px solid var(--line);
-    border-radius: 3px;
-    color: var(--head);
-    background: var(--panel, #242424);
-    text-align: left;
-    cursor: pointer;
 }
 
 .needs-expanded-chooser-backdrop {

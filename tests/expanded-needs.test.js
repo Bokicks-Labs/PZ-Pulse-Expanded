@@ -24,6 +24,7 @@ function loadRenderer(savedBars = null, options = null, savedPins = null, savedO
         window: {},
         Date: { now: () => now },
         o: name => options ? options[name] : undefined,
+        redraw() {},
         setTimeout: (callback, delay) => { pending = { callback, due: now + delay }; return 1; },
         clearTimeout: () => { pending = null; },
         localStorage: {
@@ -52,6 +53,7 @@ function loadRenderer(savedBars = null, options = null, savedPins = null, savedO
         renderPlayerStatRow,
         resolveMoodleGlyph,
         statBarClass,
+        isMonochromeBarPalette,
         BAR_CHOICES,
         BAR_GROUPS,
         renderBarChoices,
@@ -89,7 +91,7 @@ test("auto-hide waits after a bar returns to zero and flash expires on a timer",
     const payload = { needs: vanillaNeeds(), needs_expanded: {} };
     renderer.context.window.PZ_DATA = payload;
     let lastHtml = "";
-    renderer.context.updateContent = data => { lastHtml = renderer.api.renderNeedsExpanded(data); };
+    renderer.context.redraw = () => { lastHtml = renderer.api.renderNeedsExpanded(payload); };
 
     let html = renderer.api.renderNeedsExpanded(payload);
     assert.equal(countLabel(html, "Hunger"), 0);
@@ -187,7 +189,7 @@ test("auto-hide uses the new flash and hide defaults", () => {
     const renderer = loadRenderer(null, { auto_hide_zero: true });
     const payload = { needs: vanillaNeeds(), needs_expanded: {} };
     renderer.context.window.PZ_DATA = payload;
-    renderer.context.updateContent = data => renderer.api.renderNeedsExpanded(data);
+    renderer.context.redraw = () => renderer.api.renderNeedsExpanded(payload);
 
     renderer.api.renderNeedsExpanded(payload);
     payload.needs[0].value = 10;
@@ -381,7 +383,7 @@ test("renders the agreed new bars once and honors independent saved choices", ()
             casualties_euphoria: 0.64
         }
     }});
-    assert.equal(api.BAR_CHOICES.length, 36);
+    assert.equal(api.BAR_CHOICES.length, 38);
     assert.equal(count(html, 'class="needs-expanded-row"'), 11);
     assert.equal(countLabel(html, "Nicotine Withdrawal"), 1);
     assert.equal(countLabel(html, "Poison"), 1);
@@ -391,38 +393,12 @@ test("renders the agreed new bars once and honors independent saved choices", ()
     assert.equal(countLabel(html, "Idleness"), 0);
 });
 
-test("adds one chooser button to this panel's gear and restores it after a menu rebuild", () => {
-    const { api, context } = loadRenderer();
-    let button = null;
-    let observed = null;
-    const gear = {
-        querySelector(selector) {
-            return selector === ".needs-expanded-choose-button" ? button : null;
-        },
-        insertBefore(node) { button = node; }
-    };
-    context.document = {
-        querySelector(selector) {
-            assert.match(selector, /pz_pulse_expanded__needs_expanded/);
-            return { querySelector: () => gear };
-        },
-        createElement() {
-            return { addEventListener() {} };
-        }
-    };
-    context.MutationObserver = class {
-        constructor(callback) { observed = callback; }
-        observe() {}
-    };
-    api.renderNeedsExpanded({ needs: vanillaNeeds() });
-    assert.equal(button.textContent, "Manage Stat Bars…");
-    const first = button;
-    api.renderNeedsExpanded({ needs: vanillaNeeds() });
-    assert.equal(button, first, "normal renders do not add duplicate buttons");
-    button = null;
-    observed();
-    assert.equal(button.textContent, "Manage Stat Bars…");
-    assert.notEqual(button, first, "a rebuilt gear gets a fresh button");
+test("declares the supported PZ Pulse chooser action without private gear access", () => {
+    const registration = fs.readFileSync(path.join(__dirname, "..", "42", "media", "lua",
+        "client", "PZPulseExpanded", "PZ_Pulse_Expanded.lua"), "utf8");
+    assert.match(registration, /name = "manage_bars", type = "button".*action = "openBarChooser"/);
+    assert.match(source, /function openBarChooser\(\)/);
+    assert.doesNotMatch(source, /\.panel-settings|\bupdateContent\b|\bMutationObserver\b/);
 });
 
 test("unavailable mod bars have disabled checkboxes without losing their choice", () => {
@@ -588,6 +564,18 @@ test("vanilla bar colors change at each Build 42 moodle threshold", () => {
     });
 });
 
+test("PZ Pulse need levels take precedence over fallback thresholds", () => {
+    const { api } = loadRenderer();
+    const needs = vanillaNeeds();
+    needs[0].value = 5;
+    needs[0].level = 3;
+    const [hunger] = api.adaptPzPulseNeeds(needs);
+    assert.equal(hunger.sourceLevel, 3);
+    assert.equal(api.statBarClass(hunger), "bad3");
+    needs[0].level = 9;
+    assert.equal(api.adaptPzPulseNeeds(needs)[0].sourceLevel, undefined);
+});
+
 test("mod bar levels follow their source thresholds and active moodles", () => {
     const { api } = loadRenderer();
     const stat = (id, value, max = 100, badHigh = true) => api.buildPlayerStat(id, value, {
@@ -599,6 +587,12 @@ test("mod bar levels follow their source thresholds and active moodles", () => {
     assert.equal(api.statBarClass(stat("natures_call_bladder", 95, 120)), "bad2");
     assert.equal(api.statBarClass(stat("natures_call_bladder", 100, 120)), "bad2");
     assert.equal(api.statBarClass(stat("natures_call_bladder", 100.01, 120)), "bad4");
+    const gut = value => api.adaptNaturesCallStats({ gut_health: value })[0];
+    assert.equal(api.statBarClass(gut(5)), "ok");
+    assert.equal(api.statBarClass(gut(2.2)), "bad4");
+    assert.equal(api.statBarClass(gut(8.5)), "good4");
+    assert.equal(api.statBarClass(stat("natures_call_control", 0.7, 1, false)), "ok");
+    assert.equal(api.statBarClass(stat("natures_call_control", 0.3, 1, false)), "bad2");
     for (const id of ["bodily_functions_bladder", "bodily_functions_bowel"]) {
         assert.equal(api.statBarClass(stat(id, 40)), "ok");
         assert.equal(api.statBarClass(stat(id, 40.01)), "bad1");
@@ -670,6 +664,22 @@ test("rendered bars use active moodle colors and every severity has a style", ()
     assert.match(css, /\.needs-expanded-fill\.bad2 \{ background: var\(--warn\); \}/);
     assert.match(css, /\.needs-expanded-fill\.bad3 \{[^}]*color-mix\(in srgb, var\(--warn\) 50%, var\(--danger\) 50%\)/);
     assert.match(css, /\.needs-expanded-fill\.bad4 \{ background: var\(--danger\); \}/);
+    for (const level of ["good1", "good3", "good4"]) {
+        assert.match(css, new RegExp(`\\.needs-expanded-fill\\.${level} \\{[^}]*color-mix\\(in srgb, var\\(--ok\\)`));
+    }
+    assert.match(css, /\.needs-expanded-mono \.needs-expanded-fill\.bad3 \{ background: color-mix\(in srgb, var\(--warn\) 75%, white 25%\); \}/);
+});
+
+test("monochrome bar colors follow achromatic PZ Pulse tokens", () => {
+    const { api, context } = loadRenderer();
+    context.document = { documentElement: {} };
+    let colors = { "--ok": "rgb(150,150,150)", "--warn": "rgb(200, 200, 200)" };
+    context.getComputedStyle = () => ({ getPropertyValue: name => colors[name] });
+    assert.equal(api.isMonochromeBarPalette(), true);
+    colors = { "--ok": "rgb(78,138,190)", "--warn": "rgb(190,150,55)" };
+    assert.equal(api.isMonochromeBarPalette(), false);
+    colors = { "--ok": "#6fae4f", "--warn": "#d9a441" };
+    assert.equal(api.isMonochromeBarPalette(), false);
 });
 
 test("level-one bad bars soften while moodle badges keep PZ Pulse art", () => {
@@ -691,6 +701,28 @@ test("level-one bad bars soften while moodle badges keep PZ Pulse art", () => {
     const badge = api.renderMoodleBadge(moodle);
     assert.match(badge, /src="yellow-circle"/);
     assert.doesNotMatch(badge, /src="green-circle"/);
+});
+
+test("moodle badges request scheme-aware circles and Nature's Call bars use distinct icons", () => {
+    const { api, context } = loadRenderer();
+    const requested = [];
+    context.pzPulseIcon = (set, key) => {
+        requested.push(`${set}:${key}`);
+        return key.startsWith("circle_") ? `${key}-selected-scheme` : null;
+    };
+    const gut = {
+        id: "NC_NaturesCall:NCGut", label: "Gut Health", level: 2,
+        maxLevel: 2, valence: "good", iconKey: "natures-call/NCGutGood",
+        source: { type: "mod", id: "NC_NaturesCall", name: "Nature's Call" }
+    };
+    assert.match(api.renderMoodleBadge(gut), /circle_good2-selected-scheme/);
+    assert.ok(requested.includes("moodle:circle_good2"));
+    const stats = api.adaptNaturesCallStats({ gut_health: 8.5, control: 0.5 });
+    assert.equal(stats.length, 2);
+    assert.equal(stats[0].iconKey, "pz-pulse-expanded/NCGutHealth");
+    assert.equal(stats[1].iconKey, "pz-pulse-expanded/NCControl");
+    assert.match(api.resolveMoodleGlyph(stats[0].iconKey), /^data:image\/png;base64,/);
+    assert.match(api.resolveMoodleGlyph(stats[1].iconKey), /^data:image\/png;base64,/);
 });
 
 test("catch-all Framework moodles use a matching available glyph and keep a text fallback", () => {

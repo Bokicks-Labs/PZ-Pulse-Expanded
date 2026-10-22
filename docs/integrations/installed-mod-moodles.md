@@ -18,6 +18,8 @@ player-owned continuous values to their writers and consumers.
 
 | Source mod | Mod ID | Stat | Source range | Direction |
 |---|---|---|---:|---|
+| Nature's Call | `NC_NaturesCall` | Gut Health | `1..10`, neutral `5` | higher is better |
+| Nature's Call | `NC_NaturesCall` | Control | `0..1` | higher is better |
 | Lifestyle: Hobbies | `LifestyleHobbies` | Hygiene Need | `0..100` | higher is worse |
 | Lifestyle: Hobbies | `LifestyleHobbies` | Embarrassment | `0..1` | higher is worse |
 | Lifestyle: Hobbies | `LifestyleHobbies` | Comfort Need | `0..1` | higher is better |
@@ -43,7 +45,7 @@ Hygiene value. The Dental Hygiene bar instead changes severity at the mod's
 actual hygiene-effect bands: below `0.50`, `0.30`, and `0.10`.
 
 The collector preserves numeric zero. Inactive or disabled sources remain
-unavailable; an active source with no initial value supplies a zero placeholder
+unavailable; an active source with no initial value supplies a source-appropriate placeholder
 marked **Waiting for Data** in Manage Stat Bars. Invalid values and adapter
 failures are marked as problems, while a prior valid value can remain visible
 during the configured grace period.
@@ -126,6 +128,23 @@ the reviewed mod code, without evidence of an active accumulating need.
 Nature's Call bladder and bowel remain available as continuous bars as well as
 their active threshold moodles. Trait-hidden and unsynchronized values remain
 absent.
+
+The 2026-10-22 source follow-up found two numeric Nature's Call conditions
+missed by the earlier character-stat and moodle-registration sweep: Gut Health
+and Control. Both have gameplay writers, source-defined ranges, UI consumers,
+and owner-snapshot transport. `gutTrendPerHour` is a derivative trend, and
+`wipeNeed` is a situational count of required wiping; neither is a persistent
+condition bar. The current save lists 362 unique active mod IDs; 357 map to
+installed Workshop `mod.info` files and five are local Dev IDs. A name-filtered
+assignment scan of the other active Workshop Lua sources found 14 mods with
+potential numeric-state names. Its most plausible leads were already covered
+by vanilla stats (HideAnywhere exhaustion and discomfort), belonged to another
+subject (Companion Dogs stress), or were bookkeeping (This Is Your Life's
+`fatigueDay`). This heuristic is a lead generator, not an exhaustive proof.
+This follow-up has not repeated a complete source review of every ID. Future audits
+must trace player-owned numeric state and snapshot fields in addition to
+CharacterStat and moodle registrations, then compare candidates with existing
+PZ Pulse and Expanded panels.
 
 ## Runtime availability
 

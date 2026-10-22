@@ -80,6 +80,36 @@ assertEqual(preciseValues.bladder, 78.21, "Nature's Call payload must be rounded
 assertEqual(preciseState.bladderFill, 78.21247329711908,
     "rounding must not mutate source state")
 
+local gutState = { bladderFill = 0, bowelFill = 0, gutHealth = 8.53, control = 0.27 }
+local gutValues, gutHealth = Adapter.collect(playerWith({ NaturesCall = gutState }))
+assertEqual(gutValues.gut_health, 8.53, "gut health is a continuous source value")
+assertEqual(gutValues.control, 0.27, "control is a continuous source value")
+assertEqual(gutHealth.natures_call_gut_health, "reporting")
+assertEqual(gutHealth.natures_call_control, "reporting")
+assertEqual(gutState.gutHealth, 8.53, "read must not mutate gut state")
+
+SandboxVars = { NaturesCall = { DisableGutSystem = true } }
+local disabledGut, disabledHealth = Adapter.collect(playerWith({ NaturesCall = gutState }))
+assertNil(disabledGut.gut_health, "disabled gut subsystem must hide its bar")
+assertEqual(disabledHealth.natures_call_gut_health, "unavailable")
+assertEqual(disabledGut.control, 0.27, "control remains independent")
+SandboxVars = nil
+
+local exemptValues, exemptHealth = Adapter.collect(playerWith({ NaturesCall = {
+    gutHealth = 5, control = 0.9, reliefExempt = true,
+} }))
+assertNil(exemptValues.control, "relief-exempt control is not a player need")
+assertEqual(exemptHealth.natures_call_control, "unavailable")
+assertEqual(exemptValues.gut_health, 5)
+
+local invalidGut, invalidGutHealth = Adapter.collect(playerWith({ NaturesCall = {
+    gutHealth = 11, control = -0.1,
+} }))
+assertNil(invalidGut.gut_health, "gut values beyond the source range are invalid")
+assertNil(invalidGut.control, "control values beyond the source range are invalid")
+assertEqual(invalidGutHealth.natures_call_gut_health, "problem")
+assertEqual(invalidGutHealth.natures_call_control, "problem")
+
 local partialValues = Adapter.collect(playerWith({
     NaturesCall = { bladderFill = "bad", bowelFill = 0 },
 }))
@@ -117,6 +147,15 @@ local syncedState = {
 local syncedValues = Adapter.collect(playerWith({ NaturesCall = syncedState }))
 assertEqual(syncedValues.bladder, 0, "synced zero must remain visible")
 assertEqual(syncedValues.bowel, 60, "synced bowel fill")
+
+local syncedGut, syncedGutHealth = Adapter.collect(playerWith({ NaturesCall = {
+    gutHealth = 1, control = 0,
+    ownerSnapshot = { bladderFill = 0, bowelFill = 0, gutHealth = 7.25,
+        control = 0.8, traitModifiers = {} },
+} }))
+assertEqual(syncedGut.gut_health, 7.25, "owner snapshot wins over local gut value")
+assertEqual(syncedGut.control, 0.8, "owner snapshot wins over local control")
+assertEqual(syncedGutHealth.natures_call_gut_health, "reporting")
 
 local hiddenSynced = Adapter.collect(playerWith({
     NaturesCall = {

@@ -80,6 +80,12 @@ Copied from `42.20/media/textures/moodles/`: `CheckPants.png`,
 `AcidReflux.png`. They are stored using the matching runtime moodle names:
 `NCUnknownPants.png`, `NCBladder.png`, `NCBowel.png`, `NCSoilage.png`,
 `NCGutGood.png`, `NCGutBad.png`, `NCCramps.png`, and `NCHeartburn.png`.
+The Gut Health stat bar uses our edited `pz-pulse-expanded/NCGutHealth.png`,
+based on Nature's Call's `42.20/media/textures/icons/NCPanelIcon.png` stomach
+sidebar glyph. Its white border was removed and the proportions adjusted for
+the compact stat row. Control uses our separate generated
+`pz-pulse-expanded/NCControl.png`, based on Nature's Call's bladder moodle
+glyph, with a hand squeezing the bladder inward at its waist.
 
 Nature's Call's nearby-smell moodle uses PZ Pulse's existing vanilla noxious
 smell glyph, so no additional Nature's Call file is copied for that state.

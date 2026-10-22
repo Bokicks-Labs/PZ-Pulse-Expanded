@@ -8,6 +8,8 @@ the underlying vanilla **Discomfort** stat, and independently nullable
 continuous stats from Nature's Call, Bodily Functions, Lifestyle: Hobbies, Take A Bath And
 Shower, Brush Your Damn Teeth, DrugTime 89, Infirmities, and Caffeine Makes
 Sense. Players can choose, pin, and reorder bars in the panel gear menu.
+The 1.6.0 source uses PZ Pulse 1.3.0's extension button, redraw,
+and moodle-icon APIs and adds Nature's Call Gut Health and Control bars.
 
 ## Goals
 
@@ -68,7 +70,7 @@ identified without affecting other bars. See the installed-mod inventory in
 
 ## Documentation
 
-- **1.5.1** is released following the author's in-game test. It prevents duplicate moodles when a supported integration and Moodle Framework expose the same registration. See [`docs/steam-changelog.txt`](docs/steam-changelog.txt) for the plain-text changelog.
+- **1.5.1** is the last confirmed Workshop release. Version **1.6.0** is prepared for in-game validation and adds PZ Pulse 1.3.0 API support and Nature's Call Gut Health and Control bars. See [`docs/steam-changelog.txt`](docs/steam-changelog.txt) for the plain-text changelog.
 - [`docs/architecture.md`](docs/architecture.md) — project architecture, scope, and stability boundaries.
 - [`docs/development.md`](docs/development.md) — current source layout, integration changes, data flow, tests, and local validation.
 - [`docs/workshop-description.md`](docs/workshop-description.md) — player-facing Steam Workshop description.

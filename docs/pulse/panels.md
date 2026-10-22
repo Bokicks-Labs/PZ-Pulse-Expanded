@@ -61,9 +61,15 @@ step with the displayed moodle. Level 0 uses PZ Pulse's green. The stat bar for
 a level-one negative moodle blends PZ Pulse's green and yellow, including when
 that moodle has only one level. Levels 2, 3, and 4 then use PZ Pulse's yellow,
 an orange blend of yellow and PZ Pulse's red, and PZ Pulse's red. Positive
-moodle levels use progressively stronger green shades, ending in dark green.
+moodle levels use progressively stronger shades of the active positive color.
 Three-level negative moodles use green-yellow, yellow, and red. Moodle badge
-artwork and colors still come directly from PZ Pulse.
+circle artwork and colors come from PZ Pulse's `pzPulseIcon` lookup, including
+its Colorblind and Mostly Mono schemes. Intermediate bar colors are calculated
+from PZ Pulse's public `--ok`, `--warn`, and `--danger` CSS variables, so they
+follow scheme changes without matching the circle artwork exactly. When the
+public green and yellow tokens are achromatic, the intermediate bars stay gray;
+the highest negative level still uses PZ Pulse's red danger token. Source-mod
+glyphs remain bundled here.
 Dental Hygiene is deliberately not paired with the Mouth State moodle: the
 former changes with long-term hygiene, while the latter tracks time since
 brushing. Its bar follows the source mod's hygiene-effect bands instead.
@@ -89,6 +95,8 @@ the listed value.
 | Drunkenness | >10, >30, >50, >70 |
 | Discomfort | ≥20, ≥40, ≥60, ≥80 |
 | Nature's Call bladder and bowel | ≥70, ≥95, >100 of 120 fill |
+| Nature's Call Gut Health | ≤3.8 and ≤2.2 bad; ≥6.5 and ≥8.5 good, on the source's 1–10 scale |
+| Nature's Call Control | <0.70, ≤0.30, ≤0.10 on the source's 0–1 scale |
 | Bodily Functions bladder and bowel | >40%, >60%, >80%, >90% of configured capacity |
 | Lifestyle Hygiene | good: <40, <30, <20, <10; bad: >60, >70, >80, >90 |
 | TASAB Body Grime | ≥45 (level 2), ≥75 (level 3), ≥90 (level 4) |
@@ -109,7 +117,7 @@ The default row order is:
    Stress, Panic, Unhappiness, Pain, Sickness, Wetness, and Drunkenness
 2. vanilla Discomfort
 3. vanilla Nicotine Withdrawal, Idleness, and Poison
-4. optional Nature's Call Bladder and Bowel fills
+4. optional Nature's Call Bladder, Bowel, Gut Health, and Control
 5. optional continuous mod stats: Lifestyle Hygiene Need, TASAB Body Grime,
    Brush Your Damn Teeth Dental Hygiene, DrugTime 89 intensities, Infirmities
    addiction levels, and Caffeine Makes Sense Caffeine Level
@@ -122,11 +130,12 @@ and unknown IDs are discarded, and newly added bars append in default order.
 of order.
 
 PZ Pulse's `d.needs` shape is a private dependency. The current adapter targets
-the exact ordered collector contract verified in PZ Pulse 1.1.3 and validates
+the exact ordered collector contract verified in PZ Pulse 1.3.0 and validates
 individual rows before normalization. Missing or invalid rows are skipped
 without affecting the other sources and are marked as problems in Manage Stat
-Bars. An active mod with no initial value creates a zero placeholder marked
-**Waiting for Data**; a valid source zero is marked **Reporting**.
+Bars. An active mod with no initial value creates a source-appropriate
+placeholder marked **Waiting for Data**; a valid source zero is marked
+**Reporting**. For Gut Health the waiting placeholder is neutral `5`.
 
 ## Stat visibility
 
@@ -144,11 +153,10 @@ active mod's checkbox unavailable.
 Each bar also has a **Pin** checkbox. A pinned bar remains visible at zero
 when auto-hide is enabled. Pinning does not turn on a manually hidden bar.
 
-The button is a narrow integration with PZ Pulse 1.1.3's private `.panel-settings`
-markup. PZ Pulse's public extension options accept only `bool`, `number`, and
-`choice` entries (eight at most), so there is no action-button declaration.
-PZ Pulse Expanded restores its button if PZ Pulse rebuilds the gear contents.
-An upstream action-button option would replace this private integration.
+PZ Pulse 1.3.0 draws the button from the extension's `button` option and calls
+`openBarChooser` in Expanded's JavaScript. Chooser changes and expiry timers
+use the supported `redraw()` helper. This requires PZ Pulse 1.3.0 or newer;
+older builds reject the extension's button option.
 
 The same gear menu has **Moodle icon size (scale)** and **Bar icon size
 (scale)** controls. They use a 1–6 range in half steps for moodles and a 1–4

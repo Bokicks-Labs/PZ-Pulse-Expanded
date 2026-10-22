@@ -9,7 +9,7 @@ local NeedsExpanded = require("PZPulseExpanded/Panels/NeedsExpanded")
 table.insert(PZ_Pulse_EXT, {
     api = 1,
     mod = "PZ_Pulse_Expanded",
-    version = "1.5.1",
+    version = "1.6.0",
     id = "needs_expanded",
     title = "Needs Expanded",
     cls = "info",
@@ -18,6 +18,7 @@ table.insert(PZ_Pulse_EXT, {
     css = "media/web/expanded-needs.css",
     render = "renderNeedsExpanded",
     options = {
+        { name = "manage_bars", type = "button", label = "Manage Stat Bars…", action = "openBarChooser" },
         { name = "moodle_icon_scale", type = "number", label = "Moodle icon size (scale)", min = 1, max = 6, step = 0.5, default = 4 },
         { name = "bar_icon_scale", type = "number", label = "Bar icon size (scale)", min = 1, max = 4, step = 0.25, default = 2 },
         { name = "auto_hide_zero", type = "bool", label = "Auto-hide idle bars", default = false },

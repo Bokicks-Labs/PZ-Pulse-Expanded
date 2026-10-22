@@ -2,7 +2,7 @@ PZ Pulse Expanded - Workshop Release Notes
 
 Released version: 1.5.1 (confirmed by the author on October 22, 2026)
 
-The complete plain-text 1.5.1 entry is at the top of
+The complete plain-text 1.5.1 entry is in
 docs/steam-changelog.txt. This patch prevents a duplicate active moodle when
 a supported direct integration and Moodle Framework expose the same
 registration. Catch-all Framework moodles use an available matching browser
