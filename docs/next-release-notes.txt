@@ -11,7 +11,7 @@ icon, with a text fallback when no icon is available.
 Release validation:
 - Source modversion and PZ Pulse extension version are 1.5.1.
 - Browser renderer tests (36) and six Lua fixture files pass.
-- The local development copy is synchronized by Scripts/toggle-pz-junction.ps1.
+- The local development copy is deployed by Scripts/deploy-pz-dev-mod.ps1.
 - The author reported that the in-game test passed and confirmed the 1.5.1 release.
 
 Previous release: 1.5.0 (Bodily Functions support).
