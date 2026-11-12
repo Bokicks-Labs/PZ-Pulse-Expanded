@@ -1,5 +1,9 @@
 PZ Pulse Expanded - Changelog
 
+Version 1.6.1 - Manage Stat Bars Label Update
+
+- Removed the ellipsis from the Manage Stat Bars button label.
+
 Version 1.6.0 - PZ Pulse 1.3 API and Nature's Call meters
 
 - Use PZ Pulse 1.3.0 extension buttons and redraw support for Manage Stat Bars.

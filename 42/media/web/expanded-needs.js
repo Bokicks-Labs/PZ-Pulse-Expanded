@@ -276,12 +276,18 @@ const PLAYER_STAT_DEFINITIONS = {
 
         source: PROJECT_ZOMBOID_SOURCE
     },
-    nicotine_withdrawal: { label: "Nicotine Withdrawal", min: 0, max: 1, badHigh: true,
-        iconKey: "mood_hungover", source: PROJECT_ZOMBOID_SOURCE },
-    idleness: { label: "Idleness", min: 0, max: 1, badHigh: true,
-        iconKey: "status_sedated", source: PROJECT_ZOMBOID_SOURCE },
-    poison: { label: "Poison", min: 0, max: 100, badHigh: true,
-        iconKey: "mood_dead", source: PROJECT_ZOMBOID_SOURCE }
+    nicotine_withdrawal: {
+        label: "Nicotine Withdrawal", min: 0, max: 1, badHigh: true,
+        iconKey: "mood_hungover", source: PROJECT_ZOMBOID_SOURCE
+    },
+    idleness: {
+        label: "Idleness", min: 0, max: 1, badHigh: true,
+        iconKey: "status_sedated", source: PROJECT_ZOMBOID_SOURCE
+    },
+    poison: {
+        label: "Poison", min: 0, max: 100, badHigh: true,
+        iconKey: "mood_dead", source: PROJECT_ZOMBOID_SOURCE
+    }
 };
 
 const NATURES_CALL_STAT_DEFINITIONS = {
@@ -379,28 +385,48 @@ const OPTIONAL_MOD_STAT_DEFINITIONS = {
         visibleByDefault: true,
         source: BRUSH_YOUR_DAMN_TEETH_SOURCE
     },
-    drugtime_stoned: { label: "Stoned Intensity", min: 0, max: 140, badHigh: true,
-        iconKey: "drugtime/DT_Stoned_1", source: { type: "mod", id: "DrugTime89", name: "DrugTime 89" } },
-    drugtime_hard: { label: "Hard Drug Intensity", min: 0, max: 160, badHigh: true,
-        iconKey: "drugtime/DT_Hard_1", source: { type: "mod", id: "DrugTime89", name: "DrugTime 89" } },
-    addiction_alcohol: { label: "Alcohol Addiction", min: 0, max: 100, badHigh: true,
-        iconKey: "infirmities/AddictedToAlcohol", source: { type: "mod", id: "twbInfirmities", name: "Infirmities" } },
-    addiction_nicotine: { label: "Nicotine Addiction", min: 0, max: 100, badHigh: true,
-        iconKey: "infirmities/AddictedToNicotine", source: { type: "mod", id: "twbInfirmities", name: "Infirmities" } },
-    addiction_caffeine: { label: "Caffeine Addiction", min: 0, max: 100, badHigh: true,
-        iconKey: "infirmities/AddictedToCaffeine", source: { type: "mod", id: "twbInfirmities", name: "Infirmities" } },
-    addiction_painkillers: { label: "Painkiller Addiction", min: 0, max: 100, badHigh: true,
-        iconKey: "infirmities/AddictedToPainkillers", source: { type: "mod", id: "twbInfirmities", name: "Infirmities" } },
-    addiction_sleeping_pills: { label: "Sleeping Pill Addiction", min: 0, max: 100, badHigh: true,
-        iconKey: "infirmities/AddictedToSleepingPills", source: { type: "mod", id: "twbInfirmities", name: "Infirmities" } },
-    addiction_amphetamines: { label: "Amphetamine Addiction", min: 0, max: 100, badHigh: true,
-        iconKey: "infirmities/AddictedToAmp", source: { type: "mod", id: "twbInfirmities", name: "Infirmities" } },
-    caffeine_load: { label: "Caffeine Level", min: 0, max: 4, badHigh: true,
+    drugtime_stoned: {
+        label: "Stoned Intensity", min: 0, max: 140, badHigh: true,
+        iconKey: "drugtime/DT_Stoned_1", source: { type: "mod", id: "DrugTime89", name: "DrugTime 89" }
+    },
+    drugtime_hard: {
+        label: "Hard Drug Intensity", min: 0, max: 160, badHigh: true,
+        iconKey: "drugtime/DT_Hard_1", source: { type: "mod", id: "DrugTime89", name: "DrugTime 89" }
+    },
+    addiction_alcohol: {
+        label: "Alcohol Addiction", min: 0, max: 100, badHigh: true,
+        iconKey: "infirmities/AddictedToAlcohol", source: { type: "mod", id: "twbInfirmities", name: "Infirmities" }
+    },
+    addiction_nicotine: {
+        label: "Nicotine Addiction", min: 0, max: 100, badHigh: true,
+        iconKey: "infirmities/AddictedToNicotine", source: { type: "mod", id: "twbInfirmities", name: "Infirmities" }
+    },
+    addiction_caffeine: {
+        label: "Caffeine Addiction", min: 0, max: 100, badHigh: true,
+        iconKey: "infirmities/AddictedToCaffeine", source: { type: "mod", id: "twbInfirmities", name: "Infirmities" }
+    },
+    addiction_painkillers: {
+        label: "Painkiller Addiction", min: 0, max: 100, badHigh: true,
+        iconKey: "infirmities/AddictedToPainkillers", source: { type: "mod", id: "twbInfirmities", name: "Infirmities" }
+    },
+    addiction_sleeping_pills: {
+        label: "Sleeping Pill Addiction", min: 0, max: 100, badHigh: true,
+        iconKey: "infirmities/AddictedToSleepingPills", source: { type: "mod", id: "twbInfirmities", name: "Infirmities" }
+    },
+    addiction_amphetamines: {
+        label: "Amphetamine Addiction", min: 0, max: 100, badHigh: true,
+        iconKey: "infirmities/AddictedToAmp", source: { type: "mod", id: "twbInfirmities", name: "Infirmities" }
+    },
+    caffeine_load: {
+        label: "Caffeine Level", min: 0, max: 4, badHigh: true,
         iconKey: "pz-pulse-expanded/CaffeineLevel",
-        source: { type: "mod", id: "CaffeineMakesSense", name: "Caffeine Makes Sense" } },
-    casualties_euphoria: { label: "Drug Euphoria", min: 0, max: 1, badHigh: false, idleAtZero: true,
+        source: { type: "mod", id: "CaffeineMakesSense", name: "Caffeine Makes Sense" }
+    },
+    casualties_euphoria: {
+        label: "Drug Euphoria", min: 0, max: 1, badHigh: false, idleAtZero: true,
         iconKey: "casualties-undead/High",
-        source: { type: "mod", id: "CasualtiesUndead", name: "Casualties Undead" } }
+        source: { type: "mod", id: "CasualtiesUndead", name: "Casualties Undead" }
+    }
 };
 
 // These explain the measured state and its likely gameplay consequences. Source
@@ -898,7 +924,7 @@ function adaptBodilyFunctionsStats(values) {
     if (!isValidObject(values)) return [];
     const definitions = { ...BODILY_FUNCTIONS_STAT_DEFINITIONS };
     for (const [name, id] of [["bladder", "bodily_functions_bladder"],
-        ["bowel", "bodily_functions_bowel"]]) {
+    ["bowel", "bodily_functions_bowel"]]) {
         const level = values[`${name}_level`];
         if (Number.isInteger(level) && level >= 0 && level <= 4) {
             definitions[id] = { ...definitions[id], sourceLevel: level };
@@ -1189,7 +1215,7 @@ function colorForLevel(level, maxLevel, valence) {
     const normalized = maxLevel <= 1 ? (valence === "bad" ? 1 : 4) : maxLevel === 2
         ? [0, 1, 4][Math.min(2, level)]
         : maxLevel === 3 ? (valence === "bad" ? [0, 1, 2, 4] : [0, 1, 3, 4])[Math.min(3, level)]
-        : Math.min(4, level);
+            : Math.min(4, level);
     return `${valence === "good" ? "good" : "bad"}${normalized}`;
 }
 
@@ -1232,7 +1258,7 @@ function statBarClass(stat, moodles = []) {
         if (good) return colorForLevel(good, profile.maxLevel || (stat.id === "drugtime_stoned" ? 3 : 4), "good");
         return colorForLevel(bad, profile.maxLevel || (profile.atOrAboveLevels ? 4
             : profile.atOrAbove && stat.id.startsWith("natures_call_") ? 3
-            : stat.id === "drugtime_hard" ? 3 : 4), "bad");
+                : stat.id === "drugtime_hard" ? 3 : 4), "bad");
     }
 
     // No corresponding moodle (or its state depends on something other than
@@ -1796,16 +1822,16 @@ function renderBarChoices() {
         const choices = new Map(BAR_CHOICES.map(choice => [choice.id, choice]));
         list.innerHTML = `<button type="button" class="needs-expanded-order-reset">Reset order</button>` +
             barOrder.map((id, index) => {
-            const choice = choices.get(id);
-            if (!choice) return "";
-            const source = choice.source || "Project Zomboid";
-            return `<div class="needs-expanded-order-line">` +
-                `<span class="needs-expanded-order-name"><span class="needs-expanded-order-number">${index + 1}.</span>` +
-                `${barChoiceIcon(choice)}<span>${esc(choice.label)} <small>${esc(source)}</small></span>` +
-                `${barHealthMarkup(id)}</span>` +
-                `<button type="button" data-bar-move="-1" data-bar-id="${esc(id)}" aria-label="Move ${esc(choice.label)} up"${index === 0 ? " disabled" : ""}>↑</button>` +
-                `<button type="button" data-bar-move="1" data-bar-id="${esc(id)}" aria-label="Move ${esc(choice.label)} down"${index === barOrder.length - 1 ? " disabled" : ""}>↓</button></div>`;
-        }).join("");
+                const choice = choices.get(id);
+                if (!choice) return "";
+                const source = choice.source || "Project Zomboid";
+                return `<div class="needs-expanded-order-line">` +
+                    `<span class="needs-expanded-order-name"><span class="needs-expanded-order-number">${index + 1}.</span>` +
+                    `${barChoiceIcon(choice)}<span>${esc(choice.label)} <small>${esc(source)}</small></span>` +
+                    `${barHealthMarkup(id)}</span>` +
+                    `<button type="button" data-bar-move="-1" data-bar-id="${esc(id)}" aria-label="Move ${esc(choice.label)} up"${index === 0 ? " disabled" : ""}>↑</button>` +
+                    `<button type="button" data-bar-move="1" data-bar-id="${esc(id)}" aria-label="Move ${esc(choice.label)} down"${index === barOrder.length - 1 ? " disabled" : ""}>↓</button></div>`;
+            }).join("");
         return;
     }
     list.innerHTML = BAR_GROUPS.map(group => {
@@ -1854,7 +1880,7 @@ function openBarChooser() {
         `aria-label="Manage Stat Bars"><header><strong>Manage Stat Bars</strong>` +
         `<button type="button" class="needs-expanded-chooser-close" aria-label="Close">×</button></header>` +
         `<div class="needs-expanded-chooser-hint">Show each bar and optionally pin it at zero.</div>` +
-        `<button type="button" class="needs-expanded-order-toggle">Order Bars…</button>` +
+        `<button type="button" class="needs-expanded-order-toggle">Order Bars</button>` +
         `<div class="needs-expanded-chooser-list"></div>` +
         `<footer><button type="button" class="needs-expanded-chooser-done">Done</button></footer></div>`;
     barModal.addEventListener("click", event => {
@@ -1866,7 +1892,7 @@ function openBarChooser() {
         const toggle = event.target.closest(".needs-expanded-order-toggle");
         if (toggle) {
             barChooserMode = barChooserMode === "order" ? "visibility" : "order";
-            toggle.textContent = barChooserMode === "order" ? "Show and Pin Bars…" : "Order Bars…";
+            toggle.textContent = barChooserMode === "order" ? "Show and Pin Bars" : "Order Bars";
             barModal.querySelector(".needs-expanded-chooser-hint").textContent = barChooserMode === "order"
                 ? "Move bars one place at a time. Hidden and unavailable bars keep their positions."
                 : "Show each bar and optionally pin it at zero.";
